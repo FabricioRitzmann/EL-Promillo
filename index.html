@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Apple-Style Kanban</title>
+    <title>Kanban + Supabase Auth</title>
     <style>
       :root {
         --bg: #f5f5f7;
@@ -13,6 +13,7 @@
         --muted: #6e6e73;
         --accent: #0071e3;
         --accent-soft: rgba(0, 113, 227, 0.1);
+        --danger: #b42318;
         --shadow: 0 16px 35px rgba(0, 0, 0, 0.08);
         --card-shadow: 0 10px 22px rgba(0, 0, 0, 0.09);
         --radius-lg: 20px;
@@ -42,7 +43,7 @@
       }
 
       .hero {
-        margin-bottom: 1.5rem;
+        margin-bottom: 1rem;
       }
 
       .hero h1 {
@@ -56,6 +57,43 @@
         color: var(--muted);
       }
 
+      .auth-panel {
+        margin-bottom: 1rem;
+        padding: 1rem;
+        border-radius: var(--radius-lg);
+        background: var(--panel);
+        border: 1px solid var(--panel-border);
+        box-shadow: var(--shadow);
+        display: grid;
+        gap: 0.75rem;
+      }
+
+      .auth-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(180px, 1fr));
+        gap: 0.6rem;
+      }
+
+      .auth-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+
+      .auth-status {
+        margin: 0;
+        color: var(--muted);
+        min-height: 1.2rem;
+      }
+
+      .auth-status.error {
+        color: var(--danger);
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
       .board {
         display: grid;
         gap: 1rem;
@@ -65,7 +103,7 @@
       .bucket {
         display: flex;
         flex-direction: column;
-        min-height: 70vh;
+        min-height: 68vh;
         padding: 0.9rem;
         border-radius: var(--radius-lg);
         background: var(--panel);
@@ -94,7 +132,8 @@
         border-radius: 10px;
       }
 
-      .bucket-title:focus {
+      .bucket-title:focus,
+      .input:focus {
         outline: none;
         background: #fff;
         box-shadow: 0 0 0 2px var(--accent-soft);
@@ -111,10 +150,6 @@
         cursor: pointer;
         background: linear-gradient(180deg, #2f91ff, #0071e3);
         box-shadow: 0 8px 18px rgba(0, 113, 227, 0.3);
-      }
-
-      .add-card:hover {
-        transform: translateY(-1px);
       }
 
       .cards {
@@ -144,10 +179,6 @@
         user-select: none;
       }
 
-      .card:active {
-        cursor: grabbing;
-      }
-
       .card.dragging {
         opacity: 0.45;
         transform: scale(0.98);
@@ -172,7 +203,6 @@
         align-items: center;
         gap: 0.45rem;
         font-size: 0.92rem;
-        color: var(--text);
       }
 
       .todo-item input {
@@ -191,6 +221,33 @@
         border-radius: var(--radius-md);
         padding: 0.8rem;
         text-align: center;
+      }
+
+      .input {
+        width: 100%;
+        border: 1px solid rgba(0, 0, 0, 0.15);
+        border-radius: 10px;
+        padding: 0.6rem 0.7rem;
+        font: inherit;
+        background: #fff;
+      }
+
+      .btn {
+        border: none;
+        border-radius: 10px;
+        font: inherit;
+        padding: 0.52rem 0.85rem;
+        cursor: pointer;
+      }
+
+      .btn-secondary {
+        background: #efeff2;
+        color: var(--text);
+      }
+
+      .btn-primary {
+        background: var(--accent);
+        color: #fff;
       }
 
       .modal-backdrop {
@@ -227,14 +284,6 @@
         color: var(--muted);
       }
 
-      .modal-input {
-        width: 100%;
-        border: 1px solid rgba(0, 0, 0, 0.15);
-        border-radius: 10px;
-        padding: 0.6rem 0.7rem;
-        font: inherit;
-      }
-
       .modal-type {
         display: flex;
         gap: 0.5rem;
@@ -247,10 +296,6 @@
         padding: 0.45rem 0.8rem;
         cursor: pointer;
         background: #fff;
-      }
-
-      .modal-choice input {
-        margin-right: 0.4rem;
       }
 
       .todo-draft {
@@ -273,31 +318,14 @@
         gap: 0.5rem;
       }
 
-      .btn {
-        border: none;
-        border-radius: 10px;
-        font: inherit;
-        padding: 0.52rem 0.85rem;
-        cursor: pointer;
-      }
-
-      .btn-secondary {
-        background: #efeff2;
-        color: var(--text);
-      }
-
-      .btn-primary {
-        background: var(--accent);
-        color: #fff;
-      }
-
       @media (max-width: 980px) {
-        .board {
+        .board,
+        .auth-grid {
           grid-template-columns: 1fr;
         }
 
         .bucket {
-          min-height: 45vh;
+          min-height: 42vh;
         }
       }
     </style>
@@ -305,14 +333,36 @@
   <body>
     <main class="app">
       <section class="hero">
-        <h1>Kanban Board</h1>
-        <p>Bucket-Titel frei bearbeiten, Karten erstellen und per Drag &amp; Drop verschieben.</p>
+        <h1>Kanban Board + Supabase</h1>
+        <p>Registrieren/Login mit E-Mail + Passwort, Magic-Link Login und persistentes Board pro User.</p>
       </section>
 
-      <section class="board" id="board">
+      <section class="auth-panel">
+        <div class="auth-grid">
+          <input class="input" id="emailInput" type="email" placeholder="E-Mail" autocomplete="email" />
+          <input class="input" id="passwordInput" type="password" placeholder="Passwort" autocomplete="current-password" />
+        </div>
+
+        <div class="auth-actions">
+          <button class="btn btn-primary" id="registerBtn" type="button">Registrieren</button>
+          <button class="btn btn-primary" id="loginBtn" type="button">Login</button>
+          <button class="btn btn-secondary" id="magicLinkBtn" type="button">One-Turn-Go Mail Login</button>
+          <button class="btn btn-secondary" id="forgotBtn" type="button">Passwort vergessen</button>
+          <button class="btn btn-secondary hidden" id="logoutBtn" type="button">Logout</button>
+        </div>
+
+        <div class="auth-grid hidden" id="newPasswordRow">
+          <input class="input" id="newPasswordInput" type="password" placeholder="Neues Passwort" autocomplete="new-password" />
+          <button class="btn btn-primary" id="saveNewPasswordBtn" type="button">Neues Passwort speichern</button>
+        </div>
+
+        <p class="auth-status" id="authStatus">Lade Supabase-Konfiguration ...</p>
+      </section>
+
+      <section class="board hidden" id="board">
         <article class="bucket">
           <header class="bucket-header">
-            <input class="bucket-title" type="text" value="Ideen" aria-label="Bucket 1 Titel" />
+            <input class="bucket-title" type="text" value="Ideen" aria-label="Bucket 1 Titel" data-title-index="0" />
             <button class="add-card" type="button" aria-label="Karte hinzufügen">+</button>
           </header>
           <div class="cards" data-bucket="0"></div>
@@ -320,7 +370,7 @@
 
         <article class="bucket">
           <header class="bucket-header">
-            <input class="bucket-title" type="text" value="In Arbeit" aria-label="Bucket 2 Titel" />
+            <input class="bucket-title" type="text" value="In Arbeit" aria-label="Bucket 2 Titel" data-title-index="1" />
             <button class="add-card" type="button" aria-label="Karte hinzufügen">+</button>
           </header>
           <div class="cards" data-bucket="1"></div>
@@ -328,37 +378,34 @@
 
         <article class="bucket">
           <header class="bucket-header">
-            <input class="bucket-title" type="text" value="Erledigt" aria-label="Bucket 3 Titel" />
+            <input class="bucket-title" type="text" value="Erledigt" aria-label="Bucket 3 Titel" data-title-index="2" />
             <button class="add-card" type="button" aria-label="Karte hinzufügen">+</button>
           </header>
           <div class="cards" data-bucket="2"></div>
         </article>
       </section>
     </main>
+
     <div class="modal-backdrop" id="noteModal" aria-hidden="true">
       <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
         <h2 id="modalTitle">Neue Notiz</h2>
         <div class="modal-type">
-          <label class="modal-choice">
-            <input type="radio" name="noteType" value="text" checked />
-            Normale Notiz
-          </label>
-          <label class="modal-choice">
-            <input type="radio" name="noteType" value="todo" />
-            To-Do-Notiz
-          </label>
+          <label class="modal-choice"><input type="radio" name="noteType" value="text" checked /> Normale Notiz</label>
+          <label class="modal-choice"><input type="radio" name="noteType" value="todo" /> To-Do-Notiz</label>
         </div>
+
         <label class="modal-label" for="noteTitle">Titel / Text</label>
-        <input class="modal-input" id="noteTitle" type="text" placeholder="z. B. Meeting-Notizen" />
+        <input class="input" id="noteTitle" type="text" placeholder="z. B. Meeting-Notizen" />
 
         <div id="todoFields" hidden>
           <label class="modal-label" for="todoInput">To-Do hinzufügen</label>
           <div class="modal-type">
-            <input class="modal-input" id="todoInput" type="text" placeholder="z. B. E-Mail senden" />
+            <input class="input" id="todoInput" type="text" placeholder="z. B. E-Mail senden" />
             <button class="btn btn-secondary" id="addTodoItemBtn" type="button">Hinzufügen</button>
           </div>
           <div class="todo-draft" id="todoDraftList"></div>
         </div>
+
         <div class="modal-actions">
           <button class="btn btn-secondary" id="cancelNoteBtn" type="button">Abbrechen</button>
           <button class="btn btn-primary" id="createNoteBtn" type="button">Erstellen</button>
@@ -366,7 +413,14 @@
       </div>
     </div>
 
-    <script>
+    <script type="module">
+      import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+      const DEFAULT_STATE = {
+        titles: ["Ideen", "In Arbeit", "Erledigt"],
+        columns: [[], [], []],
+      };
+
       const board = document.getElementById("board");
       const noteModal = document.getElementById("noteModal");
       const noteTitleInput = document.getElementById("noteTitle");
@@ -376,71 +430,59 @@
       const todoDraftList = document.getElementById("todoDraftList");
       const cancelNoteBtn = document.getElementById("cancelNoteBtn");
       const createNoteBtn = document.getElementById("createNoteBtn");
-      let draggedCard = null;
-      let targetZone = null;
+
+      const emailInput = document.getElementById("emailInput");
+      const passwordInput = document.getElementById("passwordInput");
+      const registerBtn = document.getElementById("registerBtn");
+      const loginBtn = document.getElementById("loginBtn");
+      const magicLinkBtn = document.getElementById("magicLinkBtn");
+      const forgotBtn = document.getElementById("forgotBtn");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const authStatus = document.getElementById("authStatus");
+      const newPasswordRow = document.getElementById("newPasswordRow");
+      const newPasswordInput = document.getElementById("newPasswordInput");
+      const saveNewPasswordBtn = document.getElementById("saveNewPasswordBtn");
+
+      let supabase;
+      let currentUser = null;
+      let boardState = structuredClone(DEFAULT_STATE);
+      let draggedCardId = null;
+      let modalTargetBucket = null;
       let todoDraftItems = [];
+      let saveTimer = null;
 
-      function createCard(note) {
-        const card = document.createElement("div");
-        card.className = "card";
-        card.draggable = true;
-        if (note.type === "todo") {
-          const title = document.createElement("h3");
-          title.className = "card-title";
-          title.textContent = note.title;
-          card.appendChild(title);
+      function setStatus(message, isError = false) {
+        authStatus.textContent = message;
+        authStatus.classList.toggle("error", isError);
+      }
 
-          const list = document.createElement("ul");
-          list.className = "todo-list";
-          note.todos.forEach((todoText) => {
-            const item = document.createElement("li");
-            item.className = "todo-item";
-            const checkbox = document.createElement("input");
-            checkbox.type = "checkbox";
-            const label = document.createElement("span");
-            label.textContent = todoText;
+      function getCredentialsErrorText(error) {
+        return `Supabase Config fehlt/ungültig: ${error.message}. Bitte supabase.credentials.json ausfüllen.`;
+      }
 
-            checkbox.addEventListener("change", () => {
-              label.classList.toggle("done", checkbox.checked);
-            });
-
-            item.append(checkbox, label);
-            list.appendChild(item);
-          });
-          card.appendChild(list);
-        } else {
-          card.textContent = note.title;
+      async function loadCredentials() {
+        try {
+          const response = await fetch("./supabase.credentials.json", { cache: "no-store" });
+          if (!response.ok) {
+            throw new Error(`Datei konnte nicht geladen werden (HTTP ${response.status})`);
+          }
+          const config = await response.json();
+          if (!config?.supabaseUrl || !config?.supabaseAnonKey) {
+            throw new Error("supabaseUrl oder supabaseAnonKey fehlt");
+          }
+          return config;
+        } catch (error) {
+          setStatus(getCredentialsErrorText(error), true);
+          throw error;
         }
-
-        card.addEventListener("dragstart", () => {
-          draggedCard = card;
-          card.classList.add("dragging");
-        });
-
-        card.addEventListener("dragend", () => {
-          card.classList.remove("dragging");
-          draggedCard = null;
-          renderEmptyStates();
-        });
-
-        return card;
       }
 
-      function openNoteModal(zone) {
-        targetZone = zone;
-        todoDraftItems = [];
-        noteTitleInput.value = "";
-        todoInput.value = "";
-        todoDraftList.innerHTML = "";
-        noteModal.classList.add("is-open");
-        noteModal.setAttribute("aria-hidden", "false");
-        setTypeFields();
-        noteTitleInput.focus();
-      }
-
-      function closeNoteModal() {
-        noteModal.classList.remove("is-open");
-        noteModal.setAttribute("aria-hidden", "true");
+      function scheduleSave() {
+        if (!currentUser) return;
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(() => {
+          saveBoard().catch((error) => setStatus(`Speichern fehlgeschlagen: ${error.message}`, true));
+        }, 500);
       }
 
       function getSelectedType() {
@@ -467,100 +509,129 @@
         todoDraftItems.push(value);
         todoInput.value = "";
         renderTodoDraft();
-        todoInput.focus();
       }
 
-      function renderEmptyStates() {
-        document.querySelectorAll(".cards").forEach((zone) => {
-          const hasCard = zone.querySelector(".card");
-          const hint = zone.querySelector(".empty");
+      function openNoteModal(bucketIndex) {
+        modalTargetBucket = Number(bucketIndex);
+        todoDraftItems = [];
+        noteTitleInput.value = "";
+        todoInput.value = "";
+        todoDraftList.innerHTML = "";
+        setTypeFields();
+        noteModal.classList.add("is-open");
+        noteModal.setAttribute("aria-hidden", "false");
+        noteTitleInput.focus();
+      }
 
-          if (!hasCard && !hint) {
+      function closeNoteModal() {
+        noteModal.classList.remove("is-open");
+        noteModal.setAttribute("aria-hidden", "true");
+      }
+
+      function updateBoardTitles() {
+        document.querySelectorAll(".bucket-title").forEach((input, index) => {
+          input.value = boardState.titles[index] || DEFAULT_STATE.titles[index];
+        });
+      }
+
+      function findCardPosition(cardId) {
+        for (let bucketIndex = 0; bucketIndex < boardState.columns.length; bucketIndex += 1) {
+          const cardIndex = boardState.columns[bucketIndex].findIndex((card) => card.id === cardId);
+          if (cardIndex >= 0) return { bucketIndex, cardIndex };
+        }
+        return null;
+      }
+
+      function createCardElement(card) {
+        const element = document.createElement("div");
+        element.className = "card";
+        element.draggable = true;
+        element.dataset.cardId = card.id;
+
+        if (card.type === "todo") {
+          const title = document.createElement("h3");
+          title.className = "card-title";
+          title.textContent = card.title;
+          element.appendChild(title);
+
+          const list = document.createElement("ul");
+          list.className = "todo-list";
+
+          card.todos.forEach((todo, todoIndex) => {
+            const item = document.createElement("li");
+            item.className = "todo-item";
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.checked = Boolean(todo.done);
+            const label = document.createElement("span");
+            label.textContent = todo.text;
+            label.classList.toggle("done", checkbox.checked);
+
+            checkbox.addEventListener("change", () => {
+              const pos = findCardPosition(card.id);
+              if (!pos) return;
+              boardState.columns[pos.bucketIndex][pos.cardIndex].todos[todoIndex].done = checkbox.checked;
+              label.classList.toggle("done", checkbox.checked);
+              scheduleSave();
+            });
+
+            item.append(checkbox, label);
+            list.appendChild(item);
+          });
+
+          element.appendChild(list);
+        } else {
+          element.textContent = card.title;
+        }
+
+        element.addEventListener("dragstart", () => {
+          draggedCardId = card.id;
+          element.classList.add("dragging");
+        });
+
+        element.addEventListener("dragend", () => {
+          element.classList.remove("dragging");
+          draggedCardId = null;
+        });
+
+        return element;
+      }
+
+      function renderBoard() {
+        updateBoardTitles();
+
+        document.querySelectorAll(".cards").forEach((zone, bucketIndex) => {
+          zone.innerHTML = "";
+          const cards = boardState.columns[bucketIndex] || [];
+          cards.forEach((card) => zone.appendChild(createCardElement(card)));
+
+          if (cards.length === 0) {
             const empty = document.createElement("div");
             empty.className = "empty";
             empty.textContent = "Keine Karten – mit + neue Karte erstellen.";
             zone.appendChild(empty);
           }
-
-          if (hasCard && hint) {
-            hint.remove();
-          }
         });
       }
 
-      board.querySelectorAll(".bucket").forEach((bucket) => {
-        const addButton = bucket.querySelector(".add-card");
-        const cardsZone = bucket.querySelector(".cards");
+      function moveCard(cardId, toBucket, targetCardId = null) {
+        const fromPos = findCardPosition(cardId);
+        if (!fromPos) return;
 
-        addButton.addEventListener("click", () => {
-          openNoteModal(cardsZone);
-        });
+        const [card] = boardState.columns[fromPos.bucketIndex].splice(fromPos.cardIndex, 1);
+        const destination = boardState.columns[toBucket];
 
-        cardsZone.addEventListener("dragover", (event) => {
-          event.preventDefault();
-          cardsZone.classList.add("is-over");
-        });
-
-        cardsZone.addEventListener("dragleave", () => {
-          cardsZone.classList.remove("is-over");
-        });
-
-        cardsZone.addEventListener("drop", (event) => {
-          event.preventDefault();
-          cardsZone.classList.remove("is-over");
-          if (!draggedCard) {
-            return;
-          }
-
-          const afterElement = getDropTarget(cardsZone, event.clientY);
-          if (afterElement) {
-            cardsZone.insertBefore(draggedCard, afterElement);
-          } else {
-            cardsZone.appendChild(draggedCard);
-          }
-          renderEmptyStates();
-        });
-      });
-
-      document.querySelectorAll('input[name="noteType"]').forEach((radio) => {
-        radio.addEventListener("change", setTypeFields);
-      });
-
-      addTodoItemBtn.addEventListener("click", addTodoDraftItem);
-      todoInput.addEventListener("keydown", (event) => {
-        if (event.key === "Enter") {
-          event.preventDefault();
-          addTodoDraftItem();
-        }
-      });
-
-      cancelNoteBtn.addEventListener("click", closeNoteModal);
-      noteModal.addEventListener("click", (event) => {
-        if (event.target === noteModal) {
-          closeNoteModal();
-        }
-      });
-
-      createNoteBtn.addEventListener("click", () => {
-        const type = getSelectedType();
-        const title = noteTitleInput.value.trim();
-        if (!title || !targetZone) return;
-
-        if (type === "todo" && todoDraftItems.length === 0) {
-          window.alert("Bitte mindestens ein To-Do hinzufügen.");
-          return;
+        if (!targetCardId) {
+          destination.push(card);
+        } else {
+          const targetIndex = destination.findIndex((item) => item.id === targetCardId);
+          if (targetIndex < 0) destination.push(card);
+          else destination.splice(targetIndex, 0, card);
         }
 
-        targetZone.appendChild(
-          createCard({
-            type,
-            title,
-            todos: [...todoDraftItems],
-          })
-        );
-        closeNoteModal();
-        renderEmptyStates();
-      });
+        renderBoard();
+        scheduleSave();
+      }
 
       function getDropTarget(container, mouseY) {
         const cards = [...container.querySelectorAll(".card:not(.dragging)")];
@@ -577,7 +648,231 @@
         ).element;
       }
 
-      renderEmptyStates();
+      async function saveBoard() {
+        if (!currentUser) return;
+
+        const { error } = await supabase.from("kanban_boards").upsert(
+          {
+            user_id: currentUser.id,
+            board_state: boardState,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id" }
+        );
+
+        if (error) throw error;
+        setStatus(`Gespeichert für ${currentUser.email}`);
+      }
+
+      async function loadBoardForUser(user) {
+        const { data, error } = await supabase
+          .from("kanban_boards")
+          .select("board_state")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        if (error) throw error;
+
+        boardState = data?.board_state
+          ? {
+              titles: data.board_state.titles || structuredClone(DEFAULT_STATE.titles),
+              columns: data.board_state.columns || structuredClone(DEFAULT_STATE.columns),
+            }
+          : structuredClone(DEFAULT_STATE);
+
+        renderBoard();
+      }
+
+      function resetBoardUI() {
+        boardState = structuredClone(DEFAULT_STATE);
+        renderBoard();
+      }
+
+      async function register() {
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+        if (!email || !password) return setStatus("Bitte E-Mail und Passwort eingeben.", true);
+
+        const { error } = await supabase.auth.signUp({ email, password });
+        if (error) return setStatus(error.message, true);
+
+        setStatus("Registrierung erfolgreich. Prüfe ggf. dein E-Mail-Postfach für Verifizierung.");
+      }
+
+      async function login() {
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+        if (!email || !password) return setStatus("Bitte E-Mail und Passwort eingeben.", true);
+
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) return setStatus(error.message, true);
+      }
+
+      async function sendMagicLink() {
+        const email = emailInput.value.trim();
+        if (!email) return setStatus("Bitte E-Mail eingeben.", true);
+
+        const { error } = await supabase.auth.signInWithOtp({
+          email,
+          options: { emailRedirectTo: window.location.href },
+        });
+
+        if (error) return setStatus(error.message, true);
+        setStatus("One-Turn-Go Login-Link wurde per E-Mail versendet.");
+      }
+
+      async function forgotPassword() {
+        const email = emailInput.value.trim();
+        if (!email) return setStatus("Bitte E-Mail eingeben.", true);
+
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: window.location.href,
+        });
+
+        if (error) return setStatus(error.message, true);
+        setStatus("Passwort-Reset Mail wurde versendet.");
+      }
+
+      async function saveNewPassword() {
+        const nextPassword = newPasswordInput.value.trim();
+        if (!nextPassword) return setStatus("Bitte neues Passwort eingeben.", true);
+
+        const { error } = await supabase.auth.updateUser({ password: nextPassword });
+        if (error) return setStatus(error.message, true);
+
+        setStatus("Neues Passwort gespeichert. Du bist jetzt eingeloggt.");
+        newPasswordRow.classList.add("hidden");
+        newPasswordInput.value = "";
+      }
+
+      function updateAuthUI(user) {
+        const isLoggedIn = Boolean(user);
+        board.classList.toggle("hidden", !isLoggedIn);
+        logoutBtn.classList.toggle("hidden", !isLoggedIn);
+        currentUser = user;
+
+        if (isLoggedIn) {
+          setStatus(`Angemeldet als ${user.email}`);
+          loadBoardForUser(user).catch((error) => setStatus(`Board-Laden fehlgeschlagen: ${error.message}`, true));
+        } else {
+          setStatus("Bitte einloggen oder registrieren.");
+          resetBoardUI();
+        }
+      }
+
+      function attachBoardEvents() {
+        board.querySelectorAll(".bucket").forEach((bucket) => {
+          const addButton = bucket.querySelector(".add-card");
+          const cardsZone = bucket.querySelector(".cards");
+          const bucketIndex = Number(cardsZone.dataset.bucket);
+
+          addButton.addEventListener("click", () => openNoteModal(bucketIndex));
+
+          cardsZone.addEventListener("dragover", (event) => {
+            event.preventDefault();
+            cardsZone.classList.add("is-over");
+          });
+
+          cardsZone.addEventListener("dragleave", () => cardsZone.classList.remove("is-over"));
+
+          cardsZone.addEventListener("drop", (event) => {
+            event.preventDefault();
+            cardsZone.classList.remove("is-over");
+            if (!draggedCardId) return;
+
+            const afterElement = getDropTarget(cardsZone, event.clientY);
+            moveCard(draggedCardId, bucketIndex, afterElement?.dataset.cardId || null);
+          });
+        });
+
+        document.querySelectorAll(".bucket-title").forEach((input, index) => {
+          input.addEventListener("change", () => {
+            boardState.titles[index] = input.value.trim() || DEFAULT_STATE.titles[index];
+            renderBoard();
+            scheduleSave();
+          });
+        });
+      }
+
+      function attachModalEvents() {
+        document.querySelectorAll('input[name="noteType"]').forEach((radio) => {
+          radio.addEventListener("change", setTypeFields);
+        });
+
+        addTodoItemBtn.addEventListener("click", addTodoDraftItem);
+        todoInput.addEventListener("keydown", (event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            addTodoDraftItem();
+          }
+        });
+
+        cancelNoteBtn.addEventListener("click", closeNoteModal);
+
+        noteModal.addEventListener("click", (event) => {
+          if (event.target === noteModal) closeNoteModal();
+        });
+
+        createNoteBtn.addEventListener("click", () => {
+          const title = noteTitleInput.value.trim();
+          const type = getSelectedType();
+          if (!title || modalTargetBucket === null) return;
+          if (type === "todo" && todoDraftItems.length === 0) {
+            window.alert("Bitte mindestens ein To-Do hinzufügen.");
+            return;
+          }
+
+          const card = {
+            id: crypto.randomUUID(),
+            type,
+            title,
+            todos: type === "todo" ? todoDraftItems.map((text) => ({ text, done: false })) : [],
+          };
+
+          boardState.columns[modalTargetBucket].push(card);
+          renderBoard();
+          scheduleSave();
+          closeNoteModal();
+        });
+      }
+
+      function attachAuthEvents() {
+        registerBtn.addEventListener("click", () => register().catch((error) => setStatus(error.message, true)));
+        loginBtn.addEventListener("click", () => login().catch((error) => setStatus(error.message, true)));
+        magicLinkBtn.addEventListener("click", () => sendMagicLink().catch((error) => setStatus(error.message, true)));
+        forgotBtn.addEventListener("click", () => forgotPassword().catch((error) => setStatus(error.message, true)));
+        saveNewPasswordBtn.addEventListener("click", () => saveNewPassword().catch((error) => setStatus(error.message, true)));
+        logoutBtn.addEventListener("click", async () => {
+          const { error } = await supabase.auth.signOut();
+          if (error) return setStatus(error.message, true);
+        });
+      }
+
+      async function bootstrap() {
+        attachBoardEvents();
+        attachModalEvents();
+        attachAuthEvents();
+        renderBoard();
+
+        const credentials = await loadCredentials();
+        supabase = createClient(credentials.supabaseUrl, credentials.supabaseAnonKey);
+
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        updateAuthUI(data.session?.user || null);
+
+        supabase.auth.onAuthStateChange((event, session) => {
+          if (event === "PASSWORD_RECOVERY") {
+            newPasswordRow.classList.remove("hidden");
+            setStatus("Recovery erkannt: Bitte neues Passwort setzen.");
+          }
+          updateAuthUI(session?.user || null);
+        });
+      }
+
+      bootstrap().catch((error) => {
+        setStatus(`Initialisierung fehlgeschlagen: ${error.message}`, true);
+      });
     </script>
   </body>
 </html>
