@@ -22,6 +22,7 @@ Die Web-App wird mit folgenden Technologien erstellt:
 6. Kommentare sollen dort eingefügt werden, wo sie helfen, die Logik zu verstehen.
 7. Funktionen sollen möglichst klein und übersichtlich bleiben.
 8. Wiederverwendbare Logik soll nicht mehrfach geschrieben werden.
+9. Lifere mir für Supabase immer ein SQL mit
 
 ## Projektstruktur
 
