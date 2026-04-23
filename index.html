@@ -153,6 +153,37 @@
         transform: scale(0.98);
       }
 
+      .card-title {
+        margin: 0;
+        font-size: 0.98rem;
+        font-weight: 600;
+      }
+
+      .todo-list {
+        margin: 0.55rem 0 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 0.45rem;
+      }
+
+      .todo-item {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        font-size: 0.92rem;
+        color: var(--text);
+      }
+
+      .todo-item input {
+        accent-color: var(--accent);
+      }
+
+      .todo-item span.done {
+        color: var(--muted);
+        text-decoration: line-through;
+      }
+
       .empty {
         color: var(--muted);
         font-size: 0.92rem;
@@ -160,6 +191,104 @@
         border-radius: var(--radius-md);
         padding: 0.8rem;
         text-align: center;
+      }
+
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        display: none;
+        place-items: center;
+        padding: 1rem;
+        background: rgba(0, 0, 0, 0.35);
+        backdrop-filter: blur(2px);
+        z-index: 50;
+      }
+
+      .modal-backdrop.is-open {
+        display: grid;
+      }
+
+      .modal {
+        width: min(560px, 100%);
+        border-radius: var(--radius-lg);
+        background: #fff;
+        box-shadow: var(--shadow);
+        padding: 1.1rem;
+      }
+
+      .modal h2 {
+        margin: 0 0 0.7rem;
+      }
+
+      .modal-label {
+        margin: 0.75rem 0 0.35rem;
+        display: block;
+        font-size: 0.92rem;
+        color: var(--muted);
+      }
+
+      .modal-input {
+        width: 100%;
+        border: 1px solid rgba(0, 0, 0, 0.15);
+        border-radius: 10px;
+        padding: 0.6rem 0.7rem;
+        font: inherit;
+      }
+
+      .modal-type {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+
+      .modal-choice {
+        border: 1px solid rgba(0, 113, 227, 0.2);
+        border-radius: 999px;
+        padding: 0.45rem 0.8rem;
+        cursor: pointer;
+        background: #fff;
+      }
+
+      .modal-choice input {
+        margin-right: 0.4rem;
+      }
+
+      .todo-draft {
+        margin-top: 0.55rem;
+        display: grid;
+        gap: 0.45rem;
+      }
+
+      .todo-draft-item {
+        padding: 0.4rem 0.55rem;
+        border-radius: 8px;
+        background: #f7f7f8;
+        font-size: 0.9rem;
+      }
+
+      .modal-actions {
+        margin-top: 1rem;
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.5rem;
+      }
+
+      .btn {
+        border: none;
+        border-radius: 10px;
+        font: inherit;
+        padding: 0.52rem 0.85rem;
+        cursor: pointer;
+      }
+
+      .btn-secondary {
+        background: #efeff2;
+        color: var(--text);
+      }
+
+      .btn-primary {
+        background: var(--accent);
+        color: #fff;
       }
 
       @media (max-width: 980px) {
@@ -206,16 +335,82 @@
         </article>
       </section>
     </main>
+    <div class="modal-backdrop" id="noteModal" aria-hidden="true">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <h2 id="modalTitle">Neue Notiz</h2>
+        <div class="modal-type">
+          <label class="modal-choice">
+            <input type="radio" name="noteType" value="text" checked />
+            Normale Notiz
+          </label>
+          <label class="modal-choice">
+            <input type="radio" name="noteType" value="todo" />
+            To-Do-Notiz
+          </label>
+        </div>
+        <label class="modal-label" for="noteTitle">Titel / Text</label>
+        <input class="modal-input" id="noteTitle" type="text" placeholder="z. B. Meeting-Notizen" />
+
+        <div id="todoFields" hidden>
+          <label class="modal-label" for="todoInput">To-Do hinzufügen</label>
+          <div class="modal-type">
+            <input class="modal-input" id="todoInput" type="text" placeholder="z. B. E-Mail senden" />
+            <button class="btn btn-secondary" id="addTodoItemBtn" type="button">Hinzufügen</button>
+          </div>
+          <div class="todo-draft" id="todoDraftList"></div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" id="cancelNoteBtn" type="button">Abbrechen</button>
+          <button class="btn btn-primary" id="createNoteBtn" type="button">Erstellen</button>
+        </div>
+      </div>
+    </div>
 
     <script>
       const board = document.getElementById("board");
+      const noteModal = document.getElementById("noteModal");
+      const noteTitleInput = document.getElementById("noteTitle");
+      const todoFields = document.getElementById("todoFields");
+      const todoInput = document.getElementById("todoInput");
+      const addTodoItemBtn = document.getElementById("addTodoItemBtn");
+      const todoDraftList = document.getElementById("todoDraftList");
+      const cancelNoteBtn = document.getElementById("cancelNoteBtn");
+      const createNoteBtn = document.getElementById("createNoteBtn");
       let draggedCard = null;
+      let targetZone = null;
+      let todoDraftItems = [];
 
-      function createCard(text) {
+      function createCard(note) {
         const card = document.createElement("div");
         card.className = "card";
         card.draggable = true;
-        card.textContent = text;
+        if (note.type === "todo") {
+          const title = document.createElement("h3");
+          title.className = "card-title";
+          title.textContent = note.title;
+          card.appendChild(title);
+
+          const list = document.createElement("ul");
+          list.className = "todo-list";
+          note.todos.forEach((todoText) => {
+            const item = document.createElement("li");
+            item.className = "todo-item";
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            const label = document.createElement("span");
+            label.textContent = todoText;
+
+            checkbox.addEventListener("change", () => {
+              label.classList.toggle("done", checkbox.checked);
+            });
+
+            item.append(checkbox, label);
+            list.appendChild(item);
+          });
+          card.appendChild(list);
+        } else {
+          card.textContent = note.title;
+        }
 
         card.addEventListener("dragstart", () => {
           draggedCard = card;
@@ -229,6 +424,50 @@
         });
 
         return card;
+      }
+
+      function openNoteModal(zone) {
+        targetZone = zone;
+        todoDraftItems = [];
+        noteTitleInput.value = "";
+        todoInput.value = "";
+        todoDraftList.innerHTML = "";
+        noteModal.classList.add("is-open");
+        noteModal.setAttribute("aria-hidden", "false");
+        setTypeFields();
+        noteTitleInput.focus();
+      }
+
+      function closeNoteModal() {
+        noteModal.classList.remove("is-open");
+        noteModal.setAttribute("aria-hidden", "true");
+      }
+
+      function getSelectedType() {
+        return document.querySelector('input[name="noteType"]:checked').value;
+      }
+
+      function setTypeFields() {
+        todoFields.hidden = getSelectedType() !== "todo";
+      }
+
+      function renderTodoDraft() {
+        todoDraftList.innerHTML = "";
+        todoDraftItems.forEach((itemText, index) => {
+          const row = document.createElement("div");
+          row.className = "todo-draft-item";
+          row.textContent = `${index + 1}. ${itemText}`;
+          todoDraftList.appendChild(row);
+        });
+      }
+
+      function addTodoDraftItem() {
+        const value = todoInput.value.trim();
+        if (!value) return;
+        todoDraftItems.push(value);
+        todoInput.value = "";
+        renderTodoDraft();
+        todoInput.focus();
       }
 
       function renderEmptyStates() {
@@ -254,12 +493,7 @@
         const cardsZone = bucket.querySelector(".cards");
 
         addButton.addEventListener("click", () => {
-          const value = window.prompt("Kartentext:");
-          if (!value || !value.trim()) {
-            return;
-          }
-          cardsZone.appendChild(createCard(value.trim()));
-          renderEmptyStates();
+          openNoteModal(cardsZone);
         });
 
         cardsZone.addEventListener("dragover", (event) => {
@@ -286,6 +520,46 @@
           }
           renderEmptyStates();
         });
+      });
+
+      document.querySelectorAll('input[name="noteType"]').forEach((radio) => {
+        radio.addEventListener("change", setTypeFields);
+      });
+
+      addTodoItemBtn.addEventListener("click", addTodoDraftItem);
+      todoInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          addTodoDraftItem();
+        }
+      });
+
+      cancelNoteBtn.addEventListener("click", closeNoteModal);
+      noteModal.addEventListener("click", (event) => {
+        if (event.target === noteModal) {
+          closeNoteModal();
+        }
+      });
+
+      createNoteBtn.addEventListener("click", () => {
+        const type = getSelectedType();
+        const title = noteTitleInput.value.trim();
+        if (!title || !targetZone) return;
+
+        if (type === "todo" && todoDraftItems.length === 0) {
+          window.alert("Bitte mindestens ein To-Do hinzufügen.");
+          return;
+        }
+
+        targetZone.appendChild(
+          createCard({
+            type,
+            title,
+            todos: [...todoDraftItems],
+          })
+        );
+        closeNoteModal();
+        renderEmptyStates();
       });
 
       function getDropTarget(container, mouseY) {
