@@ -35,9 +35,26 @@ create table if not exists public.pass_assets (
   created_at timestamptz not null default timezone('utc', now())
 );
 
+-- Neue Tabelle: Hier kann die Supabase-Verbindung aus der App in der Datenbank gespeichert werden.
+create table if not exists public.supabase_connections (
+  id uuid primary key default gen_random_uuid(),
+  name text not null unique,
+  supabase_url text not null,
+  supabase_anon_key text not null,
+  is_active boolean not null default false,
+  owner_id uuid not null default auth.uid(),
+  created_at timestamptz not null default timezone('utc', now()),
+  updated_at timestamptz not null default timezone('utc', now())
+);
+
+create unique index if not exists idx_supabase_connections_one_active
+on public.supabase_connections(owner_id)
+where is_active = true;
+
 create index if not exists idx_passes_owner_updated on public.passes (owner_id, updated_at desc);
 create index if not exists idx_pass_fields_pass_id on public.pass_fields (pass_id);
 create index if not exists idx_pass_assets_pass_id on public.pass_assets (pass_id);
+create index if not exists idx_supabase_connections_owner_name on public.supabase_connections (owner_id, name);
 
 create or replace function public.set_updated_at()
 returns trigger
@@ -55,9 +72,16 @@ before update on public.passes
 for each row
 execute function public.set_updated_at();
 
+drop trigger if exists trg_supabase_connections_updated_at on public.supabase_connections;
+create trigger trg_supabase_connections_updated_at
+before update on public.supabase_connections
+for each row
+execute function public.set_updated_at();
+
 alter table public.passes enable row level security;
 alter table public.pass_fields enable row level security;
 alter table public.pass_assets enable row level security;
+alter table public.supabase_connections enable row level security;
 
 -- RLS Policies: Nutzer dürfen nur ihre eigenen Daten sehen und bearbeiten.
 drop policy if exists "passes_select_own" on public.passes;
@@ -194,3 +218,29 @@ using (
     where p.id = pass_id and p.owner_id = auth.uid()
   )
 );
+
+-- Policies für gespeicherte Supabase-Verbindungen.
+drop policy if exists "supabase_connections_select_own" on public.supabase_connections;
+create policy "supabase_connections_select_own"
+on public.supabase_connections
+for select
+using (owner_id = auth.uid());
+
+drop policy if exists "supabase_connections_insert_own" on public.supabase_connections;
+create policy "supabase_connections_insert_own"
+on public.supabase_connections
+for insert
+with check (owner_id = auth.uid());
+
+drop policy if exists "supabase_connections_update_own" on public.supabase_connections;
+create policy "supabase_connections_update_own"
+on public.supabase_connections
+for update
+using (owner_id = auth.uid())
+with check (owner_id = auth.uid());
+
+drop policy if exists "supabase_connections_delete_own" on public.supabase_connections;
+create policy "supabase_connections_delete_own"
+on public.supabase_connections
+for delete
+using (owner_id = auth.uid());
