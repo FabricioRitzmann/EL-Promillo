@@ -16,6 +16,15 @@ Eine einfache Web-App (HTML/CSS/JS + Supabase), um Wallet-Karten im Stil der Pas
    - `python3 -m http.server 8080`
 4. Öffne dann `http://localhost:8080`.
 
+## Supabase-Verbindung in der Datenbank hinterlegen
+Wenn du die Verbindung zusätzlich direkt in Supabase speichern willst (z. B. für spätere Verwaltung), gehe so vor:
+
+1. Führe zuerst `supabase/schema.sql` aus (enthält jetzt auch die Tabelle `public.supabase_connections`).
+2. Führe danach `supabase/seed_connection.sql` aus.
+3. Passe bei Bedarf `name`, `supabase_url` und `supabase_anon_key` in `supabase/seed_connection.sql` an.
+
+Damit hast du eine aktive Verbindung in Supabase gespeichert, auf die du später aufbauen kannst.
+
 ## Wichtiger Hinweis zu echten `.pkpass` Dateien
 Diese App erzeugt absichtlich **JSON-Export** und keine signierten `.pkpass` Dateien.
 Für echte Apple Wallet `.pkpass` Dateien brauchst du zusätzlich einen Server-Schritt zum Signieren (Apple Zertifikate + Manifest + Signatur).
