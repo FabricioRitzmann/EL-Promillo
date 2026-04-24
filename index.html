@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wallet Web App</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  </head>
+  <body>
+    <header class="app-header">
+      <h1>Meine Wallet</h1>
+      <p>Digitale Karten, Guthaben und Transaktionen an einem Ort.</p>
+    </header>
+
+    <main class="layout">
+      <section class="panel" id="auth-panel">
+        <h2>Login / Registrierung</h2>
+        <form id="auth-form">
+          <label>
+            E-Mail
+            <input type="email" id="auth-email" required />
+          </label>
+          <label>
+            Passwort
+            <input type="password" id="auth-password" minlength="6" required />
+          </label>
+          <div class="button-row">
+            <button type="button" id="btn-signup">Registrieren</button>
+            <button type="button" id="btn-login">Login</button>
+            <button type="button" id="btn-logout" class="secondary">Logout</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel" id="wallet-panel">
+        <h2>Wallet Übersicht</h2>
+        <div id="wallet-summary" class="summary-grid"></div>
+      </section>
+
+      <section class="panel">
+        <h2>Neue Karte anlegen</h2>
+        <form id="card-form">
+          <label>
+            Name der Karte
+            <input type="text" id="card-name" placeholder="z. B. Coffee Club" required />
+          </label>
+          <label>
+            Typ
+            <select id="card-type" required>
+              <option value="loyalty">Loyalty</option>
+              <option value="gift">Gift Card</option>
+              <option value="membership">Mitgliedschaft</option>
+              <option value="coupon">Coupon</option>
+            </select>
+          </label>
+          <label>
+            Guthaben
+            <input type="number" id="card-balance" value="0" min="0" step="0.01" required />
+          </label>
+          <label>
+            Ablaufdatum
+            <input type="date" id="card-expiry" />
+          </label>
+          <label>
+            Barcode / QR Text
+            <input type="text" id="card-code" placeholder="z. B. 1234-5678-ABCD" />
+          </label>
+          <button type="submit">Karte speichern</button>
+        </form>
+      </section>
+
+      <section class="panel">
+        <h2>Transaktion hinzufügen</h2>
+        <form id="transaction-form">
+          <label>
+            Karte
+            <select id="transaction-card" required></select>
+          </label>
+          <label>
+            Typ
+            <select id="transaction-type" required>
+              <option value="charge">Aufladen</option>
+              <option value="payment">Bezahlen</option>
+              <option value="refund">Rückerstattung</option>
+            </select>
+          </label>
+          <label>
+            Betrag
+            <input type="number" id="transaction-amount" min="0.01" step="0.01" required />
+          </label>
+          <label>
+            Beschreibung
+            <input type="text" id="transaction-description" placeholder="z. B. Latte Macchiato" />
+          </label>
+          <button type="submit">Transaktion speichern</button>
+        </form>
+      </section>
+
+      <section class="panel">
+        <h2>Angebot erstellen</h2>
+        <form id="offer-form">
+          <label>
+            Titel
+            <input type="text" id="offer-title" placeholder="10% Rabatt auf nächste Bestellung" required />
+          </label>
+          <label>
+            Gültig bis
+            <input type="date" id="offer-valid-until" required />
+          </label>
+          <button type="submit">Angebot speichern</button>
+        </form>
+      </section>
+
+      <section class="panel full-width">
+        <h2>Meine Karten</h2>
+        <div id="cards-list" class="cards-grid"></div>
+      </section>
+
+      <section class="panel full-width">
+        <h2>Letzte Transaktionen</h2>
+        <ul id="transactions-list" class="list"></ul>
+      </section>
+
+      <section class="panel full-width">
+        <h2>Aktive Angebote</h2>
+        <ul id="offers-list" class="list"></ul>
+      </section>
+    </main>
+
+    <div id="message-box" class="message-box"></div>
+
+    <script type="module" src="js/app.js"></script>
+  </body>
+</html>
