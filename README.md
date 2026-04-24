@@ -11,6 +11,7 @@ Eine einfache Web-App (HTML/CSS/JS + Supabase), um Wallet-Karten im Stil der Pas
 
 ## Start
 1. Führe `supabase/schema.sql` im Supabase SQL Editor aus.
+   - Alternativ: Einmaliges Komplett-Skript `supabase/setup_for_test_website.sql` nutzen.
 2. Prüfe `config/supabase.json`.
 3. Starte einen lokalen Static-Server im Projektordner, z. B.:
    - `python3 -m http.server 8080`
