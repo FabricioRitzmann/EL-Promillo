@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pass Studio – Wallet Karten Editor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./css/style.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">PassKit Style Editor</p>
+          <h1>Pass Studio</h1>
+        </div>
+        <div class="topbar-actions">
+          <span id="auth-state" class="auth-state">Nicht angemeldet</span>
+          <button id="logout-btn" class="btn btn-secondary hidden">Logout</button>
+        </div>
+      </header>
+
+      <main class="layout-grid">
+        <section id="auth-card" class="card auth-card">
+          <h2>Login & Registrierung</h2>
+          <p class="muted">
+            Nutze E-Mail/Passwort oder fordere ein One-Time-Passwort für Passwort-Reset an.
+          </p>
+
+          <form id="auth-form" class="stack-form">
+            <label>
+              E-Mail
+              <input type="email" id="email" placeholder="dein.name@firma.de" required />
+            </label>
+            <label>
+              Passwort
+              <input type="password" id="password" placeholder="••••••••" required />
+            </label>
+            <div class="row-buttons">
+              <button type="button" id="register-btn" class="btn">Registrieren</button>
+              <button type="button" id="login-btn" class="btn btn-primary">Login</button>
+            </div>
+            <div class="row-buttons">
+              <button type="button" id="reset-btn" class="btn btn-secondary">OTP / Reset anfordern</button>
+            </div>
+          </form>
+        </section>
+
+        <section id="editor-card" class="card editor-card hidden">
+          <div class="section-head">
+            <h2>Pass Editor</h2>
+            <button id="save-pass-btn" class="btn btn-primary">Pass speichern</button>
+          </div>
+
+          <div class="editor-grid">
+            <form id="pass-form" class="stack-form">
+              <label>
+                Titel
+                <input id="pass-title" type="text" value="VIP Membership" required />
+              </label>
+
+              <label>
+                Untertitel
+                <input id="pass-subtitle" type="text" value="Premium Club" />
+              </label>
+
+              <label>
+                Beschreibung
+                <textarea id="pass-description" rows="3">Zutritt für Events und Lounge.</textarea>
+              </label>
+
+              <label>
+                QR-Inhalt (z. B. URL oder Token)
+                <input id="pass-qr-content" type="text" value="https://example.com/checkin/ABC123" required />
+              </label>
+
+              <label>
+                Template
+                <select id="pass-template"></select>
+              </label>
+
+              <label>
+                Hintergrundfarbe
+                <input id="pass-bg" type="color" value="#1d1d1f" />
+              </label>
+
+              <label>
+                Textfarbe
+                <input id="pass-fg" type="color" value="#ffffff" />
+              </label>
+
+              <label>
+                Eigener Hintergrund (PNG/JPG)
+                <input id="pass-upload" type="file" accept="image/png,image/jpeg" />
+              </label>
+            </form>
+
+            <aside class="preview-pane">
+              <h3>Live Vorschau</h3>
+              <div id="pass-preview" class="pass-preview">
+                <div class="pass-overlay">
+                  <p id="preview-subtitle" class="preview-subtitle"></p>
+                  <h4 id="preview-title"></h4>
+                  <p id="preview-description"></p>
+                  <img id="preview-qr" alt="QR Code Vorschau" />
+                </div>
+              </div>
+              <p class="muted small">
+                Hinweis: Für echte .pkpass-Dateien kann im nächsten Schritt ein Server-Endpunkt eingebunden werden.
+              </p>
+            </aside>
+          </div>
+        </section>
+
+        <section id="saved-card" class="card saved-card hidden">
+          <h2>Gespeicherte Karten</h2>
+          <ul id="saved-pass-list" class="saved-list"></ul>
+        </section>
+      </main>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module" src="./js/app.js"></script>
+  </body>
+</html>

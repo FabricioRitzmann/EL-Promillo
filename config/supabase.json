@@ -1,0 +1,6 @@
+{
+  "projectUrl": "https://YOUR-PROJECT.supabase.co",
+  "anonKey": "YOUR_PUBLIC_ANON_KEY",
+  "storageBucket": "pass-backgrounds",
+  "notes": "Trage hier deine Supabase Projektwerte ein."
+}
