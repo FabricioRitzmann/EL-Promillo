@@ -12,8 +12,10 @@ import {
   addNotificationRule,
   applyTemplateDefaults,
   formElements,
+  getDesignById,
   getPassFormData,
   getTemplateById,
+  initDesignSelect,
   initTemplateSelect,
   renderProgramFields,
   renderSavedPasses,
@@ -30,13 +32,13 @@ let currentUploadedImageUrl = '';
 
 function buildPreviewPayload() {
   const formData = getPassFormData();
-  const selectedTemplate = getTemplateById(formData.templateId);
+  const selectedDesign = getDesignById(formData.designId);
 
   return {
     ...formData,
     customImageUrl: currentUploadedImageUrl,
-    templateGradient: selectedTemplate.gradient,
-    foregroundColor: formData.foregroundColor || selectedTemplate.fg
+    templateGradient: selectedDesign.gradient,
+    foregroundColor: formData.foregroundColor || selectedDesign.fg
   };
 }
 
@@ -46,9 +48,14 @@ function refreshPreview() {
 
 function handleTemplateChange() {
   const template = getTemplateById(formElements.template.value);
-  setTemplateColors(template);
   applyTemplateDefaults(template);
   renderProgramFields(template.programType || 'generic');
+  refreshPreview();
+}
+
+function handleDesignChange() {
+  const design = getDesignById(formElements.design.value);
+  setTemplateColors(design);
   refreshPreview();
 }
 
@@ -265,6 +272,7 @@ function wireEvents() {
   previewFields.forEach((field) => field.addEventListener('input', refreshPreview));
 
   formElements.template.addEventListener('change', handleTemplateChange);
+  formElements.design.addEventListener('change', handleDesignChange);
 
   formElements.upload.addEventListener('change', handleImageUpload);
   formElements.addRuleBtn.addEventListener('click', handleAddNotificationRule);
@@ -273,6 +281,7 @@ function wireEvents() {
 
 function init() {
   initTemplateSelect();
+  initDesignSelect();
   addNotificationRule({
     name: 'Beispiel Reminder',
     triggerType: 'time',
@@ -281,6 +290,7 @@ function init() {
   });
 
   handleTemplateChange();
+  handleDesignChange();
   refreshPreview();
   wireEvents();
   bootstrapAuth();
