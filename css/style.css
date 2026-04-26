@@ -249,6 +249,38 @@ select:focus {
   font-weight: 600;
 }
 
+.wallet-preview-tabbar {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin-bottom: 10px;
+  background: rgba(15, 23, 42, 0.45);
+  border-radius: 999px;
+  padding: 4px;
+}
+
+.wallet-preview-tab {
+  border: 0;
+  border-radius: 999px;
+  padding: 6px 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: rgba(226, 232, 240, 0.88);
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.wallet-preview-tab:hover {
+  background: rgba(148, 163, 184, 0.22);
+  color: #ffffff;
+}
+
+.wallet-preview-tab.is-active {
+  background: rgba(255, 255, 255, 0.94);
+  color: #0f172a;
+}
+
 .pass-preview {
   border-radius: 22px;
   min-height: 228px;
