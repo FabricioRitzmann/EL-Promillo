@@ -1,4 +1,4 @@
-import { passTemplates } from './config.js';
+import { passDesigns, passTemplates } from './config.js';
 
 export const ui = {
   authState: document.getElementById('auth-state'),
@@ -19,6 +19,7 @@ export const formElements = {
   description: document.getElementById('pass-description'),
   qrContent: document.getElementById('pass-qr-content'),
   template: document.getElementById('pass-template'),
+  design: document.getElementById('pass-design'),
   bg: document.getElementById('pass-bg'),
   fg: document.getElementById('pass-fg'),
   upload: document.getElementById('pass-upload'),
@@ -47,8 +48,24 @@ export function initTemplateSelect() {
   formElements.template.value = passTemplates[0].id;
 }
 
+export function initDesignSelect() {
+  formElements.design.innerHTML = '';
+  for (const design of passDesigns) {
+    const option = document.createElement('option');
+    option.value = design.id;
+    option.textContent = design.name;
+    formElements.design.appendChild(option);
+  }
+
+  formElements.design.value = passDesigns[0].id;
+}
+
 export function getTemplateById(id) {
   return passTemplates.find((template) => template.id === id) || passTemplates[0];
+}
+
+export function getDesignById(id) {
+  return passDesigns.find((design) => design.id === id) || passDesigns[0];
 }
 
 export function renderProgramFields(programType) {
@@ -64,6 +81,15 @@ function sanitizeNumber(value, fallback) {
 
 export function applyTemplateDefaults(template) {
   if (!template.defaults) return;
+  if (template.defaults.title) {
+    formElements.title.value = template.defaults.title;
+  }
+  if (template.defaults.subtitle) {
+    formElements.subtitle.value = template.defaults.subtitle;
+  }
+  if (template.defaults.description) {
+    formElements.description.value = template.defaults.description;
+  }
 
   if (template.programType === 'coffee') {
     formElements.coffeeTarget.value = template.defaults.stampTarget;
@@ -232,14 +258,17 @@ export function updatePreview(payload) {
 
 export function getPassFormData() {
   const template = getTemplateById(formElements.template.value);
+  const design = getDesignById(formElements.design.value);
   return {
     title: formElements.title.value.trim(),
     subtitle: formElements.subtitle.value.trim(),
     description: formElements.description.value.trim(),
     qrContent: formElements.qrContent.value.trim(),
     templateId: formElements.template.value,
+    designId: formElements.design.value,
     backgroundColor: formElements.bg.value,
     foregroundColor: formElements.fg.value,
+    templateGradient: design.gradient,
     cardProgramType: template.programType || 'generic',
     programConfig: getProgramConfig(template.programType || 'generic'),
     pushEnabled: formElements.pushEnabled.checked,
@@ -247,13 +276,14 @@ export function getPassFormData() {
   };
 }
 
-export function setTemplateColors(template) {
-  formElements.bg.value = template.bg;
-  formElements.fg.value = template.fg;
+export function setTemplateColors(design) {
+  formElements.bg.value = design.bg;
+  formElements.fg.value = design.fg;
 }
 
 export function setAuthenticatedView(email) {
   ui.authState.textContent = `Angemeldet als ${email}`;
+  ui.authCard.classList.add('hidden');
   ui.logoutBtn.classList.remove('hidden');
   ui.editorCard.classList.remove('hidden');
   ui.savedCard.classList.remove('hidden');
@@ -261,6 +291,7 @@ export function setAuthenticatedView(email) {
 
 export function setLoggedOutView() {
   ui.authState.textContent = 'Nicht angemeldet';
+  ui.authCard.classList.remove('hidden');
   ui.logoutBtn.classList.add('hidden');
   ui.editorCard.classList.add('hidden');
   ui.savedCard.classList.add('hidden');
