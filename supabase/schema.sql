@@ -15,9 +15,20 @@ create table if not exists public.wallet_passes (
   background_color text not null default '#1d1d1f',
   foreground_color text not null default '#ffffff',
   custom_image_url text,
+  card_program_type text not null default 'generic',
+  program_config jsonb not null default '{}'::jsonb,
+  push_enabled boolean not null default false,
+  notification_rules jsonb not null default '[]'::jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+-- 1b) Falls die Tabelle schon existiert: neue Felder ergänzen
+alter table public.wallet_passes
+  add column if not exists card_program_type text not null default 'generic',
+  add column if not exists program_config jsonb not null default '{}'::jsonb,
+  add column if not exists push_enabled boolean not null default false,
+  add column if not exists notification_rules jsonb not null default '[]'::jsonb;
 
 -- 2) Updated-At Trigger
 create or replace function public.set_updated_at()

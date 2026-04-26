@@ -235,3 +235,51 @@ select:focus {
     gap: 12px;
   }
 }
+
+.config-section {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.program-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.inline-space-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.toggle-inline {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.rule-row {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rule-location-fields,
+.rule-time-fields {
+  display: grid;
+  gap: 8px;
+}
+
+.btn-danger {
+  background: #ffefef;
+  color: #a51212;
+}
