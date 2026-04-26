@@ -40,9 +40,12 @@ export const formElements = {
   coffeeTarget: document.getElementById('coffee-target'),
   coffeeCurrent: document.getElementById('coffee-current'),
   coffeeReward: document.getElementById('coffee-reward'),
+  coffeeShape: document.getElementById('coffee-shape'),
   streakAction: document.getElementById('streak-action'),
   streakTarget: document.getElementById('streak-target'),
+  streakCurrent: document.getElementById('streak-current'),
   streakGrace: document.getElementById('streak-grace'),
+  streakShape: document.getElementById('streak-shape'),
   creditBalance: document.getElementById('credit-balance'),
   creditCurrency: document.getElementById('credit-currency'),
   creditThreshold: document.getElementById('credit-threshold')
@@ -158,6 +161,10 @@ function sanitizeNumber(value, fallback) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
+function clampNumber(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
 export function syncBannerFields() {
   const bannerFields = document.getElementById('banner-fields');
   bannerFields.classList.toggle('hidden', !formElements.bannerEnabled.checked);
@@ -188,13 +195,16 @@ export function applyTemplateDefaults(template) {
     formElements.coffeeTarget.value = template.defaults.stampTarget;
     formElements.coffeeCurrent.value = template.defaults.currentStamps;
     formElements.coffeeReward.value = template.defaults.rewardText;
+    formElements.coffeeShape.value = template.defaults.stampShape || 'circle';
   }
 
   if (template.programType === 'streak') {
     formElements.streakAction.value = template.defaults.actionDefinition;
     formElements.streakTarget.value = template.defaults.targetDays;
+    formElements.streakCurrent.value = template.defaults.currentStamps ?? 0;
     formElements.streakGrace.value = template.defaults.graceHours;
     formElements.streakIcon.value = template.defaults.streakIconId || streakIcons[0].id;
+    formElements.streakShape.value = template.defaults.streakShape || 'circle';
   }
 
   if (template.programType === 'credit') {
@@ -209,7 +219,8 @@ export function getProgramConfig(programType) {
     return {
       stampTarget: sanitizeNumber(formElements.coffeeTarget.value, 10),
       currentStamps: sanitizeNumber(formElements.coffeeCurrent.value, 0),
-      rewardText: formElements.coffeeReward.value.trim()
+      rewardText: formElements.coffeeReward.value.trim(),
+      stampShape: formElements.coffeeShape.value
     };
   }
 
@@ -217,8 +228,10 @@ export function getProgramConfig(programType) {
     return {
       actionDefinition: formElements.streakAction.value.trim(),
       targetDays: sanitizeNumber(formElements.streakTarget.value, 30),
+      currentStamps: sanitizeNumber(formElements.streakCurrent.value, 0),
       graceHours: sanitizeNumber(formElements.streakGrace.value, 24),
-      streakIconId: formElements.streakIcon.value
+      streakIconId: formElements.streakIcon.value,
+      streakShape: formElements.streakShape.value
     };
   }
 
@@ -331,6 +344,7 @@ export function updatePreview(payload) {
   const description = document.getElementById('preview-description');
   const qrImage = document.getElementById('preview-qr');
   const banner = document.getElementById('preview-banner');
+  const stampGrid = document.getElementById('preview-stamp-grid');
 
   subtitle.textContent = payload.subtitle || 'Standard';
   title.textContent = `${getIconSymbol(payload.iconId)} ${payload.title || 'Neue Karte'}`;
@@ -366,6 +380,31 @@ export function updatePreview(payload) {
   } else {
     banner.classList.add('hidden');
     banner.textContent = '';
+  }
+
+  stampGrid.innerHTML = '';
+  stampGrid.classList.add('hidden');
+
+  const isCoffee = payload.cardProgramType === 'coffee';
+  const isStreak = payload.cardProgramType === 'streak';
+  if (isCoffee || isStreak) {
+    const targetRaw = isCoffee ? payload.programConfig?.stampTarget : payload.programConfig?.targetDays;
+    const progressRaw = payload.programConfig?.currentStamps;
+    const selectedShape = isCoffee ? payload.programConfig?.stampShape : payload.programConfig?.streakShape;
+    const slotIconId = isCoffee ? payload.iconId : payload.programConfig?.streakIconId;
+    const slotIconSymbol = getIconSymbol(slotIconId);
+    const target = clampNumber(sanitizeNumber(targetRaw, 1), 1, 60);
+    const progress = clampNumber(sanitizeNumber(progressRaw, 0), 0, target);
+
+    stampGrid.classList.remove('hidden');
+    for (let index = 0; index < target; index += 1) {
+      const slot = document.createElement('span');
+      slot.className = 'stamp-slot';
+      slot.dataset.shape = selectedShape || 'circle';
+      slot.classList.toggle('stamp-slot-filled', index < progress);
+      slot.textContent = index < progress ? slotIconSymbol : '';
+      stampGrid.appendChild(slot);
+    }
   }
 }
 
@@ -433,10 +472,13 @@ export function fillEditorFromSavedPass(entry) {
   formElements.coffeeTarget.value = programConfig.stampTarget ?? 10;
   formElements.coffeeCurrent.value = programConfig.currentStamps ?? 0;
   formElements.coffeeReward.value = programConfig.rewardText ?? '';
+  formElements.coffeeShape.value = programConfig.stampShape || 'circle';
   formElements.streakAction.value = programConfig.actionDefinition ?? '';
   formElements.streakTarget.value = programConfig.targetDays ?? 30;
+  formElements.streakCurrent.value = programConfig.currentStamps ?? 0;
   formElements.streakGrace.value = programConfig.graceHours ?? 24;
   formElements.streakIcon.value = programConfig.streakIconId || streakIcons[0].id;
+  formElements.streakShape.value = programConfig.streakShape || 'circle';
   formElements.creditBalance.value = programConfig.balance ?? 0;
   formElements.creditCurrency.value = programConfig.currency ?? 'EUR';
   formElements.creditThreshold.value = programConfig.lowBalanceThreshold ?? 5;
