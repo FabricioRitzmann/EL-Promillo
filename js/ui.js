@@ -1,4 +1,4 @@
-import { passTemplates, streakIcons, templateIcons } from './config.js';
+import { backgroundTemplates, bannerColorOptions, passTemplates, streakIcons, templateIcons } from './config.js';
 
 export const ui = {
   authState: document.getElementById('auth-state'),
@@ -28,7 +28,13 @@ export const formElements = {
   streakIcon: document.getElementById('streak-icon'),
   bg: document.getElementById('pass-bg'),
   fg: document.getElementById('pass-fg'),
+  backgroundTemplate: document.getElementById('pass-background-template'),
   upload: document.getElementById('pass-upload'),
+  bannerEnabled: document.getElementById('pass-banner-enabled'),
+  bannerText: document.getElementById('pass-banner-text'),
+  bannerColor: document.getElementById('pass-banner-color'),
+  bannerBg: document.getElementById('pass-banner-bg'),
+  bannerFg: document.getElementById('pass-banner-fg'),
   pushEnabled: document.getElementById('push-enabled'),
   addRuleBtn: document.getElementById('add-rule-btn'),
   coffeeTarget: document.getElementById('coffee-target'),
@@ -74,8 +80,23 @@ export function initTemplateSelect() {
   formElements.template.value = passTemplates[0].id;
   setSelectOptions(formElements.icon, templateIcons);
   setSelectOptions(formElements.streakIcon, streakIcons);
+  setSelectOptions(formElements.bannerColor, bannerColorOptions.map((entry) => ({ ...entry, symbol: '🎨' })));
   formElements.icon.value = templateIcons[0].id;
   formElements.streakIcon.value = streakIcons[0].id;
+  formElements.bannerColor.value = bannerColorOptions[0].id;
+
+  formElements.backgroundTemplate.innerHTML = '';
+  const customOption = document.createElement('option');
+  customOption.value = 'custom';
+  customOption.textContent = '🎛️ Eigene Farbe';
+  formElements.backgroundTemplate.appendChild(customOption);
+
+  for (const template of backgroundTemplates) {
+    const option = document.createElement('option');
+    option.value = template.id;
+    option.textContent = `🖼️ ${template.name}`;
+    formElements.backgroundTemplate.appendChild(option);
+  }
 }
 
 export function getTemplateById(id) {
@@ -94,6 +115,18 @@ export function renderProgramFields(programType) {
 function sanitizeNumber(value, fallback) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+export function syncBannerFields() {
+  const bannerFields = document.getElementById('banner-fields');
+  bannerFields.classList.toggle('hidden', !formElements.bannerEnabled.checked);
+}
+
+export function applyBannerColorPreset() {
+  const preset = bannerColorOptions.find((entry) => entry.id === formElements.bannerColor.value);
+  if (!preset) return;
+  formElements.bannerBg.value = preset.bgColor;
+  formElements.bannerFg.value = preset.textColor;
 }
 
 export function applyTemplateDefaults(template) {
@@ -256,13 +289,20 @@ export function updatePreview(payload) {
   const title = document.getElementById('preview-title');
   const description = document.getElementById('preview-description');
   const qrImage = document.getElementById('preview-qr');
+  const banner = document.getElementById('preview-banner');
 
   subtitle.textContent = payload.subtitle || 'Standard';
   title.textContent = `${getIconSymbol(payload.iconId)} ${payload.title || 'Neue Karte'}`;
   description.textContent = payload.description || '';
 
+  const selectedBgTemplate = backgroundTemplates.find((entry) => entry.id === payload.backgroundTemplateId);
+
   if (payload.customImageUrl) {
     preview.style.backgroundImage = `url(${payload.customImageUrl})`;
+    preview.style.backgroundSize = 'cover';
+    preview.style.backgroundPosition = 'center';
+  } else if (selectedBgTemplate) {
+    preview.style.backgroundImage = selectedBgTemplate.gradient;
     preview.style.backgroundSize = 'cover';
     preview.style.backgroundPosition = 'center';
   } else {
@@ -276,6 +316,16 @@ export function updatePreview(payload) {
     payload.qrContent || 'https://example.com'
   )}`;
   qrImage.src = qrUrl;
+
+  if (payload.banner?.enabled && payload.banner?.text) {
+    banner.classList.remove('hidden');
+    banner.textContent = payload.banner.text;
+    banner.style.backgroundColor = payload.banner.backgroundColor;
+    banner.style.color = payload.banner.textColor;
+  } else {
+    banner.classList.add('hidden');
+    banner.textContent = '';
+  }
 }
 
 export function getPassFormData() {
@@ -287,8 +337,16 @@ export function getPassFormData() {
     qrContent: formElements.qrContent.value.trim(),
     templateId: formElements.template.value,
     iconId: formElements.icon.value,
+    backgroundTemplateId: formElements.backgroundTemplate.value,
     backgroundColor: formElements.bg.value,
     foregroundColor: formElements.fg.value,
+    banner: {
+      enabled: formElements.bannerEnabled.checked,
+      text: formElements.bannerText.value.trim(),
+      preset: formElements.bannerColor.value,
+      backgroundColor: formElements.bannerBg.value,
+      textColor: formElements.bannerFg.value
+    },
     cardProgramType: template.programType || 'generic',
     programConfig: getProgramConfig(template.programType || 'generic'),
     pushEnabled: formElements.pushEnabled.checked,
@@ -321,7 +379,14 @@ export function fillEditorFromSavedPass(entry) {
   formElements.icon.value = entry.icon_id || templateIcons[0].id;
   formElements.bg.value = entry.background_color || '#1d1d1f';
   formElements.fg.value = entry.foreground_color || '#ffffff';
+  formElements.backgroundTemplate.value = entry.background_template_id || 'custom';
   formElements.pushEnabled.checked = Boolean(entry.push_enabled);
+  formElements.bannerEnabled.checked = Boolean(entry.banner_enabled);
+  formElements.bannerText.value = entry.banner_text || '';
+  formElements.bannerColor.value = entry.banner_preset || bannerColorOptions[0].id;
+  formElements.bannerBg.value = entry.banner_background_color || '#f5c451';
+  formElements.bannerFg.value = entry.banner_text_color || '#2d1b00';
+  syncBannerFields();
 
   const programConfig = entry.program_config || {};
   formElements.coffeeTarget.value = programConfig.stampTarget ?? 10;
