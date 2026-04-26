@@ -240,6 +240,15 @@
 
                 <div class="design-grid">
                   <label>
+                    📱 Wallet-Vorschau
+                    <select id="pass-wallet-skin">
+                      <option value="apple">Apple Wallet</option>
+                      <option value="google">Google Wallet</option>
+                      <option value="samsung">Samsung Wallet</option>
+                    </select>
+                  </label>
+
+                  <label>
                     🎞️ Hintergrund-Vorlage
                     <select id="pass-background-template"></select>
                   </label>
@@ -349,7 +358,12 @@
 
             <aside class="preview-pane">
               <h3>Live Vorschau</h3>
-              <div id="pass-preview" class="pass-preview">
+              <div class="wallet-preview-shell">
+                <div class="wallet-preview-header">
+                  <span class="wallet-brand">Wallet Vorschau</span>
+                  <span id="preview-wallet-label" class="wallet-provider-label">Apple Wallet</span>
+                </div>
+                <div id="pass-preview" class="pass-preview" data-wallet-skin="apple">
                 <div class="pass-overlay">
                   <p id="preview-banner" class="preview-banner hidden"></p>
                   <p id="preview-subtitle" class="preview-subtitle"></p>
@@ -361,6 +375,7 @@
                   <div id="preview-stamp-grid" class="preview-stamp-grid hidden"></div>
                   <img id="preview-qr" alt="QR Code Vorschau" />
                 </div>
+              </div>
               </div>
               <p class="muted small">
                 Hinweis: Für echte .pkpass-Dateien kann im nächsten Schritt ein Server-Endpunkt eingebunden werden.
