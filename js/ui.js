@@ -43,6 +43,47 @@ export const formElements = {
 };
 
 let pendingConfirmResolver = null;
+const cardTransitionDurationMs = 260;
+const transitionTimers = new WeakMap();
+
+function clearCardTimer(element) {
+  const timerId = transitionTimers.get(element);
+  if (timerId) {
+    clearTimeout(timerId);
+    transitionTimers.delete(element);
+  }
+}
+
+function animateCardIn(element) {
+  clearCardTimer(element);
+  element.classList.remove('hidden', 'view-exit-active');
+  element.classList.add('view-transition', 'view-enter-start');
+
+  requestAnimationFrame(() => {
+    element.classList.add('view-enter-active');
+    element.classList.remove('view-enter-start');
+  });
+
+  const timerId = setTimeout(() => {
+    element.classList.remove('view-enter-active');
+    transitionTimers.delete(element);
+  }, cardTransitionDurationMs);
+
+  transitionTimers.set(element, timerId);
+}
+
+function animateCardOut(element) {
+  clearCardTimer(element);
+  element.classList.add('view-transition', 'view-exit-active');
+
+  const timerId = setTimeout(() => {
+    element.classList.add('hidden');
+    element.classList.remove('view-exit-active', 'view-enter-active', 'view-enter-start');
+    transitionTimers.delete(element);
+  }, cardTransitionDurationMs);
+
+  transitionTimers.set(element, timerId);
+}
 
 function setSelectOptions(selectElement, entries) {
   selectElement.innerHTML = '';
@@ -298,18 +339,18 @@ export function getPassFormData() {
 
 export function setAuthenticatedView(email) {
   ui.authState.textContent = email;
-  ui.authCard.classList.add('hidden');
+  animateCardOut(ui.authCard);
   ui.logoutBtn.classList.remove('hidden');
-  ui.editorCard.classList.remove('hidden');
-  ui.savedCard.classList.remove('hidden');
+  animateCardIn(ui.editorCard);
+  animateCardIn(ui.savedCard);
 }
 
 export function setLoggedOutView() {
   ui.authState.textContent = '';
-  ui.authCard.classList.remove('hidden');
+  animateCardIn(ui.authCard);
   ui.logoutBtn.classList.add('hidden');
-  ui.editorCard.classList.add('hidden');
-  ui.savedCard.classList.add('hidden');
+  animateCardOut(ui.editorCard);
+  animateCardOut(ui.savedCard);
 }
 
 export function fillEditorFromSavedPass(entry) {

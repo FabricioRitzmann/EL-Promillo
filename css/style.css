@@ -71,6 +71,31 @@ p {
   -webkit-backdrop-filter: blur(18px);
 }
 
+.view-transition {
+  transition: opacity 260ms ease, transform 260ms ease;
+}
+
+.view-enter-start {
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+.view-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.view-exit-active {
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .view-transition {
+    transition: none;
+  }
+}
+
 .auth-card {
   max-width: 480px;
 }
