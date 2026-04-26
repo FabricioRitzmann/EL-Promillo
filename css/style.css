@@ -191,6 +191,12 @@ select:focus {
   align-items: center;
 }
 
+.editor-actions .btn {
+  font-size: 0.82rem;
+  padding: 6px 12px;
+  font-weight: 500;
+}
+
 .preview-pane {
   background: #f9fbff;
   border: 1px dashed #d3dbe8;
