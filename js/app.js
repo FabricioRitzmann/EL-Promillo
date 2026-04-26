@@ -63,12 +63,28 @@ function updatePreviewPaneSizeOnScroll() {
   const previewPane = document.querySelector('.preview-pane');
   if (!previewPane) return;
 
+  const isFullscreenLayout = isWindowCoveringScreen();
+  previewPane.classList.toggle('is-windowed', !isFullscreenLayout);
+
+  if (!isFullscreenLayout) {
+    previewPane.classList.remove('is-expanded');
+    return;
+  }
+
   const bottomThresholdPx = 24;
   const scrolledBottom = window.scrollY + window.innerHeight;
   const docHeight = document.documentElement.scrollHeight;
   const hasReachedBottom = scrolledBottom >= docHeight - bottomThresholdPx;
 
   previewPane.classList.toggle('is-expanded', hasReachedBottom);
+}
+
+function isWindowCoveringScreen() {
+  const widthGap = Math.abs(window.outerWidth - window.screen.availWidth);
+  const heightGap = Math.abs(window.outerHeight - window.screen.availHeight);
+  const allowedGapPx = 24;
+
+  return widthGap <= allowedGapPx && heightGap <= allowedGapPx;
 }
 
 function buildPreviewPayload() {
