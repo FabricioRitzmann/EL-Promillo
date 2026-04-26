@@ -39,6 +39,25 @@ function isMissingRelationError(error, relationName) {
   return error.code === 'PGRST205' || error.message?.includes(relationHint);
 }
 
+function slugify(value) {
+  return String(value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
+    .slice(0, 48) || 'pass';
+}
+
+function buildTemplateStoragePath(passPayload, userId) {
+  if (passPayload.templateStoragePath) {
+    return passPayload.templateStoragePath;
+  }
+  const category = slugify(passPayload.businessCategory || 'general');
+  const title = slugify(passPayload.title || 'karte');
+  return `passes/${userId}/${category}/${title}-${crypto.randomUUID()}.json`;
+}
+
 export async function registerWithEmail(email, password) {
   if (!isConfigured) return notConfiguredError();
   try {
@@ -86,6 +105,9 @@ export async function savePass(passPayload, userId) {
       subtitle: passPayload.subtitle,
       description: passPayload.description,
       qr_content: passPayload.qrContent,
+      business_name: passPayload.businessName || null,
+      business_category: passPayload.businessCategory || 'restaurant',
+      template_storage_path: buildTemplateStoragePath(passPayload, userId),
       template_id: passPayload.templateId,
       icon_id: passPayload.iconId,
       background_template_id: passPayload.backgroundTemplateId,
@@ -197,4 +219,50 @@ export async function uploadCustomImage(file, userId) {
     .getPublicUrl(objectPath);
 
   return { data: { path: objectPath, publicUrl: data.publicUrl }, error: null };
+}
+
+
+export async function issuePassToWallet({ passId, businessUserId, endUserId, walletProvider = 'apple_wallet' }) {
+  if (!isConfigured) return notConfiguredError();
+  try {
+    const storagePath = `wallet-links/${businessUserId}/${passId}/${endUserId}-${crypto.randomUUID()}.json`;
+    return await supabaseClient.from('wallet_pass_instances').insert({
+      pass_id: passId,
+      business_user_id: businessUserId,
+      end_user_id: endUserId,
+      wallet_provider: walletProvider,
+      wallet_reference_path: storagePath
+    }).select('*').single();
+  } catch (error) {
+    return networkError(error);
+  }
+}
+
+export async function recordWalletScan({ passInstanceId, passId, businessUserId, eventType = 'scan', pointsDelta = 0 }) {
+  if (!isConfigured) return notConfiguredError();
+  try {
+    return await supabaseClient.from('pass_scan_events').insert({
+      pass_instance_id: passInstanceId,
+      pass_id: passId,
+      business_user_id: businessUserId,
+      event_type: eventType,
+      points_delta: pointsDelta,
+      occurred_at: new Date().toISOString()
+    });
+  } catch (error) {
+    return networkError(error);
+  }
+}
+
+export async function listBusinessScanStats(userId) {
+  if (!isConfigured) return notConfiguredError();
+  try {
+    return await supabaseClient
+      .from('business_scan_stats_anonymized')
+      .select('*')
+      .eq('business_user_id', userId)
+      .order('last_event_at', { ascending: false });
+  } catch (error) {
+    return networkError(error);
+  }
 }

@@ -26,6 +26,8 @@ export const formElements = {
   subtitle: document.getElementById('pass-subtitle'),
   description: document.getElementById('pass-description'),
   qrContent: document.getElementById('pass-qr-content'),
+  businessName: document.getElementById('business-name'),
+  businessCategory: document.getElementById('business-category'),
   template: document.getElementById('pass-template'),
   icon: document.getElementById('pass-icon'),
   iconUpload: document.getElementById('pass-icon-upload'),
@@ -624,6 +626,8 @@ export function getPassFormData() {
     subtitle: formElements.subtitle.value.trim(),
     description: formElements.description.value.trim(),
     qrContent: formElements.qrContent.value.trim(),
+    businessName: formElements.businessName.value.trim(),
+    businessCategory: formElements.businessCategory.value,
     templateId: formElements.template.value,
     iconId: formElements.icon.value,
     backgroundTemplateId: formElements.backgroundTemplate.value,
@@ -673,6 +677,8 @@ export function fillEditorFromSavedPass(entry) {
   formElements.subtitle.value = entry.subtitle || '';
   formElements.description.value = entry.description || '';
   formElements.qrContent.value = entry.qr_content || '';
+  formElements.businessName.value = entry.business_name || '';
+  formElements.businessCategory.value = entry.business_category || 'restaurant';
   formElements.template.value = entry.template_id || passTemplates[0].id;
   formElements.icon.value = entry.icon_id || templateIcons[0].id;
   formElements.bg.value = entry.background_color || '#1d1d1f';
@@ -733,6 +739,8 @@ export function renderSavedPasses(entries) {
         <strong>${entry.title}</strong>
         <p class="muted small">${entry.subtitle || 'Kein Untertitel'} · ${new Date(entry.created_at).toLocaleString('de-DE')}</p>
         <p class="muted small">Typ: ${entry.card_program_type || 'generic'} · Push-Regeln: ${ruleCount}</p>
+        <p class="muted small">Betrieb: ${entry.business_name || 'Nicht angegeben'} · Kategorie: ${entry.business_category || 'n/a'}</p>
+        <p class="muted small">Vorlagenpfad: ${entry.template_storage_path || 'wird beim Speichern erzeugt'}</p>
       </div>
       <div class="row-buttons">
         <button type="button" class="btn btn-secondary open-pass-btn">Öffnen</button>

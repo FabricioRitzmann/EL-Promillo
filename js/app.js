@@ -291,10 +291,15 @@ async function handleSavePass() {
     }
   }
 
+  const currentEntry = currentEditingPassId
+    ? latestPassEntries.find((entry) => entry.id === currentEditingPassId)
+    : null;
+
   const { error } = await savePass(
     {
       ...passData,
       id: currentEditingPassId,
+      templateStoragePath: currentEntry?.template_storage_path || '',
       customImageUrl: currentUploadedImageUrl,
       customIconUrl: currentUploadedIconUrl,
       customBannerUrl: currentUploadedBannerUrl
@@ -434,6 +439,9 @@ async function handleScanPass(passId) {
       subtitle: selectedPass.subtitle,
       description: selectedPass.description,
       qrContent: selectedPass.qr_content,
+      businessName: selectedPass.business_name,
+      businessCategory: selectedPass.business_category,
+      templateStoragePath: selectedPass.template_storage_path,
       templateId: selectedPass.template_id,
       iconId: selectedPass.icon_id,
       backgroundTemplateId: selectedPass.background_template_id,
