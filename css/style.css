@@ -342,6 +342,13 @@ select:focus {
   height: 70%;
 }
 
+.stamp-slot-uploaded-icon {
+  width: 70%;
+  height: 70%;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
 .stamp-slot-fallback-icon {
   font-size: 1rem;
   opacity: 0.85;
