@@ -63,7 +63,8 @@ export const formElements = {
   streakShape: document.getElementById('streak-shape'),
   creditBalance: document.getElementById('credit-balance'),
   creditCurrency: document.getElementById('credit-currency'),
-  creditThreshold: document.getElementById('credit-threshold')
+  creditThreshold: document.getElementById('credit-threshold'),
+  stampFrameSection: document.getElementById('stamp-frame-section')
 };
 
 let pendingConfirmResolver = null;
@@ -179,6 +180,48 @@ export function renderProgramFields(programType) {
 
   const streakIconWrap = document.getElementById('streak-icon-wrap');
   streakIconWrap.classList.toggle('hidden', programType !== 'streak');
+  const hasStampBackground = programType === 'coffee' || programType === 'streak';
+  formElements.stampFrameSection.classList.toggle('hidden', !hasStampBackground);
+}
+
+export function initSectionDropdowns() {
+  const sections = document.querySelectorAll('.config-section');
+  sections.forEach((section) => {
+    if (section.dataset.dropdownReady === 'true') {
+      return;
+    }
+
+    const title = section.querySelector('h3');
+    if (!title) {
+      return;
+    }
+
+    const content = document.createElement('div');
+    content.className = 'section-content';
+    const childElements = Array.from(section.children).filter((element) => element !== title);
+    childElements.forEach((element) => content.appendChild(element));
+    section.appendChild(content);
+
+    const trigger = document.createElement('button');
+    trigger.type = 'button';
+    trigger.className = 'section-toggle';
+    trigger.innerHTML = `
+      <span>${title.textContent}</span>
+      <span class="section-toggle-icon" aria-hidden="true">▾</span>
+    `;
+    title.replaceWith(trigger);
+
+    const isOpenByDefault = false;
+    section.classList.toggle('is-collapsed', !isOpenByDefault);
+    trigger.setAttribute('aria-expanded', String(isOpenByDefault));
+
+    trigger.addEventListener('click', () => {
+      const isCollapsed = section.classList.toggle('is-collapsed');
+      trigger.setAttribute('aria-expanded', String(!isCollapsed));
+    });
+
+    section.dataset.dropdownReady = 'true';
+  });
 }
 
 function sanitizeNumber(value, fallback) {
