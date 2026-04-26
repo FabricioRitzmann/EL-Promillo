@@ -8,6 +8,8 @@ Eine moderne Web-App mit:
 - Templates + eigene Design-Uploads
 - QR-Code Live-Vorschau
 - Speicherung in Supabase
+- Branchenfelder für Betriebe (Restaurant/Bar/Club/Café/Bäckerei/...)
+- Anonymisierte Scan-Statistik pro Betrieb (ohne private Kundendaten)
 
 ## Projektstruktur
 
@@ -72,3 +74,14 @@ Die App zeigt dafür jetzt eine klarere Fehlermeldung an.
 
 Diese Version erstellt und verwaltet die Pass-Daten und QR-Codes im Frontend.
 Für echte `.pkpass`-Dateien brauchst du zusätzlich einen Server-Endpunkt, der Apple-Zertifikate nutzt und PassKit-Dateien signiert.
+
+## Wallet-Tracking für Endnutzer
+
+Das SQL enthält jetzt zusätzlich ein Datenmodell für den echten Betriebseinsatz:
+
+- `wallet_passes`: enthält Karten-Vorlagen inkl. `business_name`, `business_category` und `template_storage_path`.
+- `wallet_pass_instances`: eine individuelle Wallet-Instanz pro Endnutzer und Karte (inkl. eindeutigem `wallet_reference_path`).
+- `pass_scan_events`: jeder Scan-/Punkte-/Stempel-Event wird revisionssicher gespeichert.
+- `business_scan_stats_anonymized` (View): liefert lesbare Statistiken pro Betrieb/Karte mit anonymisierten Kundenzahlen (`customer_reference_hash`).
+
+So können Betriebe nachvollziehen, wie oft Karten genutzt werden, ohne personenbezogene Endkundendaten im Klartext auszulesen.
