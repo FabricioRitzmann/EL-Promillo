@@ -34,6 +34,7 @@ export const formElements = {
   streakIcon: document.getElementById('streak-icon'),
   bg: document.getElementById('pass-bg'),
   fg: document.getElementById('pass-fg'),
+  walletSkin: document.getElementById('pass-wallet-skin'),
   backgroundTemplate: document.getElementById('pass-background-template'),
   upload: document.getElementById('pass-upload'),
   bannerEnabled: document.getElementById('pass-banner-enabled'),
@@ -536,6 +537,19 @@ export function updatePreview(payload) {
   const qrImage = document.getElementById('preview-qr');
   const banner = document.getElementById('preview-banner');
   const stampGrid = document.getElementById('preview-stamp-grid');
+  const walletLabel = document.getElementById('preview-wallet-label');
+
+  const walletSkin = payload.walletSkin || 'apple';
+  const walletLabels = {
+    apple: 'Apple Wallet',
+    google: 'Google Wallet',
+    samsung: 'Samsung Wallet'
+  };
+
+  preview.dataset.walletSkin = walletSkin;
+  if (walletLabel) {
+    walletLabel.textContent = walletLabels[walletSkin] || walletLabels.apple;
+  }
 
   subtitle.textContent = payload.subtitle || 'Standard';
   title.textContent = `${getIconSymbol(payload.iconId)} ${payload.title || 'Neue Karte'}`;
@@ -630,6 +644,7 @@ export function getPassFormData() {
     businessCategory: formElements.businessCategory.value,
     templateId: formElements.template.value,
     iconId: formElements.icon.value,
+    walletSkin: formElements.walletSkin.value,
     backgroundTemplateId: formElements.backgroundTemplate.value,
     backgroundColor: formElements.bg.value,
     foregroundColor: formElements.fg.value,
@@ -681,6 +696,7 @@ export function fillEditorFromSavedPass(entry) {
   formElements.businessCategory.value = entry.business_category || 'restaurant';
   formElements.template.value = entry.template_id || passTemplates[0].id;
   formElements.icon.value = entry.icon_id || templateIcons[0].id;
+  formElements.walletSkin.value = entry.wallet_skin || 'apple';
   formElements.bg.value = entry.background_color || '#1d1d1f';
   formElements.fg.value = entry.foreground_color || '#ffffff';
   formElements.backgroundTemplate.value = entry.background_template_id || 'custom';

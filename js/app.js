@@ -537,6 +537,7 @@ function wireEvents() {
     formElements.streakIcon,
     formElements.bg,
     formElements.fg,
+    formElements.walletSkin,
     formElements.backgroundTemplate,
     formElements.bannerEnabled,
     formElements.bannerText,
