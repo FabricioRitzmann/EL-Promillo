@@ -891,33 +891,14 @@ export function fillEditorFromSavedPass(entry) {
   setNotificationRules(entry.notification_rules || []);
 }
 
-function normalizeForSearch(value) {
-  return String(value || '')
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '');
-}
-
 function getCardKind(entry) {
-  const searchText = normalizeForSearch(`${entry.template_id || ''} ${entry.title || ''} ${entry.subtitle || ''}`);
-  const programType = normalizeForSearch(entry.card_program_type || '');
-
-  if (searchText.includes('vip')) return 'vip';
-  if (searchText.includes('mitglied') || searchText.includes('member') || searchText.includes('membership')) return 'member';
-  if (programType === 'coffee' || programType === 'streak' || searchText.includes('stempel') || searchText.includes('stamp')) {
-    return 'stamp';
-  }
-  return 'other';
+  return entry.template_id || 'unknown';
 }
 
 function getCardKindLabel(kind) {
-  const labels = {
-    stamp: 'Stempelkarte',
-    member: 'Memberkarte',
-    vip: 'VIP-Karte',
-    other: 'Sonstige'
-  };
-  return labels[kind] || labels.other;
+  if (kind === 'unknown') return 'Unbekannte Kartenart';
+  const template = passTemplates.find((entry) => entry.id === kind);
+  return template?.name || kind;
 }
 
 function sortSavedEntries(entries, sortMode) {
@@ -933,10 +914,10 @@ function sortSavedEntries(entries, sortMode) {
       return (b.title || '').localeCompare(a.title || '', 'de-DE', { sensitivity: 'base' });
     }
     if (sortMode === 'type') {
-      const kindOrder = ['stamp', 'member', 'vip', 'other'];
-      const left = kindOrder.indexOf(getCardKind(a));
-      const right = kindOrder.indexOf(getCardKind(b));
-      if (left !== right) return left - right;
+      const left = getCardKindLabel(getCardKind(a));
+      const right = getCardKindLabel(getCardKind(b));
+      const typeComparison = left.localeCompare(right, 'de-DE', { sensitivity: 'base' });
+      if (typeComparison !== 0) return typeComparison;
       return (a.title || '').localeCompare(b.title || '', 'de-DE', { sensitivity: 'base' });
     }
     return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
@@ -962,6 +943,32 @@ function renderFolderFilterOptions(folderNames, selectedFolder) {
   ui.savedFolderFilter.value = options.includes(selectedFolder) ? selectedFolder : 'all';
 }
 
+function renderTypeFilterOptions(entries, selectedType) {
+  if (!ui.savedTypeFilter) return 'all';
+
+  const templateIdsFromConfig = passTemplates.map((template) => template.id);
+  const templateIdsFromEntries = entries.map((entry) => getCardKind(entry)).filter((value) => value !== 'unknown');
+  const templateIds = Array.from(new Set([...templateIdsFromConfig, ...templateIdsFromEntries]));
+
+  ui.savedTypeFilter.innerHTML = '';
+
+  const allOption = document.createElement('option');
+  allOption.value = 'all';
+  allOption.textContent = 'Alle Kartenarten';
+  ui.savedTypeFilter.appendChild(allOption);
+
+  for (const templateId of templateIds) {
+    const option = document.createElement('option');
+    option.value = templateId;
+    option.textContent = getCardKindLabel(templateId);
+    ui.savedTypeFilter.appendChild(option);
+  }
+
+  const safeValue = templateIds.includes(selectedType) ? selectedType : 'all';
+  ui.savedTypeFilter.value = safeValue;
+  return safeValue;
+}
+
 export function renderSavedPasses(entries, options = {}) {
   const folderAssignments = options.folderAssignments || {};
   const folderNames = options.folderNames || [];
@@ -973,9 +980,7 @@ export function renderSavedPasses(entries, options = {}) {
 
   renderFolderFilterOptions(folderNames, filters.folder);
 
-  if (ui.savedTypeFilter) {
-    ui.savedTypeFilter.value = filters.cardType;
-  }
+  filters.cardType = renderTypeFilterOptions(entries, filters.cardType);
   if (ui.savedSort) {
     ui.savedSort.value = filters.sort;
   }
