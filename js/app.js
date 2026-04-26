@@ -20,6 +20,7 @@ import {
   getPassFormData,
   getTemplateById,
   initTemplateSelect,
+  initSectionDropdowns,
   onSavedPassOpen,
   onSavedPassScan,
   renderStats,
@@ -567,6 +568,7 @@ function wireEvents() {
 
 function init() {
   initTemplateSelect();
+  initSectionDropdowns();
   resetNotificationRules();
   addNotificationRule({
     name: 'Beispiel Reminder',
