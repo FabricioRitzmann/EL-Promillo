@@ -114,6 +114,11 @@ async function handleLogin() {
   await refreshPasses();
 }
 
+async function handleAuthSubmit(event) {
+  event.preventDefault();
+  await handleLogin();
+}
+
 async function handleResetOtp() {
   const email = formElements.email.value.trim();
   if (!email) {
@@ -299,6 +304,7 @@ async function bootstrapAuth() {
 }
 
 function wireEvents() {
+  document.getElementById('auth-form').addEventListener('submit', handleAuthSubmit);
   document.getElementById('register-btn').addEventListener('click', handleRegister);
   document.getElementById('login-btn').addEventListener('click', handleLogin);
   document.getElementById('reset-btn').addEventListener('click', handleResetOtp);
