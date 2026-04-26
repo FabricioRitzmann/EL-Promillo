@@ -187,6 +187,11 @@
 
                 <div class="design-grid">
                   <label>
+                    🎞️ Hintergrund-Vorlage
+                    <select id="pass-background-template"></select>
+                  </label>
+
+                  <label>
                     🟦 Hintergrundfarbe
                     <input id="pass-bg" type="color" value="#1d1d1f" />
                   </label>
@@ -201,6 +206,35 @@
                   🖼️ Eigener Hintergrund (PNG/JPG)
                   <input id="pass-upload" type="file" accept="image/png,image/jpeg" />
                 </label>
+
+                <div class="banner-config">
+                  <div class="inline-space-between">
+                    <h4>Kleiner Banner</h4>
+                    <label class="toggle-inline">
+                      <input id="pass-banner-enabled" type="checkbox" />
+                      Einblenden
+                    </label>
+                  </div>
+
+                  <div id="banner-fields" class="design-grid hidden">
+                    <label>
+                      Banner Text
+                      <input id="pass-banner-text" type="text" value="Dein Angebot hier" />
+                    </label>
+                    <label>
+                      Banner Farbe
+                      <select id="pass-banner-color"></select>
+                    </label>
+                    <label>
+                      Banner Hintergrundfarbe
+                      <input id="pass-banner-bg" type="color" value="#f5c451" />
+                    </label>
+                    <label>
+                      Banner Textfarbe
+                      <input id="pass-banner-fg" type="color" value="#2d1b00" />
+                    </label>
+                  </div>
+                </div>
               </section>
             </form>
 
@@ -208,6 +242,7 @@
               <h3>Live Vorschau</h3>
               <div id="pass-preview" class="pass-preview">
                 <div class="pass-overlay">
+                  <p id="preview-banner" class="preview-banner hidden"></p>
                   <p id="preview-subtitle" class="preview-subtitle"></p>
                   <h4 id="preview-title"></h4>
                   <p id="preview-description"></p>

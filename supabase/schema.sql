@@ -13,9 +13,15 @@ create table if not exists public.wallet_passes (
   qr_content text not null,
   template_id text not null default 'vip-membership',
   icon_id text not null default 'gift',
+  background_template_id text not null default 'custom',
   background_color text not null default '#1d1d1f',
   foreground_color text not null default '#ffffff',
   custom_image_url text,
+  banner_enabled boolean not null default false,
+  banner_text text,
+  banner_preset text,
+  banner_background_color text,
+  banner_text_color text,
   card_program_type text not null default 'generic',
   program_config jsonb not null default '{}'::jsonb,
   push_enabled boolean not null default false,
@@ -27,10 +33,16 @@ create table if not exists public.wallet_passes (
 -- 1b) Falls die Tabelle schon existiert: neue Felder ergänzen
 alter table public.wallet_passes
   add column if not exists icon_id text not null default 'gift',
+  add column if not exists background_template_id text not null default 'custom',
   add column if not exists card_program_type text not null default 'generic',
   add column if not exists program_config jsonb not null default '{}'::jsonb,
   add column if not exists push_enabled boolean not null default false,
-  add column if not exists notification_rules jsonb not null default '[]'::jsonb;
+  add column if not exists notification_rules jsonb not null default '[]'::jsonb,
+  add column if not exists banner_enabled boolean not null default false,
+  add column if not exists banner_text text,
+  add column if not exists banner_preset text,
+  add column if not exists banner_background_color text,
+  add column if not exists banner_text_color text;
 
 -- 2) Updated-At Trigger
 create or replace function public.set_updated_at()

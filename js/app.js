@@ -11,6 +11,7 @@ import {
 import {
   addNotificationRule,
   applyTemplateDefaults,
+  applyBannerColorPreset,
   askForConfirmation,
   fillEditorFromSavedPass,
   formElements,
@@ -24,6 +25,7 @@ import {
   setAuthenticatedView,
   setLoggedOutView,
   showToast,
+  syncBannerFields,
   ui,
   updatePreview
 } from './ui.js';
@@ -320,6 +322,12 @@ function wireEvents() {
     formElements.streakIcon,
     formElements.bg,
     formElements.fg,
+    formElements.backgroundTemplate,
+    formElements.bannerEnabled,
+    formElements.bannerText,
+    formElements.bannerColor,
+    formElements.bannerBg,
+    formElements.bannerFg,
     formElements.coffeeTarget,
     formElements.coffeeCurrent,
     formElements.coffeeReward,
@@ -332,8 +340,11 @@ function wireEvents() {
   ];
 
   previewFields.forEach((field) => field.addEventListener('input', refreshPreview));
+  previewFields.forEach((field) => field.addEventListener('change', refreshPreview));
 
   formElements.template.addEventListener('change', handleTemplateChange);
+  formElements.bannerEnabled.addEventListener('change', syncBannerFields);
+  formElements.bannerColor.addEventListener('change', applyBannerColorPreset);
 
   formElements.upload.addEventListener('change', handleImageUpload);
   formElements.addRuleBtn.addEventListener('click', handleAddNotificationRule);
@@ -352,6 +363,8 @@ function init() {
   });
 
   lastTemplateId = formElements.template.value;
+  syncBannerFields();
+  applyBannerColorPreset();
   handleTemplateChange();
   refreshPreview();
   wireEvents();

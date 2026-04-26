@@ -92,3 +92,20 @@ export const passTemplates = [
     }
   }
 ];
+
+export const backgroundTemplates = [
+  { id: 'warm-cafe', name: 'Warmes Café', gradient: 'linear-gradient(135deg, #4a2a1a 0%, #8b5e3c 55%, #2b1a12 100%)' },
+  { id: 'stadium-green', name: 'Stadion Grün', gradient: 'linear-gradient(135deg, #163a1f 0%, #2f7c42 50%, #102614 100%)' },
+  { id: 'neon-bar', name: 'Neon Bar', gradient: 'linear-gradient(135deg, #140f2e 0%, #442f83 45%, #ff4fa3 100%)' },
+  { id: 'craft-bronze', name: 'Craft Bronze', gradient: 'linear-gradient(135deg, #2b160e 0%, #8c4b24 50%, #1f120d 100%)' },
+  { id: 'night-lounge', name: 'Night Lounge', gradient: 'linear-gradient(135deg, #101820 0%, #1d3d5a 48%, #0d131a 100%)' },
+  { id: 'event-ticket', name: 'Event Ticket', gradient: 'linear-gradient(135deg, #262b49 0%, #6e3ba6 50%, #2e1b57 100%)' }
+];
+
+export const bannerColorOptions = [
+  { id: 'gold', name: 'Gold', bgColor: '#f5c451', textColor: '#2d1b00' },
+  { id: 'dark', name: 'Dunkel', bgColor: '#1d1d1f', textColor: '#ffffff' },
+  { id: 'white', name: 'Weiß', bgColor: '#ffffff', textColor: '#1f2937' },
+  { id: 'emerald', name: 'Smaragd', bgColor: '#0b7a5a', textColor: '#ffffff' },
+  { id: 'berry', name: 'Berry', bgColor: '#a22968', textColor: '#ffffff' }
+];
