@@ -42,6 +42,22 @@ projekt/
    ```
 5. Browser öffnen: `http://localhost:8080`
 
+## Brauche ich SQL für die Registrierung?
+
+Für **Login/Registrierung via Supabase Auth** brauchst du **kein zusätzliches SQL**.
+Das SQL in `supabase/schema.sql` ist nur für:
+
+- Tabelle `wallet_passes`
+- RLS-Policies für gespeicherte Pässe
+- Storage-Bucket `pass-backgrounds`
+
+Wenn Registrierung nicht geht, prüfe primär:
+
+1. In `js/config.js` sind echte Supabase-Werte eingetragen.
+2. In Supabase unter **Authentication → Providers → Email** ist der E-Mail Provider aktiv.
+3. Bei Tests ist **Confirm email** ggf. deaktiviert (sonst erst nach Mail-Bestätigung einloggen).
+4. Passwort ist lang genug (Supabase verlangt standardmäßig mind. 6 Zeichen).
+
 ## Fehler "Failed to fetch" bei Registrierung
 
 Wenn bei Registrierung/Login "Failed to fetch" erscheint, liegt es meist an einer dieser Ursachen:

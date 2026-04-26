@@ -1,6 +1,6 @@
 export const appConfig = {
-  supabaseUrl: 'https://YOUR-PROJECT.supabase.co',
-  supabaseAnonKey: 'YOUR_PUBLIC_ANON_KEY',
+  supabaseUrl: 'https://fcnnrtkvmkpbnsbhfwee.supabase.co',
+  supabaseAnonKey: 'sb_publishable_ai6tT-97fCKJpCWyrHWFXw_IZ2vPDyz',
   // Optional: Externer Endpunkt für echte PassKit-Dateien (.pkpass)
   passkitServiceUrl: ''
 };
