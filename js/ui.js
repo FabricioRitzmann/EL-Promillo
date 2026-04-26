@@ -69,6 +69,15 @@ export const formElements = {
 let pendingConfirmResolver = null;
 const cardTransitionDurationMs = 260;
 const transitionTimers = new WeakMap();
+const weekdays = [
+  { value: 'monday', label: 'Montag' },
+  { value: 'tuesday', label: 'Dienstag' },
+  { value: 'wednesday', label: 'Mittwoch' },
+  { value: 'thursday', label: 'Donnerstag' },
+  { value: 'friday', label: 'Freitag' },
+  { value: 'saturday', label: 'Samstag' },
+  { value: 'sunday', label: 'Sonntag' }
+];
 
 function clearCardTimer(element) {
   const timerId = transitionTimers.get(element);
@@ -272,6 +281,10 @@ export function getProgramConfig(programType) {
 }
 
 export function addNotificationRule(rule = {}) {
+  const scheduleType = rule.scheduleType || 'exact';
+  const recurringDay = rule.recurringDay || 'monday';
+  const recurringTime = rule.recurringTime || '';
+
   const row = document.createElement('div');
   row.className = 'rule-row';
   row.innerHTML = `
@@ -290,11 +303,37 @@ export function addNotificationRule(rule = {}) {
       Nachricht
       <textarea class="rule-message" rows="2" placeholder="Nachricht an den Nutzer">${rule.message || ''}</textarea>
     </label>
-    <div class="rule-time-fields">
+    <div class="rule-schedule-fields">
       <label>
-        Zeitpunkt
-        <input class="rule-datetime" type="datetime-local" value="${rule.sendAt || ''}" />
+        Zeitplan
+        <select class="rule-schedule-type">
+          <option value="exact" ${scheduleType === 'exact' ? 'selected' : ''}>Genaues Datum & Uhrzeit</option>
+          <option value="recurring" ${scheduleType === 'recurring' ? 'selected' : ''}>Wiederkehrend (Wochentag + Uhrzeit)</option>
+        </select>
       </label>
+      <div class="rule-exact-fields">
+        <label>
+          Zeitpunkt
+          <input class="rule-datetime" type="datetime-local" value="${rule.sendAt || ''}" />
+        </label>
+      </div>
+      <div class="rule-recurring-fields hidden">
+        <label>
+          Wochentag
+          <select class="rule-recurring-day">
+            ${weekdays
+              .map(
+                (day) =>
+                  `<option value="${day.value}" ${recurringDay === day.value ? 'selected' : ''}>${day.label}</option>`
+              )
+              .join('')}
+          </select>
+        </label>
+        <label>
+          Uhrzeit
+          <input class="rule-recurring-time" type="time" value="${recurringTime}" />
+        </label>
+      </div>
     </div>
     <div class="rule-location-fields hidden">
       <label>
@@ -315,17 +354,26 @@ export function addNotificationRule(rule = {}) {
   `;
 
   const triggerSelect = row.querySelector('.rule-trigger');
-  const timeFields = row.querySelector('.rule-time-fields');
   const locationFields = row.querySelector('.rule-location-fields');
+  const scheduleTypeSelect = row.querySelector('.rule-schedule-type');
+  const exactFields = row.querySelector('.rule-exact-fields');
+  const recurringFields = row.querySelector('.rule-recurring-fields');
 
   const syncTriggerState = () => {
     const isLocation = triggerSelect.value === 'location';
     locationFields.classList.toggle('hidden', !isLocation);
-    timeFields.classList.toggle('hidden', isLocation);
+  };
+
+  const syncScheduleState = () => {
+    const isRecurring = scheduleTypeSelect.value === 'recurring';
+    recurringFields.classList.toggle('hidden', !isRecurring);
+    exactFields.classList.toggle('hidden', isRecurring);
   };
 
   triggerSelect.addEventListener('change', syncTriggerState);
+  scheduleTypeSelect.addEventListener('change', syncScheduleState);
   syncTriggerState();
+  syncScheduleState();
 
   row.querySelector('.rule-remove').addEventListener('click', () => {
     row.remove();
@@ -342,24 +390,50 @@ export function getNotificationRules() {
       const base = {
         name: row.querySelector('.rule-name').value.trim(),
         triggerType,
-        message: row.querySelector('.rule-message').value.trim()
+        message: row.querySelector('.rule-message').value.trim(),
+        scheduleType: row.querySelector('.rule-schedule-type').value
       };
+
+      const scheduleType = base.scheduleType;
+      const scheduleData =
+        scheduleType === 'exact'
+          ? {
+              sendAt: row.querySelector('.rule-datetime').value || null,
+              recurringDay: null,
+              recurringTime: null
+            }
+          : {
+              sendAt: null,
+              recurringDay: row.querySelector('.rule-recurring-day').value || null,
+              recurringTime: row.querySelector('.rule-recurring-time').value || null
+            };
 
       if (triggerType === 'time') {
         return {
           ...base,
-          sendAt: row.querySelector('.rule-datetime').value || null
+          ...scheduleData
         };
       }
 
       return {
         ...base,
+        ...scheduleData,
         latitude: sanitizeNumber(row.querySelector('.rule-lat').value, 0),
         longitude: sanitizeNumber(row.querySelector('.rule-lng').value, 0),
         radiusMeters: sanitizeNumber(row.querySelector('.rule-radius').value, 250)
       };
     })
-    .filter((rule) => rule.name && rule.message);
+    .filter((rule) => {
+      if (!rule.name || !rule.message) {
+        return false;
+      }
+
+      if (rule.scheduleType === 'exact') {
+        return Boolean(rule.sendAt);
+      }
+
+      return Boolean(rule.recurringDay && rule.recurringTime);
+    });
 }
 
 export function updatePreview(payload) {
