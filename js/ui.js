@@ -79,6 +79,21 @@ const weekdays = [
   { value: 'sunday', label: 'Sonntag' }
 ];
 
+const stampIconDefinitions = {
+  'coffee-cup': { name: 'coffee', path: 'M17 8h1a4 4 0 1 1 0 8h-1M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z M6 2v2M10 2v2M14 2v2' },
+  cocktail: { name: 'martini', path: 'M5 5h14l-7 8v6l4 2M12 19l-4 2' },
+  sandwich: { name: 'sandwich', path: 'M4 9a8 8 0 0 1 16 0v1H4Zm1 1v5a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3v-5' },
+  'menu-card': { name: 'clipboard', path: 'M9 4h6a2 2 0 0 1 2 2v14H7V6a2 2 0 0 1 2-2Zm0 0a2 2 0 0 0 2-2h2a2 2 0 0 0 2 2M9 11h6M9 15h4' },
+  cake: { name: 'cake', path: 'M4 11h16v9H4Zm4-5a2 2 0 0 1 4 0v5H8Zm6 0a2 2 0 1 1 4 0v5h-4' },
+  pizza: { name: 'pizza', path: 'm3 4 18 8-8 8Zm6 4 4 4M7 13l2 2M12 10l2 2' },
+  burger: { name: 'burger', path: 'M4 11h16M4 14h16M6 19h12a2 2 0 0 0 2-2v-3H4v3a2 2 0 0 0 2 2Zm1-8a5 5 0 0 1 10 0' },
+  'soccer-ball': { name: 'soccer', path: 'M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Zm0 4 3 2-1 3h-4L9 8Zm-4 7 2-1 2 1 2-1 2 1-1 3-3 2-3-2Z' },
+  hockey: { name: 'hockey', path: 'm5 5 7 7M8 2l5 5M15 14l4 4-2 2-4-4Z M3 20h8' },
+  gift: { name: 'gift', path: 'M20 7H4v13h16ZM2 7h20v4H2Zm10 0v13M12 7H8a2 2 0 1 1 0-4c2 0 4 4 4 4Zm0 0h4a2 2 0 1 0 0-4c-2 0-4 4-4 4Z' },
+  running: { name: 'running', path: 'M13 5a2 2 0 1 1 0 4 2 2 0 0 1 0-4Zm-1 6 3 2 2 4M11 11l-2 3H6m5-3 4-2 3 1' },
+  flame: { name: 'flame', path: 'M12 2c3 3 4 5 4 8a4 4 0 0 1-8 0c0-2 1-4 4-8Zm0 7c2 2 3 3 3 5a3 3 0 1 1-6 0c0-1 1-3 3-5Z' }
+};
+
 function clearCardTimer(element) {
   const timerId = transitionTimers.get(element);
   if (timerId) {
@@ -135,6 +150,32 @@ function iconById(collection, id) {
 export function getIconSymbol(id) {
   const icon = [...templateIcons, ...streakIcons].find((entry) => entry.id === id);
   return icon?.symbol || '🎯';
+}
+
+function createStampIcon(iconId, isFilled) {
+  const iconDefinition = stampIconDefinitions[iconId];
+  if (!iconDefinition) {
+    const fallback = document.createElement('span');
+    fallback.className = 'stamp-slot-fallback-icon';
+    fallback.textContent = getIconSymbol(iconId);
+    return fallback;
+  }
+
+  const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  icon.setAttribute('viewBox', '0 0 24 24');
+  icon.setAttribute('class', 'stamp-slot-icon');
+  icon.setAttribute('aria-label', iconDefinition.name);
+
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', iconDefinition.path);
+  path.setAttribute('fill', isFilled ? 'currentColor' : 'none');
+  path.setAttribute('stroke', 'currentColor');
+  path.setAttribute('stroke-width', '1.9');
+  path.setAttribute('stroke-linecap', 'round');
+  path.setAttribute('stroke-linejoin', 'round');
+
+  icon.appendChild(path);
+  return icon;
 }
 
 export function initTemplateSelect() {
@@ -518,15 +559,16 @@ export function updatePreview(payload) {
     stampGrid.classList.remove('hidden');
     for (let index = 0; index < target; index += 1) {
       const slot = document.createElement('span');
+      const isFilled = index < progress;
       slot.className = 'stamp-slot';
       slot.dataset.shape = selectedShape || 'circle';
-      slot.classList.toggle('stamp-slot-filled', index < progress);
-      slot.textContent = index < progress ? slotIconSymbol : '';
+      slot.classList.toggle('stamp-slot-filled', isFilled);
       slot.style.width = `${payload.programConfig?.stampSize ?? 42}px`;
       slot.style.height = `${payload.programConfig?.stampSize ?? 42}px`;
       slot.style.borderColor = payload.programConfig?.stampBorderColor || 'rgba(255,255,255,0.6)';
       slot.style.borderWidth = `${payload.programConfig?.stampBorderWidth ?? 2}px`;
       slot.style.transform = `translate(${payload.programConfig?.stampOffsetX ?? 0}px, ${payload.programConfig?.stampOffsetY ?? 0}px)`;
+      slot.appendChild(createStampIcon(slotIconId || slotIconSymbol, isFilled));
       stampGrid.appendChild(slot);
     }
   }
