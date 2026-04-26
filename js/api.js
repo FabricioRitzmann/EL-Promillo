@@ -39,6 +39,40 @@ function isMissingRelationError(error, relationName) {
   return error.code === 'PGRST205' || error.message?.includes(relationHint);
 }
 
+function extractMissingSchemaCacheColumn(error) {
+  if (!error?.message) return null;
+  const match = error.message.match(/could not find the '([^']+)' column of '([^']+)' in the schema cache/i);
+  if (!match) return null;
+  return {
+    column: match[1],
+    relation: match[2]
+  };
+}
+
+async function savePassWithSchemaFallback({ payload, passId, userId }) {
+  const attemptSave = (activePayload) => {
+    if (passId) {
+      return supabaseClient
+        .from('wallet_passes')
+        .update(activePayload)
+        .eq('id', passId)
+        .eq('user_id', userId);
+    }
+    return supabaseClient.from('wallet_passes').insert(activePayload);
+  };
+
+  const firstResponse = await attemptSave(payload);
+  const missingColumnInfo = extractMissingSchemaCacheColumn(firstResponse.error);
+
+  if (!missingColumnInfo || missingColumnInfo.relation !== 'wallet_passes') {
+    return firstResponse;
+  }
+
+  const fallbackPayload = { ...payload };
+  delete fallbackPayload[missingColumnInfo.column];
+  return attemptSave(fallbackPayload);
+}
+
 function slugify(value) {
   return String(value || '')
     .toLowerCase()
@@ -132,11 +166,11 @@ export async function savePass(passPayload, userId) {
       notification_rules: passPayload.notificationRules
     };
 
-    if (passPayload.id) {
-      return await supabaseClient.from('wallet_passes').update(payload).eq('id', passPayload.id).eq('user_id', userId);
-    }
-
-    return await supabaseClient.from('wallet_passes').insert(payload);
+    return await savePassWithSchemaFallback({
+      payload,
+      passId: passPayload.id,
+      userId
+    });
   } catch (error) {
     return networkError(error);
   }
