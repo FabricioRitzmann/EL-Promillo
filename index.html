@@ -118,6 +118,73 @@
                   <select id="pass-template"></select>
                 </label>
               </section>
+
+              <section class="config-section">
+                <h3>🍎 PassKit-Erweiterung (separat)</h3>
+                <p class="muted small">
+                  Diese Felder sind bewusst isoliert gespeichert, damit sie später einfach wieder entfernt/gefiltert werden können.
+                </p>
+                <label class="inline-checkbox">
+                  <input id="passkit-enabled" type="checkbox" />
+                  PassKit-Konfiguration aktivieren
+                </label>
+                <label>
+                  Pass-Typ
+                  <select id="passkit-pass-type"></select>
+                </label>
+                <label>
+                  Pass Type Identifier
+                  <input id="passkit-pass-type-identifier" type="text" placeholder="pass.com.deinefirma.app" />
+                </label>
+                <label>
+                  Team Identifier
+                  <input id="passkit-team-identifier" type="text" placeholder="ABCDE12345" />
+                </label>
+                <label>
+                  Organization Name
+                  <input id="passkit-organization-name" type="text" placeholder="Deine Firma" />
+                </label>
+                <label>
+                  Serial Number
+                  <input id="passkit-serial-number" type="text" placeholder="123456" />
+                </label>
+                <label>
+                  PassKit Beschreibung
+                  <input id="passkit-description" type="text" placeholder="Kundenkarte" />
+                </label>
+                <label>
+                  Foreground Color (rgb)
+                  <input id="passkit-foreground-color" type="text" value="rgb(255,255,255)" />
+                </label>
+                <label>
+                  Background Color (rgb)
+                  <input id="passkit-background-color" type="text" value="rgb(0,0,0)" />
+                </label>
+                <label>
+                  Label Color (rgb)
+                  <input id="passkit-label-color" type="text" value="rgb(200,200,200)" />
+                </label>
+                <label>
+                  Relevant Date
+                  <input id="passkit-relevant-date" type="datetime-local" />
+                </label>
+                <label>
+                  Location Latitude
+                  <input id="passkit-latitude" type="number" step="0.000001" placeholder="47.5596" />
+                </label>
+                <label>
+                  Location Longitude
+                  <input id="passkit-longitude" type="number" step="0.000001" placeholder="7.5886" />
+                </label>
+                <label>
+                  Barcode Format
+                  <select id="passkit-barcode-format"></select>
+                </label>
+                <label>
+                  Message Encoding
+                  <input id="passkit-message-encoding" type="text" value="iso-8859-1" />
+                </label>
+              </section>
               <section class="config-section">
                 <h3>🎯 Icon-Editor</h3>
                 <p class="muted small">
