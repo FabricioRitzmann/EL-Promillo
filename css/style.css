@@ -445,7 +445,10 @@ select:focus {
 }
 
 .rule-location-fields,
-.rule-time-fields {
+.rule-time-fields,
+.rule-schedule-fields,
+.rule-exact-fields,
+.rule-recurring-fields {
   display: grid;
   gap: 8px;
 }
