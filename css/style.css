@@ -204,13 +204,11 @@ select:focus {
   border: 1px dashed #d3dbe8;
   border-radius: 14px;
   padding: 16px;
-  position: fixed;
-  right: max(24px, calc((100vw - 1280px) / 2 + 24px));
+  position: sticky;
   bottom: 12px;
-  width: min(420px, calc(100vw - 48px));
-  max-height: calc(100vh - 32px);
+  align-self: end;
+  max-height: calc(100vh - 24px);
   overflow: auto;
-  z-index: 100;
 }
 
 .pass-preview {
@@ -251,6 +249,16 @@ select:focus {
   background: rgba(255, 255, 255, 0.08);
 }
 
+.stamp-slot-icon {
+  width: 70%;
+  height: 70%;
+}
+
+.stamp-slot-fallback-icon {
+  font-size: 1rem;
+  opacity: 0.85;
+}
+
 .stamp-slot[data-shape='circle'] {
   border-radius: 999px;
 }
@@ -271,6 +279,10 @@ select:focus {
   color: #ffffff;
   border-color: rgba(255, 255, 255, 0.95);
   background: rgba(255, 255, 255, 0.2);
+}
+
+.stamp-slot:not(.stamp-slot-filled) {
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .preview-subtitle {
@@ -508,9 +520,7 @@ select:focus {
   }
 
   .preview-pane {
-    right: 8px;
     bottom: 8px;
-    width: calc(100vw - 16px);
     max-height: 45vh;
   }
 }
