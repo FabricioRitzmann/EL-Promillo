@@ -50,24 +50,41 @@ function refreshPreview() {
 
 async function handleTemplateChange() {
   const template = getTemplateById(formElements.template.value);
-
-  if (lastTemplateId && lastTemplateId !== template.id) {
-    const confirmed = await askForConfirmation({
-      title: 'Template wechseln?',
-      message: 'Beim Wechsel werden die vorgeschlagenen Template-Werte übernommen. Möchtest du fortfahren?',
-      confirmLabel: 'Ja, wechseln'
-    });
-
-    if (!confirmed) {
-      formElements.template.value = lastTemplateId;
-      return;
-    }
-  }
-
   applyTemplateDefaults(template);
   renderProgramFields(template.programType || 'generic');
   lastTemplateId = template.id;
   refreshPreview();
+}
+
+async function handleNewPass() {
+  const confirmed = await askForConfirmation({
+    title: 'Neue Karte starten?',
+    message: 'Deine aktuellen, noch nicht gespeicherten Änderungen gehen dabei verloren.',
+    confirmLabel: 'Neue Karte'
+  });
+
+  if (!confirmed) {
+    return;
+  }
+
+  currentEditingPassId = null;
+  currentUploadedImageUrl = '';
+  document.getElementById('pass-form').reset();
+  formElements.upload.value = '';
+  applyTemplateDefaults(getTemplateById(formElements.template.value));
+  renderProgramFields(getTemplateById(formElements.template.value).programType || 'generic');
+  resetNotificationRules();
+  addNotificationRule({
+    name: 'Beispiel Reminder',
+    triggerType: 'time',
+    message: 'Denk an deine Karte!',
+    sendAt: ''
+  });
+  lastTemplateId = formElements.template.value;
+  syncBannerFields();
+  applyBannerColorPreset();
+  refreshPreview();
+  showToast('Neue Karte gestartet.');
 }
 
 async function refreshPasses() {
@@ -193,19 +210,17 @@ async function handleSavePass() {
     return;
   }
 
-  const confirmMessage = currentEditingPassId
-    ? 'Du bearbeitest eine bestehende Karte. Änderungen jetzt speichern?'
-    : 'Neue Karte jetzt speichern?';
+  if (currentEditingPassId) {
+    const confirmed = await askForConfirmation({
+      title: 'Änderungen überschreiben?',
+      message: 'Du bearbeitest eine bereits gespeicherte Karte. Diese Version wirklich überschreiben?',
+      confirmLabel: 'Überschreiben'
+    });
 
-  const confirmed = await askForConfirmation({
-    title: 'Speichern bestätigen',
-    message: confirmMessage,
-    confirmLabel: 'Speichern'
-  });
-
-  if (!confirmed) {
-    showToast('Speichern abgebrochen.');
-    return;
+    if (!confirmed) {
+      showToast('Speichern abgebrochen.');
+      return;
+    }
   }
 
   const { error } = await savePass(
@@ -343,6 +358,7 @@ function wireEvents() {
   document.getElementById('register-btn').addEventListener('click', handleRegister);
   document.getElementById('login-btn').addEventListener('click', handleLogin);
   document.getElementById('reset-btn').addEventListener('click', handleResetOtp);
+  document.getElementById('new-pass-btn').addEventListener('click', handleNewPass);
   document.getElementById('save-pass-btn').addEventListener('click', handleSavePass);
   document.getElementById('new-pass-btn').addEventListener('click', handleCreateNewPass);
   ui.logoutBtn.addEventListener('click', handleLogout);
