@@ -171,6 +171,18 @@ select:focus {
 .row-buttons {
   display: flex;
   gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tabbar {
+  display: flex;
+  gap: 10px;
+  padding: 12px;
+}
+
+.tab-btn.is-active {
+  background: #111827;
+  color: #fff;
 }
 
 .section-head {
@@ -201,6 +213,7 @@ select:focus {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  position: relative;
 }
 
 .preview-stamp-grid {
@@ -254,12 +267,53 @@ select:focus {
 
 .preview-banner {
   align-self: flex-start;
-  border-radius: 999px;
   padding: 6px 10px;
   font-size: 0.74rem;
   font-weight: 700;
   letter-spacing: 0.03em;
   text-transform: uppercase;
+  position: absolute;
+  left: 4%;
+  top: 4%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.preview-banner[data-shape='pill'] {
+  border-radius: 999px;
+}
+
+.preview-banner[data-shape='rectangle'] {
+  border-radius: 0;
+}
+
+.preview-banner[data-shape='rounded'] {
+  border-radius: 12px;
+}
+
+.preview-banner[data-shape='ticket'] {
+  clip-path: polygon(0 0, 92% 0, 100% 50%, 92% 100%, 0 100%, 8% 50%);
+}
+
+.preview-banner[data-shape='diamond'] {
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+.preview-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 40px;
+}
+
+.preview-main-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
 #preview-qr {

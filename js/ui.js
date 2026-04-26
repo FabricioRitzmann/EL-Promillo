@@ -3,11 +3,14 @@ import { backgroundTemplates, bannerColorOptions, passTemplates, streakIcons, te
 export const ui = {
   authState: document.getElementById('auth-state'),
   logoutBtn: document.getElementById('logout-btn'),
+  tabbar: document.getElementById('main-tabbar'),
   authCard: document.getElementById('auth-card'),
   editorCard: document.getElementById('editor-card'),
   savedCard: document.getElementById('saved-card'),
+  statsCard: document.getElementById('stats-card'),
   toast: document.getElementById('toast'),
   passList: document.getElementById('saved-pass-list'),
+  statsList: document.getElementById('stats-list'),
   notificationRules: document.getElementById('notification-rules'),
   confirmModal: document.getElementById('confirm-modal'),
   confirmTitle: document.getElementById('confirm-title'),
@@ -25,6 +28,7 @@ export const formElements = {
   qrContent: document.getElementById('pass-qr-content'),
   template: document.getElementById('pass-template'),
   icon: document.getElementById('pass-icon'),
+  iconUpload: document.getElementById('pass-icon-upload'),
   streakIcon: document.getElementById('streak-icon'),
   bg: document.getElementById('pass-bg'),
   fg: document.getElementById('pass-fg'),
@@ -35,6 +39,17 @@ export const formElements = {
   bannerColor: document.getElementById('pass-banner-color'),
   bannerBg: document.getElementById('pass-banner-bg'),
   bannerFg: document.getElementById('pass-banner-fg'),
+  bannerShape: document.getElementById('pass-banner-shape'),
+  bannerWidth: document.getElementById('pass-banner-width'),
+  bannerHeight: document.getElementById('pass-banner-height'),
+  bannerX: document.getElementById('pass-banner-x'),
+  bannerY: document.getElementById('pass-banner-y'),
+  bannerUpload: document.getElementById('pass-banner-upload'),
+  stampBorderColor: document.getElementById('stamp-border-color'),
+  stampSize: document.getElementById('stamp-size'),
+  stampBorderWidth: document.getElementById('stamp-border-width'),
+  stampOffsetX: document.getElementById('stamp-offset-x'),
+  stampOffsetY: document.getElementById('stamp-offset-y'),
   pushEnabled: document.getElementById('push-enabled'),
   addRuleBtn: document.getElementById('add-rule-btn'),
   coffeeTarget: document.getElementById('coffee-target'),
@@ -109,7 +124,8 @@ function iconById(collection, id) {
 }
 
 export function getIconSymbol(id) {
-  return iconById(templateIcons, id).symbol;
+  const icon = [...templateIcons, ...streakIcons].find((entry) => entry.id === id);
+  return icon?.symbol || '🎯';
 }
 
 export function initTemplateSelect() {
@@ -215,12 +231,20 @@ export function applyTemplateDefaults(template) {
 }
 
 export function getProgramConfig(programType) {
+  const stampStyle = {
+    stampBorderColor: formElements.stampBorderColor.value,
+    stampSize: sanitizeNumber(formElements.stampSize.value, 42),
+    stampBorderWidth: sanitizeNumber(formElements.stampBorderWidth.value, 2),
+    stampOffsetX: sanitizeNumber(formElements.stampOffsetX.value, 0),
+    stampOffsetY: sanitizeNumber(formElements.stampOffsetY.value, 0)
+  };
   if (programType === 'coffee') {
     return {
       stampTarget: sanitizeNumber(formElements.coffeeTarget.value, 10),
       currentStamps: sanitizeNumber(formElements.coffeeCurrent.value, 0),
       rewardText: formElements.coffeeReward.value.trim(),
-      stampShape: formElements.coffeeShape.value
+      stampShape: formElements.coffeeShape.value,
+      ...stampStyle
     };
   }
 
@@ -231,7 +255,8 @@ export function getProgramConfig(programType) {
       currentStamps: sanitizeNumber(formElements.streakCurrent.value, 0),
       graceHours: sanitizeNumber(formElements.streakGrace.value, 24),
       streakIconId: formElements.streakIcon.value,
-      streakShape: formElements.streakShape.value
+      streakShape: formElements.streakShape.value,
+      ...stampStyle
     };
   }
 
@@ -341,6 +366,7 @@ export function updatePreview(payload) {
   const preview = document.getElementById('pass-preview');
   const subtitle = document.getElementById('preview-subtitle');
   const title = document.getElementById('preview-title');
+  const mainIcon = document.getElementById('preview-main-icon');
   const description = document.getElementById('preview-description');
   const qrImage = document.getElementById('preview-qr');
   const banner = document.getElementById('preview-banner');
@@ -348,6 +374,13 @@ export function updatePreview(payload) {
 
   subtitle.textContent = payload.subtitle || 'Standard';
   title.textContent = `${getIconSymbol(payload.iconId)} ${payload.title || 'Neue Karte'}`;
+  if (payload.customIconUrl) {
+    mainIcon.classList.remove('hidden');
+    mainIcon.src = payload.customIconUrl;
+  } else {
+    mainIcon.classList.add('hidden');
+    mainIcon.src = '';
+  }
   description.textContent = payload.description || '';
 
   const selectedBgTemplate = backgroundTemplates.find((entry) => entry.id === payload.backgroundTemplateId);
@@ -377,6 +410,13 @@ export function updatePreview(payload) {
     banner.textContent = payload.banner.text;
     banner.style.backgroundColor = payload.banner.backgroundColor;
     banner.style.color = payload.banner.textColor;
+    banner.style.left = `${payload.banner.positionX ?? 4}%`;
+    banner.style.top = `${payload.banner.positionY ?? 4}%`;
+    banner.style.width = `${payload.banner.width ?? 60}%`;
+    banner.style.height = `${payload.banner.height ?? 42}px`;
+    banner.style.backgroundImage = payload.customBannerUrl ? `url(${payload.customBannerUrl})` : 'none';
+    banner.style.backgroundSize = 'cover';
+    banner.dataset.shape = payload.banner.shape || 'pill';
   } else {
     banner.classList.add('hidden');
     banner.textContent = '';
@@ -403,6 +443,11 @@ export function updatePreview(payload) {
       slot.dataset.shape = selectedShape || 'circle';
       slot.classList.toggle('stamp-slot-filled', index < progress);
       slot.textContent = index < progress ? slotIconSymbol : '';
+      slot.style.width = `${payload.programConfig?.stampSize ?? 42}px`;
+      slot.style.height = `${payload.programConfig?.stampSize ?? 42}px`;
+      slot.style.borderColor = payload.programConfig?.stampBorderColor || 'rgba(255,255,255,0.6)';
+      slot.style.borderWidth = `${payload.programConfig?.stampBorderWidth ?? 2}px`;
+      slot.style.transform = `translate(${payload.programConfig?.stampOffsetX ?? 0}px, ${payload.programConfig?.stampOffsetY ?? 0}px)`;
       stampGrid.appendChild(slot);
     }
   }
@@ -425,7 +470,12 @@ export function getPassFormData() {
       text: formElements.bannerText.value.trim(),
       preset: formElements.bannerColor.value,
       backgroundColor: formElements.bannerBg.value,
-      textColor: formElements.bannerFg.value
+      textColor: formElements.bannerFg.value,
+      shape: formElements.bannerShape.value,
+      width: sanitizeNumber(formElements.bannerWidth.value, 60),
+      height: sanitizeNumber(formElements.bannerHeight.value, 42),
+      positionX: sanitizeNumber(formElements.bannerX.value, 4),
+      positionY: sanitizeNumber(formElements.bannerY.value, 4)
     },
     cardProgramType: template.programType || 'generic',
     programConfig: getProgramConfig(template.programType || 'generic'),
@@ -437,17 +487,21 @@ export function getPassFormData() {
 export function setAuthenticatedView(email) {
   ui.authState.textContent = email;
   animateCardOut(ui.authCard);
+  ui.tabbar.classList.remove('hidden');
   ui.logoutBtn.classList.remove('hidden');
   animateCardIn(ui.editorCard);
   animateCardIn(ui.savedCard);
+  animateCardIn(ui.statsCard);
 }
 
 export function setLoggedOutView() {
   ui.authState.textContent = '';
   animateCardIn(ui.authCard);
+  ui.tabbar.classList.add('hidden');
   ui.logoutBtn.classList.add('hidden');
   animateCardOut(ui.editorCard);
   animateCardOut(ui.savedCard);
+  animateCardOut(ui.statsCard);
 }
 
 export function fillEditorFromSavedPass(entry) {
@@ -466,6 +520,11 @@ export function fillEditorFromSavedPass(entry) {
   formElements.bannerColor.value = entry.banner_preset || bannerColorOptions[0].id;
   formElements.bannerBg.value = entry.banner_background_color || '#f5c451';
   formElements.bannerFg.value = entry.banner_text_color || '#2d1b00';
+  formElements.bannerShape.value = entry.banner_shape || 'pill';
+  formElements.bannerWidth.value = entry.banner_width ?? 60;
+  formElements.bannerHeight.value = entry.banner_height ?? 42;
+  formElements.bannerX.value = entry.banner_position_x ?? 4;
+  formElements.bannerY.value = entry.banner_position_y ?? 4;
   syncBannerFields();
 
   const programConfig = entry.program_config || {};
@@ -479,6 +538,11 @@ export function fillEditorFromSavedPass(entry) {
   formElements.streakGrace.value = programConfig.graceHours ?? 24;
   formElements.streakIcon.value = programConfig.streakIconId || streakIcons[0].id;
   formElements.streakShape.value = programConfig.streakShape || 'circle';
+  formElements.stampBorderColor.value = programConfig.stampBorderColor || '#ffffff';
+  formElements.stampSize.value = programConfig.stampSize ?? 42;
+  formElements.stampBorderWidth.value = programConfig.stampBorderWidth ?? 2;
+  formElements.stampOffsetX.value = programConfig.stampOffsetX ?? 0;
+  formElements.stampOffsetY.value = programConfig.stampOffsetY ?? 0;
   formElements.creditBalance.value = programConfig.balance ?? 0;
   formElements.creditCurrency.value = programConfig.currency ?? 'EUR';
   formElements.creditThreshold.value = programConfig.lowBalanceThreshold ?? 5;
@@ -508,12 +572,47 @@ export function renderSavedPasses(entries) {
       </div>
       <div class="row-buttons">
         <button type="button" class="btn btn-secondary open-pass-btn">Öffnen</button>
+        <button type="button" class="btn btn-secondary scan-pass-btn">Karte scannen</button>
         <a class="btn btn-secondary" href="https://api.qrserver.com/v1/create-qr-code/?size=420x420&data=${encodeURIComponent(
           entry.qr_content
         )}" target="_blank" rel="noreferrer">QR öffnen</a>
       </div>
     `;
     ui.passList.appendChild(li);
+  }
+}
+
+export function renderStats(entries) {
+  ui.statsList.innerHTML = '';
+  if (!entries.length) {
+    const empty = document.createElement('li');
+    empty.textContent = 'Noch keine abgeschlossenen Karten vorhanden.';
+    ui.statsList.appendChild(empty);
+    return;
+  }
+
+  const grouped = entries.reduce((acc, row) => {
+    const key = row.pass_title || 'Unbenannte Karte';
+    if (!acc[key]) {
+      acc[key] = { pass_title: key, completed_count: 0, last_completed_at: row.completed_at };
+    }
+    acc[key].completed_count += 1;
+    if (new Date(row.completed_at) > new Date(acc[key].last_completed_at)) {
+      acc[key].last_completed_at = row.completed_at;
+    }
+    return acc;
+  }, {});
+
+  for (const entry of Object.values(grouped)) {
+    const li = document.createElement('li');
+    li.innerHTML = `
+      <div>
+        <strong>${entry.pass_title}</strong>
+        <p class="muted small">Abschlüsse: ${entry.completed_count}</p>
+        <p class="muted small">Zuletzt: ${new Date(entry.last_completed_at).toLocaleString('de-DE')}</p>
+      </div>
+    `;
+    ui.statsList.appendChild(li);
   }
 }
 
@@ -525,6 +624,24 @@ export function onSavedPassOpen(handler) {
     if (!row) return;
     handler(row.dataset.passId);
   });
+}
+
+export function onSavedPassScan(handler) {
+  ui.passList.addEventListener('click', (event) => {
+    const button = event.target.closest('.scan-pass-btn');
+    if (!button) return;
+    const row = button.closest('li[data-pass-id]');
+    if (!row) return;
+    handler(row.dataset.passId);
+  });
+}
+
+export function setActiveTab(tabName) {
+  const tabButtons = document.querySelectorAll('.tab-btn');
+  tabButtons.forEach((btn) => btn.classList.toggle('is-active', btn.dataset.tab === tabName));
+  ui.editorCard.classList.toggle('hidden', tabName !== 'editor');
+  ui.savedCard.classList.toggle('hidden', tabName !== 'saved');
+  ui.statsCard.classList.toggle('hidden', tabName !== 'stats');
 }
 
 export function resetNotificationRules() {

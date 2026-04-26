@@ -26,6 +26,12 @@
       </header>
 
       <main class="layout-grid">
+        <nav class="tabbar card hidden" id="main-tabbar">
+          <button class="btn btn-secondary tab-btn is-active" data-tab="editor" type="button">Editor</button>
+          <button class="btn btn-secondary tab-btn" data-tab="saved" type="button">Karten</button>
+          <button class="btn btn-secondary tab-btn" data-tab="stats" type="button">Statistik</button>
+        </nav>
+
         <section id="auth-card" class="card auth-card">
           <h2>Login & Registrierung</h2>
           <p class="muted">
@@ -57,8 +63,6 @@
             <div class="row-buttons">
               <button id="new-pass-btn" type="button" class="btn btn-secondary">Neue Karte</button>
               <button id="save-pass-btn" class="btn btn-primary">Pass speichern</button>
-              <button id="new-pass-btn" class="btn btn-secondary" type="button">Neue Karte erstellen</button>
-              <button id="save-pass-btn" class="btn btn-primary" type="button">Pass speichern</button>
             </div>
           </div>
 
@@ -112,6 +116,10 @@
                     <select id="streak-icon"></select>
                   </label>
                 </div>
+                <label>
+                  Eigenes Karten-Icon (PNG/JPG)
+                  <input id="pass-icon-upload" type="file" accept="image/png,image/jpeg" />
+                </label>
               </section>
 
               
@@ -260,7 +268,63 @@
                       Banner Textfarbe
                       <input id="pass-banner-fg" type="color" value="#2d1b00" />
                     </label>
+                    <label>
+                      Banner Form
+                      <select id="pass-banner-shape">
+                        <option value="pill">Pille</option>
+                        <option value="rectangle">Rechteck</option>
+                        <option value="rounded">Rund</option>
+                        <option value="ticket">Ticket</option>
+                        <option value="diamond">Diamant</option>
+                      </select>
+                    </label>
+                    <label>
+                      Banner Breite (%)
+                      <input id="pass-banner-width" type="range" min="20" max="100" value="60" />
+                    </label>
+                    <label>
+                      Banner Höhe (px)
+                      <input id="pass-banner-height" type="range" min="28" max="120" value="42" />
+                    </label>
+                    <label>
+                      Banner X-Position (%)
+                      <input id="pass-banner-x" type="range" min="0" max="100" value="4" />
+                    </label>
+                    <label>
+                      Banner Y-Position (%)
+                      <input id="pass-banner-y" type="range" min="0" max="70" value="4" />
+                    </label>
+                    <label>
+                      Eigenes Banner-Bild (PNG/JPG)
+                      <input id="pass-banner-upload" type="file" accept="image/png,image/jpeg" />
+                    </label>
                   </div>
+                </div>
+              </section>
+
+              <section class="config-section">
+                <h3>🔲 Stempel-Rahmen</h3>
+                <div class="design-grid">
+                  <label>
+                    Rahmenfarbe
+                    <input id="stamp-border-color" type="color" value="#ffffff" />
+                  </label>
+                  <label>
+                    Stempelgröße (px)
+                    <input id="stamp-size" type="range" min="28" max="72" value="42" />
+                  </label>
+                  <label>
+                    Rahmendicke (px)
+                    <input id="stamp-border-width" type="range" min="1" max="8" value="2" />
+                  </label>
+                  <label>
+                    Position X (px)
+                    <input id="stamp-offset-x" type="range" min="-20" max="20" value="0" />
+                  </label>
+                  <label>
+                    Position Y (px)
+                    <input id="stamp-offset-y" type="range" min="-20" max="20" value="0" />
+                  </label>
                 </div>
               </section>
             </form>
@@ -271,7 +335,10 @@
                 <div class="pass-overlay">
                   <p id="preview-banner" class="preview-banner hidden"></p>
                   <p id="preview-subtitle" class="preview-subtitle"></p>
-                  <h4 id="preview-title"></h4>
+                  <div class="preview-title-row">
+                    <img id="preview-main-icon" class="preview-main-icon hidden" alt="Karten Icon" />
+                    <h4 id="preview-title"></h4>
+                  </div>
                   <p id="preview-description"></p>
                   <div id="preview-stamp-grid" class="preview-stamp-grid hidden"></div>
                   <img id="preview-qr" alt="QR Code Vorschau" />
@@ -287,6 +354,11 @@
         <section id="saved-card" class="card saved-card hidden">
           <h2>Gespeicherte Karten</h2>
           <ul id="saved-pass-list" class="saved-list"></ul>
+        </section>
+
+        <section id="stats-card" class="card saved-card hidden">
+          <h2>Statistik</h2>
+          <ul id="stats-list" class="saved-list"></ul>
         </section>
       </main>
     </div>

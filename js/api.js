@@ -86,11 +86,18 @@ export async function savePass(passPayload, userId) {
       background_color: passPayload.backgroundColor,
       foreground_color: passPayload.foregroundColor,
       custom_image_url: passPayload.customImageUrl,
+      custom_icon_url: passPayload.customIconUrl,
+      custom_banner_url: passPayload.customBannerUrl,
       banner_enabled: passPayload.banner?.enabled ?? false,
       banner_text: passPayload.banner?.text || null,
       banner_preset: passPayload.banner?.preset || null,
       banner_background_color: passPayload.banner?.backgroundColor || null,
       banner_text_color: passPayload.banner?.textColor || null,
+      banner_shape: passPayload.banner?.shape || 'pill',
+      banner_width: passPayload.banner?.width ?? 60,
+      banner_height: passPayload.banner?.height ?? 42,
+      banner_position_x: passPayload.banner?.positionX ?? 4,
+      banner_position_y: passPayload.banner?.positionY ?? 4,
       card_program_type: passPayload.cardProgramType,
       program_config: passPayload.programConfig,
       push_enabled: passPayload.pushEnabled,
@@ -115,6 +122,33 @@ export async function listPasses(userId) {
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
+  } catch (error) {
+    return networkError(error);
+  }
+}
+
+export async function addCompletionStat(userId, passId, passTitle) {
+  if (!isConfigured) return notConfiguredError();
+  try {
+    return await supabaseClient.from('pass_completion_stats').insert({
+      user_id: userId,
+      pass_id: passId,
+      pass_title: passTitle,
+      completed_at: new Date().toISOString()
+    });
+  } catch (error) {
+    return networkError(error);
+  }
+}
+
+export async function listPassStats(userId) {
+  if (!isConfigured) return notConfiguredError();
+  try {
+    return await supabaseClient
+      .from('pass_completion_stats')
+      .select('pass_title, completed_at')
+      .eq('user_id', userId)
+      .order('completed_at', { ascending: false });
   } catch (error) {
     return networkError(error);
   }
