@@ -16,7 +16,12 @@ export const ui = {
   confirmTitle: document.getElementById('confirm-title'),
   confirmText: document.getElementById('confirm-text'),
   confirmCancelBtn: document.getElementById('confirm-cancel-btn'),
-  confirmOkBtn: document.getElementById('confirm-ok-btn')
+  confirmOkBtn: document.getElementById('confirm-ok-btn'),
+  openWalletSimBtn: document.getElementById('open-wallet-sim-btn'),
+  walletSimModal: document.getElementById('wallet-sim-modal'),
+  walletSimCloseBtn: document.getElementById('wallet-sim-close-btn'),
+  walletSimStack: document.getElementById('wallet-sim-stack'),
+  walletSimDetail: document.getElementById('wallet-sim-detail')
 };
 
 export const formElements = {
@@ -71,6 +76,8 @@ export const formElements = {
 };
 
 let pendingConfirmResolver = null;
+let selectedSimulationPassId = null;
+let simulationPasses = [];
 const cardTransitionDurationMs = 260;
 const transitionTimers = new WeakMap();
 const weekdays = [
@@ -633,6 +640,106 @@ export function updatePreview(payload) {
   }
 }
 
+function toWalletSimulationEntry(rawEntry, fallbackId = null) {
+  const title = rawEntry.title || 'Neue Karte';
+  const subtitle = rawEntry.subtitle || rawEntry.business_name || rawEntry.businessName || 'Wallet Pass';
+  const qrContent = rawEntry.qrContent || rawEntry.qr_content || 'https://example.com';
+  const iconId = rawEntry.iconId || rawEntry.icon_id || 'gift';
+  const entryId = rawEntry.id || fallbackId || `sim-${Math.random().toString(36).slice(2, 10)}`;
+
+  return {
+    id: entryId,
+    title,
+    subtitle,
+    qrContent,
+    iconId,
+    backgroundColor: rawEntry.backgroundColor || rawEntry.background_color || '#1d1d1f',
+    foregroundColor: rawEntry.foregroundColor || rawEntry.foreground_color || '#ffffff',
+    customImageUrl: rawEntry.customImageUrl || rawEntry.custom_image_url || '',
+    backgroundTemplateId: rawEntry.backgroundTemplateId || rawEntry.background_template_id || 'custom'
+  };
+}
+
+function getSimulationBackground(entry) {
+  if (entry.customImageUrl) {
+    return `url(${entry.customImageUrl})`;
+  }
+
+  const selectedBgTemplate = backgroundTemplates.find((template) => template.id === entry.backgroundTemplateId);
+  if (selectedBgTemplate) {
+    return selectedBgTemplate.gradient;
+  }
+
+  return entry.backgroundColor;
+}
+
+function renderWalletSimulationDetail(entry) {
+  if (!ui.walletSimDetail) {
+    return;
+  }
+
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=${encodeURIComponent(entry.qrContent)}`;
+  ui.walletSimDetail.innerHTML = `
+    <div class="wallet-sim-detail-pass" style="background:${getSimulationBackground(entry)}; color:${entry.foregroundColor};">
+      <p class="wallet-sim-detail-subtitle">${entry.subtitle}</p>
+      <h4 class="wallet-sim-detail-title">${getIconSymbol(entry.iconId)} ${entry.title}</h4>
+      <img class="wallet-sim-detail-qr" src="${qrUrl}" alt="QR Code von ${entry.title}" />
+    </div>
+  `;
+}
+
+function renderWalletSimulationStack() {
+  if (!ui.walletSimStack) {
+    return;
+  }
+
+  ui.walletSimStack.innerHTML = '';
+
+  simulationPasses.forEach((entry) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'wallet-sim-mini-pass';
+    button.dataset.simPassId = entry.id;
+    button.setAttribute('aria-label', `Karte ${entry.title} öffnen`);
+    button.style.background = getSimulationBackground(entry);
+    button.style.color = entry.foregroundColor;
+    button.classList.toggle('is-active', entry.id === selectedSimulationPassId);
+    button.innerHTML = `
+      <p class="wallet-sim-mini-subtitle">${entry.subtitle}</p>
+      <p class="wallet-sim-mini-title">${getIconSymbol(entry.iconId)} ${entry.title}</p>
+    `;
+    ui.walletSimStack.appendChild(button);
+  });
+}
+
+export function renderWalletSimulation({ currentPass, savedPasses = [] }) {
+  const normalizedCurrent = toWalletSimulationEntry(currentPass, 'live-preview');
+  const normalizedSaved = savedPasses.map((entry) => toWalletSimulationEntry(entry));
+  simulationPasses = [normalizedCurrent, ...normalizedSaved].slice(0, 8);
+  selectedSimulationPassId = simulationPasses[0]?.id || null;
+
+  renderWalletSimulationStack();
+  if (simulationPasses[0]) {
+    renderWalletSimulationDetail(simulationPasses[0]);
+  } else if (ui.walletSimDetail) {
+    ui.walletSimDetail.innerHTML = '<p class="muted small">Keine Karten für die Simulation verfügbar.</p>';
+  }
+}
+
+export function openWalletSimulation() {
+  if (!ui.walletSimModal) {
+    return;
+  }
+  ui.walletSimModal.classList.remove('hidden');
+}
+
+export function closeWalletSimulation() {
+  if (!ui.walletSimModal) {
+    return;
+  }
+  ui.walletSimModal.classList.add('hidden');
+}
+
 export function getPassFormData() {
   const template = getTemplateById(formElements.template.value);
   return {
@@ -874,6 +981,24 @@ ui.confirmOkBtn.addEventListener('click', () => closeConfirmation(true));
 ui.confirmModal.addEventListener('click', (event) => {
   if (event.target === ui.confirmModal) {
     closeConfirmation(false);
+  }
+});
+
+ui.walletSimCloseBtn?.addEventListener('click', closeWalletSimulation);
+ui.walletSimModal?.addEventListener('click', (event) => {
+  if (event.target === ui.walletSimModal) {
+    closeWalletSimulation();
+  }
+});
+ui.walletSimStack?.addEventListener('click', (event) => {
+  const cardButton = event.target.closest('.wallet-sim-mini-pass');
+  if (!cardButton) return;
+
+  selectedSimulationPassId = cardButton.dataset.simPassId;
+  const selectedEntry = simulationPasses.find((entry) => entry.id === selectedSimulationPassId);
+  renderWalletSimulationStack();
+  if (selectedEntry) {
+    renderWalletSimulationDetail(selectedEntry);
   }
 });
 

@@ -380,6 +380,9 @@
               <p class="muted small">
                 Hinweis: Für echte .pkpass-Dateien kann im nächsten Schritt ein Server-Endpunkt eingebunden werden.
               </p>
+              <button id="open-wallet-sim-btn" type="button" class="btn btn-secondary">
+                Apple Wallet Simulation öffnen
+              </button>
             </aside>
           </div>
         </section>
@@ -405,6 +408,27 @@
         <div class="row-buttons">
           <button id="confirm-cancel-btn" class="btn btn-secondary" type="button">Abbrechen</button>
           <button id="confirm-ok-btn" class="btn btn-primary" type="button">Bestätigen</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="wallet-sim-modal" class="modal-backdrop hidden">
+      <div class="wallet-sim-card">
+        <div class="wallet-sim-topbar">
+          <p class="wallet-sim-title">Apple Wallet Vorschau</p>
+          <button id="wallet-sim-close-btn" type="button" class="btn btn-secondary">Schließen</button>
+        </div>
+        <p class="muted small">
+          Tippe auf eine kleine Karte, um die große Detailansicht mit QR-Code zu sehen.
+        </p>
+
+        <div class="wallet-sim-device">
+          <div class="wallet-sim-notch"></div>
+          <div class="wallet-sim-screen">
+            <p class="wallet-sim-screen-title">Wallet</p>
+            <div id="wallet-sim-stack" class="wallet-sim-stack"></div>
+            <div id="wallet-sim-detail" class="wallet-sim-detail"></div>
+          </div>
         </div>
       </div>
     </div>
