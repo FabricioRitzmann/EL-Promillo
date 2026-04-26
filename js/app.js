@@ -45,6 +45,18 @@ let latestPassEntries = [];
 let latestPassStats = [];
 let lastTemplateId = '';
 
+function updatePreviewPaneSizeOnScroll() {
+  const previewPane = document.querySelector('.preview-pane');
+  if (!previewPane) return;
+
+  const bottomThresholdPx = 24;
+  const scrolledBottom = window.scrollY + window.innerHeight;
+  const docHeight = document.documentElement.scrollHeight;
+  const hasReachedBottom = scrolledBottom >= docHeight - bottomThresholdPx;
+
+  previewPane.classList.toggle('is-expanded', hasReachedBottom);
+}
+
 function buildPreviewPayload() {
   const formData = getPassFormData();
   return {
@@ -572,6 +584,8 @@ function wireEvents() {
   document.querySelectorAll('.tab-btn').forEach((button) =>
     button.addEventListener('click', () => setActiveTab(button.dataset.tab))
   );
+  window.addEventListener('scroll', updatePreviewPaneSizeOnScroll, { passive: true });
+  window.addEventListener('resize', updatePreviewPaneSizeOnScroll);
 }
 
 function init() {
@@ -592,6 +606,7 @@ function init() {
   handleTemplateChange();
   refreshPreview();
   wireEvents();
+  updatePreviewPaneSizeOnScroll();
   bootstrapAuth();
 }
 
