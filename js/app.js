@@ -11,17 +11,18 @@ import {
 import {
   addNotificationRule,
   applyTemplateDefaults,
+  askForConfirmation,
+  fillEditorFromSavedPass,
   formElements,
-  getDesignById,
   getPassFormData,
   getTemplateById,
-  initDesignSelect,
   initTemplateSelect,
+  onSavedPassOpen,
   renderProgramFields,
   renderSavedPasses,
+  resetNotificationRules,
   setAuthenticatedView,
   setLoggedOutView,
-  setTemplateColors,
   showToast,
   ui,
   updatePreview
@@ -29,16 +30,15 @@ import {
 
 let currentUser = null;
 let currentUploadedImageUrl = '';
+let currentEditingPassId = null;
+let latestPassEntries = [];
+let lastTemplateId = '';
 
 function buildPreviewPayload() {
   const formData = getPassFormData();
-  const selectedDesign = getDesignById(formData.designId);
-
   return {
     ...formData,
-    customImageUrl: currentUploadedImageUrl,
-    templateGradient: selectedDesign.gradient,
-    foregroundColor: formData.foregroundColor || selectedDesign.fg
+    customImageUrl: currentUploadedImageUrl
   };
 }
 
@@ -46,21 +46,31 @@ function refreshPreview() {
   updatePreview(buildPreviewPayload());
 }
 
-function handleTemplateChange() {
+async function handleTemplateChange() {
   const template = getTemplateById(formElements.template.value);
+
+  if (lastTemplateId && lastTemplateId !== template.id) {
+    const confirmed = await askForConfirmation({
+      title: 'Template wechseln?',
+      message: 'Beim Wechsel werden die vorgeschlagenen Template-Werte übernommen. Möchtest du fortfahren?',
+      confirmLabel: 'Ja, wechseln'
+    });
+
+    if (!confirmed) {
+      formElements.template.value = lastTemplateId;
+      return;
+    }
+  }
+
   applyTemplateDefaults(template);
   renderProgramFields(template.programType || 'generic');
-  refreshPreview();
-}
-
-function handleDesignChange() {
-  const design = getDesignById(formElements.design.value);
-  setTemplateColors(design);
+  lastTemplateId = template.id;
   refreshPreview();
 }
 
 async function refreshPasses() {
   if (!currentUser) {
+    latestPassEntries = [];
     renderSavedPasses([]);
     return;
   }
@@ -70,7 +80,9 @@ async function refreshPasses() {
     showToast(`Laden fehlgeschlagen: ${error.message}`, true);
     return;
   }
-  renderSavedPasses(data);
+
+  latestPassEntries = data || [];
+  renderSavedPasses(latestPassEntries);
 }
 
 async function handleRegister() {
@@ -127,6 +139,7 @@ async function handleLogout() {
 
   currentUser = null;
   currentUploadedImageUrl = '';
+  currentEditingPassId = null;
   setLoggedOutView();
   showToast('Du wurdest abgemeldet.');
 }
@@ -173,9 +186,25 @@ async function handleSavePass() {
     return;
   }
 
+  const confirmMessage = currentEditingPassId
+    ? 'Du bearbeitest eine bestehende Karte. Änderungen jetzt speichern?'
+    : 'Neue Karte jetzt speichern?';
+
+  const confirmed = await askForConfirmation({
+    title: 'Speichern bestätigen',
+    message: confirmMessage,
+    confirmLabel: 'Speichern'
+  });
+
+  if (!confirmed) {
+    showToast('Speichern abgebrochen.');
+    return;
+  }
+
   const { error } = await savePass(
     {
       ...passData,
+      id: currentEditingPassId,
       customImageUrl: currentUploadedImageUrl
     },
     currentUser.id
@@ -186,7 +215,7 @@ async function handleSavePass() {
     return;
   }
 
-  showToast('Pass erfolgreich gespeichert.');
+  showToast(currentEditingPassId ? 'Karte erfolgreich aktualisiert.' : 'Pass erfolgreich gespeichert.');
   await refreshPasses();
 }
 
@@ -217,6 +246,31 @@ function handleRuleLocationClick(event) {
     },
     { enableHighAccuracy: true, timeout: 10000 }
   );
+}
+
+async function handleOpenSavedPass(passId) {
+  const selectedPass = latestPassEntries.find((entry) => entry.id === passId);
+  if (!selectedPass) {
+    showToast('Gespeicherte Karte wurde nicht gefunden.', true);
+    return;
+  }
+
+  const confirmed = await askForConfirmation({
+    title: 'Gespeicherte Karte öffnen?',
+    message: 'Aktuelle Eingaben werden überschrieben. Möchtest du fortfahren?',
+    confirmLabel: 'Öffnen'
+  });
+
+  if (!confirmed) {
+    return;
+  }
+
+  fillEditorFromSavedPass(selectedPass);
+  currentEditingPassId = selectedPass.id;
+  currentUploadedImageUrl = selectedPass.custom_image_url || '';
+  lastTemplateId = selectedPass.template_id || formElements.template.value;
+  refreshPreview();
+  showToast('Karte im Editor geöffnet.');
 }
 
 async function bootstrapAuth() {
@@ -256,6 +310,8 @@ function wireEvents() {
     formElements.subtitle,
     formElements.description,
     formElements.qrContent,
+    formElements.icon,
+    formElements.streakIcon,
     formElements.bg,
     formElements.fg,
     formElements.coffeeTarget,
@@ -272,16 +328,16 @@ function wireEvents() {
   previewFields.forEach((field) => field.addEventListener('input', refreshPreview));
 
   formElements.template.addEventListener('change', handleTemplateChange);
-  formElements.design.addEventListener('change', handleDesignChange);
 
   formElements.upload.addEventListener('change', handleImageUpload);
   formElements.addRuleBtn.addEventListener('click', handleAddNotificationRule);
   ui.notificationRules.addEventListener('click', handleRuleLocationClick);
+  onSavedPassOpen(handleOpenSavedPass);
 }
 
 function init() {
   initTemplateSelect();
-  initDesignSelect();
+  resetNotificationRules();
   addNotificationRule({
     name: 'Beispiel Reminder',
     triggerType: 'time',
@@ -289,8 +345,8 @@ function init() {
     sendAt: ''
   });
 
+  lastTemplateId = formElements.template.value;
   handleTemplateChange();
-  handleDesignChange();
   refreshPreview();
   wireEvents();
   bootstrapAuth();

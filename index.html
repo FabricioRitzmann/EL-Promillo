@@ -20,7 +20,7 @@
           <h1>Pass Studio</h1>
         </div>
         <div class="topbar-actions">
-          <span id="auth-state" class="auth-state">Nicht angemeldet</span>
+          <span id="auth-state" class="auth-state"></span>
           <button id="logout-btn" class="btn btn-secondary hidden">Logout</button>
         </div>
       </header>
@@ -92,17 +92,24 @@
                   <select id="pass-template"></select>
                 </label>
               </section>
-
               <section class="config-section">
-                <h3>🎨 Designstil</h3>
+                <h3>🎯 Icon-Editor</h3>
                 <p class="muted small">
-                  Designstile wie Dark Glass oder Oceanic bestimmen nur Farben und Optik.
+                  Wähle ein passendes Haupt-Icon für die Karte.
                 </p>
                 <label>
-                  Kartentyp / Stil
-                  <select id="pass-design"></select>
+                  Karten-Icon
+                  <select id="pass-icon"></select>
                 </label>
+                <div id="streak-icon-wrap" class="hidden">
+                  <label>
+                    Stempel/Streak Icon
+                    <select id="streak-icon"></select>
+                  </label>
+                </div>
               </section>
+
+              
 
               <section class="config-section">
                 <h3>Kartenspezifische Einstellungen</h3>
@@ -222,6 +229,17 @@
     </div>
 
     <div id="toast" class="toast hidden"></div>
+
+    <div id="confirm-modal" class="modal-backdrop hidden">
+      <div class="modal-card">
+        <h3 id="confirm-title">Bestätigung</h3>
+        <p id="confirm-text" class="muted"></p>
+        <div class="row-buttons">
+          <button id="confirm-cancel-btn" class="btn btn-secondary" type="button">Abbrechen</button>
+          <button id="confirm-ok-btn" class="btn btn-primary" type="button">Bestätigen</button>
+        </div>
+      </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="module" src="./js/app.js"></script>

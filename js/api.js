@@ -74,13 +74,14 @@ export async function logout() {
 export async function savePass(passPayload, userId) {
   if (!isConfigured) return notConfiguredError();
   try {
-    return await supabaseClient.from('wallet_passes').insert({
+    const payload = {
       user_id: userId,
       title: passPayload.title,
       subtitle: passPayload.subtitle,
       description: passPayload.description,
       qr_content: passPayload.qrContent,
       template_id: passPayload.templateId,
+      icon_id: passPayload.iconId,
       background_color: passPayload.backgroundColor,
       foreground_color: passPayload.foregroundColor,
       custom_image_url: passPayload.customImageUrl,
@@ -88,7 +89,13 @@ export async function savePass(passPayload, userId) {
       program_config: passPayload.programConfig,
       push_enabled: passPayload.pushEnabled,
       notification_rules: passPayload.notificationRules
-    });
+    };
+
+    if (passPayload.id) {
+      return await supabaseClient.from('wallet_passes').update(payload).eq('id', passPayload.id).eq('user_id', userId);
+    }
+
+    return await supabaseClient.from('wallet_passes').insert(payload);
   } catch (error) {
     return networkError(error);
   }

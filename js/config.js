@@ -5,6 +5,29 @@ export const appConfig = {
   passkitServiceUrl: ''
 };
 
+export const templateIcons = [
+  { id: 'coffee-cup', name: 'Kaffeetasse', symbol: '☕' },
+  { id: 'cocktail', name: 'Cocktail', symbol: '🍸' },
+  { id: 'sandwich', name: 'Sandwich', symbol: '🥪' },
+  { id: 'menu-card', name: 'Menükarte', symbol: '📋' },
+  { id: 'cake', name: 'Kuchen', symbol: '🍰' },
+  { id: 'pizza', name: 'Pizza', symbol: '🍕' },
+  { id: 'burger', name: 'Burger', symbol: '🍔' },
+  { id: 'soccer-ball', name: 'Fußball', symbol: '⚽' },
+  { id: 'hockey', name: 'Hockey', symbol: '🏒' },
+  { id: 'gift', name: 'Bonus', symbol: '🎁' }
+];
+
+export const streakIcons = [
+  { id: 'soccer-ball', name: 'Fußball', symbol: '⚽' },
+  { id: 'cocktail', name: 'Cocktail', symbol: '🍸' },
+  { id: 'hockey', name: 'Hockey', symbol: '🏒' },
+  { id: 'coffee-cup', name: 'Kaffee', symbol: '☕' },
+  { id: 'sandwich', name: 'Sandwich', symbol: '🥪' },
+  { id: 'running', name: 'Laufen', symbol: '🏃' },
+  { id: 'flame', name: 'Flamme', symbol: '🔥' }
+];
+
 export const passTemplates = [
   {
     id: 'vip-membership',
@@ -13,7 +36,8 @@ export const passTemplates = [
     defaults: {
       title: 'VIP Membership',
       subtitle: 'Premium Club',
-      description: 'Zutritt für Events und Lounge.'
+      description: 'Zutritt für Events und Lounge.',
+      iconId: 'gift'
     }
   },
   {
@@ -26,20 +50,23 @@ export const passTemplates = [
       description: 'Treueprogramm für deine täglichen Kaffees.',
       stampTarget: 10,
       currentStamps: 0,
-      rewardText: 'Jeder 10. Kaffee ist gratis.'
+      rewardText: 'Jeder 10. Kaffee ist gratis.',
+      iconId: 'coffee-cup'
     }
   },
   {
-    id: 'streak-card',
-    name: 'Streakkarte',
+    id: 'stamp-card',
+    name: 'Stempelkarte',
     programType: 'streak',
     defaults: {
-      title: '30 Tage Streak',
+      title: '30 Tage Stempel-Challenge',
       subtitle: 'Bleib dran',
-      description: 'Jeden Tag ein Check-in für Bonusvorteile.',
+      description: 'Jeden Tag sammeln und Vorteile freischalten.',
       actionDefinition: 'Täglich 1x einchecken',
       targetDays: 30,
-      graceHours: 24
+      graceHours: 24,
+      iconId: 'soccer-ball',
+      streakIconId: 'soccer-ball'
     }
   },
   {
@@ -52,43 +79,16 @@ export const passTemplates = [
       description: 'Aufladen, bezahlen und Bonus sammeln.',
       balance: 25,
       currency: 'EUR',
-      lowBalanceThreshold: 5
+      lowBalanceThreshold: 5,
+      iconId: 'menu-card'
     }
   },
   {
     id: 'coupon-card',
     name: 'Couponkarte',
-    programType: 'generic'
-  }
-];
-
-export const passDesigns = [
-  {
-    id: 'dark-glass',
-    name: 'Dark Glass',
-    bg: '#1d1d1f',
-    fg: '#ffffff',
-    gradient: 'linear-gradient(130deg, #1d1d1f, #3a3a3c)'
-  },
-  {
-    id: 'oceanic',
-    name: 'Oceanic',
-    bg: '#0059d6',
-    fg: '#ffffff',
-    gradient: 'linear-gradient(130deg, #0071e3, #0059d6)'
-  },
-  {
-    id: 'sunset',
-    name: 'Sunset',
-    bg: '#8220ff',
-    fg: '#ffffff',
-    gradient: 'linear-gradient(130deg, #ff5f6d, #8220ff)'
-  },
-  {
-    id: 'silver-mist',
-    name: 'Silver Mist',
-    bg: '#b8bec9',
-    fg: '#10203a',
-    gradient: 'linear-gradient(130deg, #eef1f6, #bcc5d3)'
+    programType: 'generic',
+    defaults: {
+      iconId: 'gift'
+    }
   }
 ];
