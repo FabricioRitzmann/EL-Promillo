@@ -168,7 +168,15 @@ export function getIconSymbol(id) {
   return icon?.symbol || '🎯';
 }
 
-function createStampIcon(iconId, isFilled) {
+function createStampIcon(iconId, isFilled, customIconUrl = '') {
+  if (customIconUrl) {
+    const uploadedIcon = document.createElement('img');
+    uploadedIcon.className = 'stamp-slot-uploaded-icon';
+    uploadedIcon.src = customIconUrl;
+    uploadedIcon.alt = 'Eigenes Stempel-Icon';
+    return uploadedIcon;
+  }
+
   const iconDefinition = stampIconDefinitions[iconId];
   if (!iconDefinition) {
     const fallback = document.createElement('span');
@@ -566,8 +574,8 @@ export function updatePreview(payload) {
   subtitle.textContent = payload.subtitle || 'Standard';
   title.textContent = `${getIconSymbol(payload.iconId)} ${payload.title || 'Neue Karte'}`;
   if (payload.customIconUrl) {
-    mainIcon.classList.remove('hidden');
-    mainIcon.src = payload.customIconUrl;
+    mainIcon.classList.add('hidden');
+    mainIcon.src = '';
   } else {
     mainIcon.classList.add('hidden');
     mainIcon.src = '';
@@ -639,7 +647,7 @@ export function updatePreview(payload) {
       slot.style.borderColor = payload.programConfig?.stampBorderColor || 'rgba(255,255,255,0.6)';
       slot.style.borderWidth = `${payload.programConfig?.stampBorderWidth ?? 2}px`;
       slot.style.transform = `translate(${payload.programConfig?.stampOffsetX ?? 0}px, ${payload.programConfig?.stampOffsetY ?? 0}px)`;
-      slot.appendChild(createStampIcon(slotIconId || slotIconSymbol, isFilled));
+      slot.appendChild(createStampIcon(slotIconId || slotIconSymbol, isFilled, payload.customIconUrl));
       stampGrid.appendChild(slot);
     }
   }
