@@ -83,7 +83,11 @@ export async function savePass(passPayload, userId) {
       template_id: passPayload.templateId,
       background_color: passPayload.backgroundColor,
       foreground_color: passPayload.foregroundColor,
-      custom_image_url: passPayload.customImageUrl
+      custom_image_url: passPayload.customImageUrl,
+      card_program_type: passPayload.cardProgramType,
+      program_config: passPayload.programConfig,
+      push_enabled: passPayload.pushEnabled,
+      notification_rules: passPayload.notificationRules
     });
   } catch (error) {
     return networkError(error);

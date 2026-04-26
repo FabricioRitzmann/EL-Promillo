@@ -9,10 +9,13 @@ import {
   uploadCustomImage
 } from './api.js';
 import {
+  addNotificationRule,
+  applyTemplateDefaults,
   formElements,
   getPassFormData,
   getTemplateById,
   initTemplateSelect,
+  renderProgramFields,
   renderSavedPasses,
   setAuthenticatedView,
   setLoggedOutView,
@@ -39,6 +42,14 @@ function buildPreviewPayload() {
 
 function refreshPreview() {
   updatePreview(buildPreviewPayload());
+}
+
+function handleTemplateChange() {
+  const template = getTemplateById(formElements.template.value);
+  setTemplateColors(template);
+  applyTemplateDefaults(template);
+  renderProgramFields(template.programType || 'generic');
+  refreshPreview();
 }
 
 async function refreshPasses() {
@@ -150,6 +161,11 @@ async function handleSavePass() {
     return;
   }
 
+  if (passData.pushEnabled && !passData.notificationRules.length) {
+    showToast('Push ist aktiv, aber es gibt keine gültige Regel.', true);
+    return;
+  }
+
   const { error } = await savePass(
     {
       ...passData,
@@ -165,6 +181,35 @@ async function handleSavePass() {
 
   showToast('Pass erfolgreich gespeichert.');
   await refreshPasses();
+}
+
+function handleAddNotificationRule() {
+  addNotificationRule({ triggerType: 'time' });
+}
+
+function handleRuleLocationClick(event) {
+  const locationButton = event.target.closest('.rule-location-btn');
+  if (!locationButton) return;
+
+  if (!navigator.geolocation) {
+    showToast('Geolocation wird von diesem Browser nicht unterstützt.', true);
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      const row = locationButton.closest('.rule-row');
+      if (!row) return;
+
+      row.querySelector('.rule-lat').value = position.coords.latitude.toFixed(6);
+      row.querySelector('.rule-lng').value = position.coords.longitude.toFixed(6);
+      showToast('Standort für Regel übernommen.');
+    },
+    (error) => {
+      showToast(`Standort konnte nicht gelesen werden: ${error.message}`, true);
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
 }
 
 async function bootstrapAuth() {
@@ -205,24 +250,37 @@ function wireEvents() {
     formElements.description,
     formElements.qrContent,
     formElements.bg,
-    formElements.fg
+    formElements.fg,
+    formElements.coffeeTarget,
+    formElements.coffeeCurrent,
+    formElements.coffeeReward,
+    formElements.streakAction,
+    formElements.streakTarget,
+    formElements.streakGrace,
+    formElements.creditBalance,
+    formElements.creditCurrency,
+    formElements.creditThreshold
   ];
 
   previewFields.forEach((field) => field.addEventListener('input', refreshPreview));
 
-  formElements.template.addEventListener('change', () => {
-    const template = getTemplateById(formElements.template.value);
-    setTemplateColors(template);
-    refreshPreview();
-  });
+  formElements.template.addEventListener('change', handleTemplateChange);
 
   formElements.upload.addEventListener('change', handleImageUpload);
+  formElements.addRuleBtn.addEventListener('click', handleAddNotificationRule);
+  ui.notificationRules.addEventListener('click', handleRuleLocationClick);
 }
 
 function init() {
   initTemplateSelect();
-  const defaultTemplate = getTemplateById(formElements.template.value);
-  setTemplateColors(defaultTemplate);
+  addNotificationRule({
+    name: 'Beispiel Reminder',
+    triggerType: 'time',
+    message: 'Denk an deine Karte!',
+    sendAt: ''
+  });
+
+  handleTemplateChange();
   refreshPreview();
   wireEvents();
   bootstrapAuth();

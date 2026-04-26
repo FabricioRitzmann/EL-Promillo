@@ -84,6 +84,74 @@
                 <select id="pass-template"></select>
               </label>
 
+              <section class="config-section">
+                <h3>Kartenspezifische Einstellungen</h3>
+
+                <div id="program-generic" class="program-panel muted small">
+                  Für dieses Template sind keine zusätzlichen Felder nötig.
+                </div>
+
+                <div id="program-coffee" class="program-panel hidden">
+                  <label>
+                    Ziel-Stempel
+                    <input id="coffee-target" type="number" min="1" value="10" />
+                  </label>
+                  <label>
+                    Aktuelle Stempel
+                    <input id="coffee-current" type="number" min="0" value="0" />
+                  </label>
+                  <label>
+                    Belohnungstext
+                    <input id="coffee-reward" type="text" value="Jeder 10. Kaffee ist gratis." />
+                  </label>
+                </div>
+
+                <div id="program-streak" class="program-panel hidden">
+                  <label>
+                    Was muss getan werden?
+                    <input id="streak-action" type="text" value="Täglich 1x einchecken" />
+                  </label>
+                  <label>
+                    Ziel in Tagen
+                    <input id="streak-target" type="number" min="1" value="30" />
+                  </label>
+                  <label>
+                    Kulanzzeit in Stunden
+                    <input id="streak-grace" type="number" min="1" value="24" />
+                  </label>
+                </div>
+
+                <div id="program-credit" class="program-panel hidden">
+                  <label>
+                    Startguthaben
+                    <input id="credit-balance" type="number" min="0" step="0.01" value="25" />
+                  </label>
+                  <label>
+                    Währung
+                    <input id="credit-currency" type="text" maxlength="5" value="EUR" />
+                  </label>
+                  <label>
+                    Schwellwert für Niedrigguthaben
+                    <input id="credit-threshold" type="number" min="0" step="0.01" value="5" />
+                  </label>
+                </div>
+              </section>
+
+              <section class="config-section">
+                <div class="inline-space-between">
+                  <h3>Push Benachrichtigungen</h3>
+                  <label class="toggle-inline">
+                    <input id="push-enabled" type="checkbox" />
+                    Aktivieren
+                  </label>
+                </div>
+                <p class="muted small">
+                  Lege pro Karte mehrere Regeln fest. Regeln können zeitbasiert oder standortbasiert sein.
+                </p>
+                <div id="notification-rules" class="stack-form"></div>
+                <button id="add-rule-btn" type="button" class="btn btn-secondary">Regel hinzufügen</button>
+              </section>
+
               <label>
                 Hintergrundfarbe
                 <input id="pass-bg" type="color" value="#1d1d1f" />
