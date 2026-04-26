@@ -11,7 +11,8 @@ create table if not exists public.wallet_passes (
   subtitle text,
   description text,
   qr_content text not null,
-  template_id text not null default 'dark-glass',
+  template_id text not null default 'vip-membership',
+  icon_id text not null default 'gift',
   background_color text not null default '#1d1d1f',
   foreground_color text not null default '#ffffff',
   custom_image_url text,
@@ -25,6 +26,7 @@ create table if not exists public.wallet_passes (
 
 -- 1b) Falls die Tabelle schon existiert: neue Felder ergänzen
 alter table public.wallet_passes
+  add column if not exists icon_id text not null default 'gift',
   add column if not exists card_program_type text not null default 'generic',
   add column if not exists program_config jsonb not null default '{}'::jsonb,
   add column if not exists push_enabled boolean not null default false,
