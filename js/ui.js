@@ -309,6 +309,10 @@ export function addNotificationRule(rule = {}) {
         Radius (Meter)
         <input class="rule-radius" type="number" min="1" value="${rule.radiusMeters ?? 250}" />
       </label>
+      <label>
+        Optionaler Zeitpunkt
+        <input class="rule-location-datetime" type="datetime-local" value="${rule.sendAt || ''}" />
+      </label>
       <button type="button" class="btn btn-secondary rule-location-btn">Aktuellen Standort nutzen</button>
     </div>
     <button type="button" class="btn btn-danger rule-remove">Regel entfernen</button>
@@ -356,7 +360,8 @@ export function getNotificationRules() {
         ...base,
         latitude: sanitizeNumber(row.querySelector('.rule-lat').value, 0),
         longitude: sanitizeNumber(row.querySelector('.rule-lng').value, 0),
-        radiusMeters: sanitizeNumber(row.querySelector('.rule-radius').value, 250)
+        radiusMeters: sanitizeNumber(row.querySelector('.rule-radius').value, 250),
+        sendAt: row.querySelector('.rule-location-datetime').value || null
       };
     })
     .filter((rule) => rule.name && rule.message);
