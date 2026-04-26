@@ -42,6 +42,16 @@ projekt/
    ```
 5. Browser öffnen: `http://localhost:8080`
 
+## Fehler "Failed to fetch" bei Registrierung
+
+Wenn bei Registrierung/Login "Failed to fetch" erscheint, liegt es meist an einer dieser Ursachen:
+
+- `js/config.js` enthält noch Platzhalter (`YOUR-PROJECT`, `YOUR_PUBLIC_ANON_KEY`)
+- App wurde als Datei (`file://...`) statt über einen lokalen Webserver geöffnet
+- Netzwerk/CORS blockiert Anfragen zu Supabase
+
+Die App zeigt dafür jetzt eine klarere Fehlermeldung an.
+
 ## Hinweis zu echten Wallet-Dateien
 
 Diese Version erstellt und verwaltet die Pass-Daten und QR-Codes im Frontend.
