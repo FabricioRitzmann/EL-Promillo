@@ -651,6 +651,12 @@ function toWalletSimulationEntry(rawEntry, fallbackId = null) {
   const qrContent = rawEntry.qrContent || rawEntry.qr_content || 'https://example.com';
   const iconId = rawEntry.iconId || rawEntry.icon_id || 'gift';
   const entryId = rawEntry.id || fallbackId || `sim-${Math.random().toString(36).slice(2, 10)}`;
+  const cardProgramType = rawEntry.cardProgramType || rawEntry.card_program_type || 'generic';
+  const programConfig = rawEntry.programConfig || rawEntry.program_config || {};
+  const targetRaw = cardProgramType === 'coffee' ? programConfig.stampTarget : programConfig.targetDays;
+  const currentRaw = programConfig.currentStamps;
+  const stampTarget = clampNumber(sanitizeNumber(targetRaw, 10), 1, 60);
+  const currentStamps = clampNumber(sanitizeNumber(currentRaw, 0), 0, stampTarget);
 
   return {
     id: entryId,
@@ -658,6 +664,9 @@ function toWalletSimulationEntry(rawEntry, fallbackId = null) {
     subtitle,
     qrContent,
     iconId,
+    cardProgramType,
+    stampTarget,
+    currentStamps,
     backgroundColor: rawEntry.backgroundColor || rawEntry.background_color || '#1d1d1f',
     foregroundColor: rawEntry.foregroundColor || rawEntry.foreground_color || '#ffffff',
     customImageUrl: rawEntry.customImageUrl || rawEntry.custom_image_url || '',
@@ -685,6 +694,16 @@ function renderWalletSimulationDetail(entry) {
 
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=${encodeURIComponent(entry.qrContent)}`;
   const issuer = entry.subtitle || 'Wallet Pass';
+  const hasStampProgram = entry.cardProgramType === 'coffee' || entry.cardProgramType === 'streak';
+  const progressText = hasStampProgram ? `${entry.currentStamps} von ${entry.stampTarget}` : null;
+  const stampPreview = hasStampProgram
+    ? `<div class="wallet-sim-detail-stamp-hero">
+        <span class="wallet-sim-detail-stamp-icon">${getIconSymbol(entry.iconId)}</span>
+        <p class="wallet-sim-detail-stamp-label">Stempel</p>
+        <p class="wallet-sim-detail-stamp-progress">${progressText}</p>
+      </div>`
+    : '';
+
   ui.walletSimDetail.innerHTML = `
     <div class="wallet-sim-detail-pass" style="background:${getSimulationBackground(entry)}; color:${entry.foregroundColor};">
       <div class="wallet-sim-detail-header">
@@ -693,6 +712,7 @@ function renderWalletSimulationDetail(entry) {
       </div>
       <p class="wallet-sim-detail-subtitle">${entry.subtitle}</p>
       <h4 class="wallet-sim-detail-title">${getIconSymbol(entry.iconId)} ${entry.title}</h4>
+      ${stampPreview}
       <img class="wallet-sim-detail-qr" src="${qrUrl}" alt="QR Code von ${entry.title}" />
     </div>
   `;
@@ -715,9 +735,17 @@ function renderWalletSimulationStack() {
     button.style.color = entry.foregroundColor;
     button.style.zIndex = String(simulationPasses.length - index);
     button.classList.toggle('is-active', entry.id === selectedSimulationPassId);
+    const hasStampProgram = entry.cardProgramType === 'coffee' || entry.cardProgramType === 'streak';
+    const progressText = hasStampProgram ? `Stempel ${entry.currentStamps} von ${entry.stampTarget}` : '';
     button.innerHTML = `
-      <p class="wallet-sim-mini-subtitle">${entry.subtitle}</p>
-      <p class="wallet-sim-mini-title">${getIconSymbol(entry.iconId)} ${entry.title}</p>
+      <div class="wallet-sim-mini-leading">
+        <span class="wallet-sim-mini-icon">${getIconSymbol(entry.iconId)}</span>
+        <div class="wallet-sim-mini-copy">
+          <p class="wallet-sim-mini-subtitle">${entry.subtitle}</p>
+          <p class="wallet-sim-mini-title">${entry.title}</p>
+        </div>
+      </div>
+      ${hasStampProgram ? `<p class="wallet-sim-mini-progress">${progressText}</p>` : ''}
     `;
     ui.walletSimStack.appendChild(button);
   });
