@@ -24,6 +24,7 @@ import {
   clearFolderInput,
   onCreateFolder,
   onSavedCardFiltersChange,
+  onSavedToolbarToggle,
   onSavedPassFolderChange,
   onSavedPassOpen,
   onSavedPassScan,
@@ -725,6 +726,7 @@ function wireEvents() {
   onSavedPassFolderChange(handleSavedPassFolderChange);
   onSavedCardFiltersChange(handleSavedCardsFilterChange);
   onCreateFolder(handleCreateFolder);
+  onSavedToolbarToggle();
   ui.openWalletSimBtn?.addEventListener('click', handleOpenWalletSimulation);
   document.querySelectorAll('.tab-btn').forEach((button) =>
     button.addEventListener('click', () => setActiveTab(button.dataset.tab))
