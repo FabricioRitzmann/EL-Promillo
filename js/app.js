@@ -71,6 +71,12 @@ function refreshPreview() {
   updatePreview(buildPreviewPayload());
 }
 
+function focusEditorTab() {
+  setActiveTab('editor');
+  requestAnimationFrame(() => setActiveTab('editor'));
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 async function handleTemplateChange() {
   const template = getTemplateById(formElements.template.value);
   applyTemplateDefaults(template);
@@ -416,6 +422,7 @@ async function handleOpenSavedPass(passId) {
   currentUploadedIconUrl = selectedPass.custom_icon_url || '';
   currentUploadedBannerUrl = selectedPass.custom_banner_url || '';
   lastTemplateId = selectedPass.template_id || formElements.template.value;
+  focusEditorTab();
   refreshPreview();
   showToast('Karte im Editor geöffnet.');
 }
