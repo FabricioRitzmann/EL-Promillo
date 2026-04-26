@@ -412,20 +412,21 @@
       </div>
     </div>
 
-    <div id="wallet-sim-modal" class="modal-backdrop hidden">
+    <div id="wallet-sim-modal" class="modal-backdrop wallet-sim-backdrop hidden">
       <div class="wallet-sim-card">
         <div class="wallet-sim-topbar">
-          <p class="wallet-sim-title">Apple Wallet Vorschau</p>
+          <div class="wallet-sim-topbar-leading">
+            <button type="button" class="wallet-sim-plain-btn" aria-label="Weitere Optionen">⋯</button>
+            <p class="wallet-sim-title">Wallet</p>
+          </div>
           <button id="wallet-sim-close-btn" type="button" class="btn btn-secondary">Schließen</button>
         </div>
-        <p class="muted small">
-          Tippe auf eine kleine Karte, um die große Detailansicht mit QR-Code zu sehen.
-        </p>
+        <p class="wallet-sim-caption">Apple Wallet Simulation (Pass-Detail + Kartenstapel)</p>
 
         <div class="wallet-sim-device">
           <div class="wallet-sim-notch"></div>
           <div class="wallet-sim-screen">
-            <p class="wallet-sim-screen-title">Wallet</p>
+            <p class="wallet-sim-screen-title">Heute</p>
             <div id="wallet-sim-stack" class="wallet-sim-stack"></div>
             <div id="wallet-sim-detail" class="wallet-sim-detail"></div>
           </div>
