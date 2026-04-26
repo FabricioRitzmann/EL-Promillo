@@ -45,7 +45,7 @@ function extractMissingSchemaCacheColumn(error) {
   if (!match) return null;
   return {
     column: match[1],
-    relation: match[2]
+    relation: match[2].replace(/^public\./i, '')
   };
 }
 
@@ -61,16 +61,27 @@ async function savePassWithSchemaFallback({ payload, passId, userId }) {
     return supabaseClient.from('wallet_passes').insert(activePayload);
   };
 
-  const firstResponse = await attemptSave(payload);
-  const missingColumnInfo = extractMissingSchemaCacheColumn(firstResponse.error);
+  const fallbackPayload = { ...payload };
+  const removedColumns = new Set();
+  let response = await attemptSave(fallbackPayload);
 
-  if (!missingColumnInfo || missingColumnInfo.relation !== 'wallet_passes') {
-    return firstResponse;
+  while (response?.error) {
+    const missingColumnInfo = extractMissingSchemaCacheColumn(response.error);
+
+    if (!missingColumnInfo || missingColumnInfo.relation !== 'wallet_passes') {
+      return response;
+    }
+
+    if (!(missingColumnInfo.column in fallbackPayload) || removedColumns.has(missingColumnInfo.column)) {
+      return response;
+    }
+
+    removedColumns.add(missingColumnInfo.column);
+    delete fallbackPayload[missingColumnInfo.column];
+    response = await attemptSave(fallbackPayload);
   }
 
-  const fallbackPayload = { ...payload };
-  delete fallbackPayload[missingColumnInfo.column];
-  return attemptSave(fallbackPayload);
+  return response;
 }
 
 function slugify(value) {
