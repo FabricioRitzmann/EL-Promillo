@@ -17,11 +17,18 @@ create table if not exists public.wallet_passes (
   background_color text not null default '#1d1d1f',
   foreground_color text not null default '#ffffff',
   custom_image_url text,
+  custom_icon_url text,
+  custom_banner_url text,
   banner_enabled boolean not null default false,
   banner_text text,
   banner_preset text,
   banner_background_color text,
   banner_text_color text,
+  banner_shape text not null default 'pill',
+  banner_width integer not null default 60,
+  banner_height integer not null default 42,
+  banner_position_x integer not null default 4,
+  banner_position_y integer not null default 4,
   card_program_type text not null default 'generic',
   program_config jsonb not null default '{}'::jsonb,
   push_enabled boolean not null default false,
@@ -42,7 +49,35 @@ alter table public.wallet_passes
   add column if not exists banner_text text,
   add column if not exists banner_preset text,
   add column if not exists banner_background_color text,
-  add column if not exists banner_text_color text;
+  add column if not exists banner_text_color text,
+  add column if not exists custom_icon_url text,
+  add column if not exists custom_banner_url text,
+  add column if not exists banner_shape text not null default 'pill',
+  add column if not exists banner_width integer not null default 60,
+  add column if not exists banner_height integer not null default 42,
+  add column if not exists banner_position_x integer not null default 4,
+  add column if not exists banner_position_y integer not null default 4;
+
+-- 1c) Statistik pro abgeschlossene Stempelkarte/Streak Karte
+create table if not exists public.pass_completion_stats (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  pass_id uuid not null references public.wallet_passes(id) on delete cascade,
+  pass_title text not null,
+  completed_at timestamptz not null default now()
+);
+
+alter table public.pass_completion_stats enable row level security;
+
+create policy "Users can view own pass stats"
+on public.pass_completion_stats
+for select
+using (auth.uid() = user_id);
+
+create policy "Users can insert own pass stats"
+on public.pass_completion_stats
+for insert
+with check (auth.uid() = user_id);
 
 -- 2) Updated-At Trigger
 create or replace function public.set_updated_at()

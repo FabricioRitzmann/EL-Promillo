@@ -42,7 +42,7 @@ export const passTemplates = [
   },
   {
     id: 'coffee-stamp',
-    name: 'Kaffee Stempelkarte',
+    name: 'Stempelkarte',
     programType: 'coffee',
     defaults: {
       title: 'Coffee Club',
@@ -57,7 +57,7 @@ export const passTemplates = [
   },
   {
     id: 'stamp-card',
-    name: 'Stempelkarte',
+    name: 'Streak Karte',
     programType: 'streak',
     defaults: {
       title: '30 Tage Stempel-Challenge',
@@ -106,9 +106,12 @@ export const backgroundTemplates = [
 ];
 
 export const bannerColorOptions = [
-  { id: 'gold', name: 'Gold', bgColor: '#f5c451', textColor: '#2d1b00' },
-  { id: 'dark', name: 'Dunkel', bgColor: '#1d1d1f', textColor: '#ffffff' },
-  { id: 'white', name: 'Weiß', bgColor: '#ffffff', textColor: '#1f2937' },
-  { id: 'emerald', name: 'Smaragd', bgColor: '#0b7a5a', textColor: '#ffffff' },
-  { id: 'berry', name: 'Berry', bgColor: '#a22968', textColor: '#ffffff' }
+  { id: 'amber', name: 'Amber', bgColor: '#f59e0b', textColor: '#1f1200' },
+  { id: 'graphite', name: 'Graphit', bgColor: '#1f2937', textColor: '#f9fafb' },
+  { id: 'snow', name: 'Snow', bgColor: '#f9fafb', textColor: '#111827' },
+  { id: 'emerald', name: 'Smaragd', bgColor: '#0f766e', textColor: '#ecfeff' },
+  { id: 'berry', name: 'Berry', bgColor: '#be185d', textColor: '#fff1f2' },
+  { id: 'ocean', name: 'Ocean', bgColor: '#0369a1', textColor: '#e0f2fe' },
+  { id: 'violet', name: 'Violett', bgColor: '#6d28d9', textColor: '#f5f3ff' },
+  { id: 'sunset', name: 'Sunset', bgColor: '#ea580c', textColor: '#fff7ed' }
 ];

@@ -1,5 +1,7 @@
 import {
+  addCompletionStat,
   listPasses,
+  listPassStats,
   loginWithEmail,
   logout,
   registerWithEmail,
@@ -19,9 +21,12 @@ import {
   getTemplateById,
   initTemplateSelect,
   onSavedPassOpen,
+  onSavedPassScan,
+  renderStats,
   renderProgramFields,
   renderSavedPasses,
   resetNotificationRules,
+  setActiveTab,
   setAuthenticatedView,
   setLoggedOutView,
   showToast,
@@ -32,15 +37,20 @@ import {
 
 let currentUser = null;
 let currentUploadedImageUrl = '';
+let currentUploadedIconUrl = '';
+let currentUploadedBannerUrl = '';
 let currentEditingPassId = null;
 let latestPassEntries = [];
+let latestPassStats = [];
 let lastTemplateId = '';
 
 function buildPreviewPayload() {
   const formData = getPassFormData();
   return {
     ...formData,
-    customImageUrl: currentUploadedImageUrl
+    customImageUrl: currentUploadedImageUrl,
+    customIconUrl: currentUploadedIconUrl,
+    customBannerUrl: currentUploadedBannerUrl
   };
 }
 
@@ -69,6 +79,8 @@ async function handleNewPass() {
 
   currentEditingPassId = null;
   currentUploadedImageUrl = '';
+  currentUploadedIconUrl = '';
+  currentUploadedBannerUrl = '';
   document.getElementById('pass-form').reset();
   formElements.upload.value = '';
   applyTemplateDefaults(getTemplateById(formElements.template.value));
@@ -102,6 +114,17 @@ async function refreshPasses() {
 
   latestPassEntries = data || [];
   renderSavedPasses(latestPassEntries);
+}
+
+async function refreshStats() {
+  if (!currentUser) return;
+  const { data, error } = await listPassStats(currentUser.id);
+  if (error) {
+    showToast(`Statistik konnte nicht geladen werden: ${error.message}`, true);
+    return;
+  }
+  latestPassStats = data || [];
+  renderStats(latestPassStats);
 }
 
 async function handleRegister() {
@@ -163,6 +186,8 @@ async function handleLogout() {
 
   currentUser = null;
   currentUploadedImageUrl = '';
+  currentUploadedIconUrl = '';
+  currentUploadedBannerUrl = '';
   currentEditingPassId = null;
   setLoggedOutView();
   showToast('Du wurdest abgemeldet.');
@@ -191,6 +216,48 @@ async function handleImageUpload(event) {
   currentUploadedImageUrl = data.publicUrl;
   refreshPreview();
   showToast('Hintergrundbild hochgeladen.');
+}
+
+async function handleIconUpload(event) {
+  const file = event.target.files?.[0];
+  if (!file) {
+    currentUploadedIconUrl = '';
+    refreshPreview();
+    return;
+  }
+  if (!currentUser) {
+    showToast('Bitte zuerst einloggen, bevor du Bilder hochlädst.', true);
+    event.target.value = '';
+    return;
+  }
+  const { data, error } = await uploadCustomImage(file, currentUser.id);
+  if (error) {
+    showToast(`Icon-Upload fehlgeschlagen: ${error.message}`, true);
+    return;
+  }
+  currentUploadedIconUrl = data.publicUrl;
+  refreshPreview();
+}
+
+async function handleBannerUpload(event) {
+  const file = event.target.files?.[0];
+  if (!file) {
+    currentUploadedBannerUrl = '';
+    refreshPreview();
+    return;
+  }
+  if (!currentUser) {
+    showToast('Bitte zuerst einloggen, bevor du Bilder hochlädst.', true);
+    event.target.value = '';
+    return;
+  }
+  const { data, error } = await uploadCustomImage(file, currentUser.id);
+  if (error) {
+    showToast(`Banner-Upload fehlgeschlagen: ${error.message}`, true);
+    return;
+  }
+  currentUploadedBannerUrl = data.publicUrl;
+  refreshPreview();
 }
 
 async function handleSavePass() {
@@ -227,7 +294,9 @@ async function handleSavePass() {
     {
       ...passData,
       id: currentEditingPassId,
-      customImageUrl: currentUploadedImageUrl
+      customImageUrl: currentUploadedImageUrl,
+      customIconUrl: currentUploadedIconUrl,
+      customBannerUrl: currentUploadedBannerUrl
     },
     currentUser.id
   );
@@ -239,6 +308,7 @@ async function handleSavePass() {
 
   showToast(currentEditingPassId ? 'Karte erfolgreich aktualisiert.' : 'Pass erfolgreich gespeichert.');
   await refreshPasses();
+  await refreshStats();
 }
 
 async function handleCreateNewPass() {
@@ -256,6 +326,8 @@ async function handleCreateNewPass() {
 
   currentEditingPassId = null;
   currentUploadedImageUrl = '';
+  currentUploadedIconUrl = '';
+  currentUploadedBannerUrl = '';
   formElements.upload.value = '';
   initTemplateSelect();
   resetNotificationRules();
@@ -323,9 +395,78 @@ async function handleOpenSavedPass(passId) {
   fillEditorFromSavedPass(selectedPass);
   currentEditingPassId = selectedPass.id;
   currentUploadedImageUrl = selectedPass.custom_image_url || '';
+  currentUploadedIconUrl = selectedPass.custom_icon_url || '';
+  currentUploadedBannerUrl = selectedPass.custom_banner_url || '';
   lastTemplateId = selectedPass.template_id || formElements.template.value;
   refreshPreview();
   showToast('Karte im Editor geöffnet.');
+}
+
+async function handleScanPass(passId) {
+  const selectedPass = latestPassEntries.find((entry) => entry.id === passId);
+  if (!selectedPass) return;
+  const programConfig = selectedPass.program_config || {};
+  const target = selectedPass.card_program_type === 'coffee' ? Number(programConfig.stampTarget || 0) : Number(programConfig.targetDays || 0);
+  const current = Number(programConfig.currentStamps || 0);
+  if (!target || current < target) {
+    showToast('Karte ist noch nicht voll und kann nicht gescannt werden.', true);
+    return;
+  }
+  const confirmed = await askForConfirmation({
+    title: 'Karte scannen und neu starten?',
+    message: 'Die Karte wird auf 0 zurückgesetzt und als abgeschlossen gezählt.',
+    confirmLabel: 'Scannen'
+  });
+  if (!confirmed) return;
+
+  const { error: statError } = await addCompletionStat(currentUser.id, selectedPass.id, selectedPass.title);
+  if (statError) {
+    showToast(`Statistik speichern fehlgeschlagen: ${statError.message}`, true);
+    return;
+  }
+
+  programConfig.currentStamps = 0;
+  const { error } = await savePass(
+    {
+      id: selectedPass.id,
+      title: selectedPass.title,
+      subtitle: selectedPass.subtitle,
+      description: selectedPass.description,
+      qrContent: selectedPass.qr_content,
+      templateId: selectedPass.template_id,
+      iconId: selectedPass.icon_id,
+      backgroundTemplateId: selectedPass.background_template_id,
+      backgroundColor: selectedPass.background_color,
+      foregroundColor: selectedPass.foreground_color,
+      customImageUrl: selectedPass.custom_image_url,
+      customIconUrl: selectedPass.custom_icon_url,
+      customBannerUrl: selectedPass.custom_banner_url,
+      banner: {
+        enabled: selectedPass.banner_enabled,
+        text: selectedPass.banner_text,
+        preset: selectedPass.banner_preset,
+        backgroundColor: selectedPass.banner_background_color,
+        textColor: selectedPass.banner_text_color,
+        shape: selectedPass.banner_shape,
+        width: selectedPass.banner_width,
+        height: selectedPass.banner_height,
+        positionX: selectedPass.banner_position_x,
+        positionY: selectedPass.banner_position_y
+      },
+      cardProgramType: selectedPass.card_program_type,
+      programConfig,
+      pushEnabled: selectedPass.push_enabled,
+      notificationRules: selectedPass.notification_rules
+    },
+    currentUser.id
+  );
+  if (error) {
+    showToast(`Karte zurücksetzen fehlgeschlagen: ${error.message}`, true);
+    return;
+  }
+  showToast('Karte gescannt und zurückgesetzt.');
+  await refreshPasses();
+  await refreshStats();
 }
 
 async function bootstrapAuth() {
@@ -336,7 +477,9 @@ async function bootstrapAuth() {
   currentUser = session?.user ?? null;
   if (currentUser) {
     setAuthenticatedView(currentUser.email);
+    setActiveTab('editor');
     await refreshPasses();
+    await refreshStats();
   } else {
     setLoggedOutView();
   }
@@ -345,7 +488,9 @@ async function bootstrapAuth() {
     currentUser = sessionData?.user ?? null;
     if (currentUser) {
       setAuthenticatedView(currentUser.email);
+      setActiveTab('editor');
       refreshPasses();
+      refreshStats();
     } else {
       setLoggedOutView();
       renderSavedPasses([]);
@@ -358,7 +503,6 @@ function wireEvents() {
   document.getElementById('register-btn').addEventListener('click', handleRegister);
   document.getElementById('login-btn').addEventListener('click', handleLogin);
   document.getElementById('reset-btn').addEventListener('click', handleResetOtp);
-  document.getElementById('new-pass-btn').addEventListener('click', handleNewPass);
   document.getElementById('save-pass-btn').addEventListener('click', handleSavePass);
   document.getElementById('new-pass-btn').addEventListener('click', handleCreateNewPass);
   ui.logoutBtn.addEventListener('click', handleLogout);
@@ -377,8 +521,13 @@ function wireEvents() {
     formElements.bannerText,
     formElements.bannerColor,
     formElements.bannerBg,
-    formElements.bannerFg,
-    formElements.coffeeTarget,
+  formElements.bannerFg,
+  formElements.bannerShape,
+  formElements.bannerWidth,
+  formElements.bannerHeight,
+  formElements.bannerX,
+  formElements.bannerY,
+  formElements.coffeeTarget,
     formElements.coffeeCurrent,
     formElements.coffeeReward,
     formElements.coffeeShape,
@@ -389,7 +538,12 @@ function wireEvents() {
     formElements.streakShape,
     formElements.creditBalance,
     formElements.creditCurrency,
-    formElements.creditThreshold
+    formElements.creditThreshold,
+    formElements.stampBorderColor,
+    formElements.stampSize,
+    formElements.stampBorderWidth,
+    formElements.stampOffsetX,
+    formElements.stampOffsetY
   ];
 
   previewFields.forEach((field) => field.addEventListener('input', refreshPreview));
@@ -400,9 +554,15 @@ function wireEvents() {
   formElements.bannerColor.addEventListener('change', applyBannerColorPreset);
 
   formElements.upload.addEventListener('change', handleImageUpload);
+  formElements.iconUpload.addEventListener('change', handleIconUpload);
+  formElements.bannerUpload.addEventListener('change', handleBannerUpload);
   formElements.addRuleBtn.addEventListener('click', handleAddNotificationRule);
   ui.notificationRules.addEventListener('click', handleRuleLocationClick);
   onSavedPassOpen(handleOpenSavedPass);
+  onSavedPassScan(handleScanPass);
+  document.querySelectorAll('.tab-btn').forEach((button) =>
+    button.addEventListener('click', () => setActiveTab(button.dataset.tab))
+  );
 }
 
 function init() {
@@ -418,6 +578,7 @@ function init() {
   lastTemplateId = formElements.template.value;
   syncBannerFields();
   applyBannerColorPreset();
+  setActiveTab('editor');
   handleTemplateChange();
   refreshPreview();
   wireEvents();
