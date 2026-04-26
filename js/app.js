@@ -241,6 +241,39 @@ async function handleSavePass() {
   await refreshPasses();
 }
 
+async function handleCreateNewPass() {
+  if (currentEditingPassId) {
+    const confirmed = await askForConfirmation({
+      title: 'Bearbeitung verlassen?',
+      message: 'Du verlässt die aktuell geöffnete Karte und erstellst eine neue. Nicht gespeicherte Änderungen gehen verloren.',
+      confirmLabel: 'Neue Karte'
+    });
+
+    if (!confirmed) {
+      return;
+    }
+  }
+
+  currentEditingPassId = null;
+  currentUploadedImageUrl = '';
+  formElements.upload.value = '';
+  initTemplateSelect();
+  resetNotificationRules();
+  addNotificationRule({
+    name: 'Beispiel Reminder',
+    triggerType: 'time',
+    message: 'Denk an deine Karte!',
+    sendAt: ''
+  });
+  lastTemplateId = formElements.template.value;
+  applyTemplateDefaults(getTemplateById(formElements.template.value));
+  renderProgramFields(getTemplateById(formElements.template.value).programType || 'generic');
+  syncBannerFields();
+  applyBannerColorPreset();
+  refreshPreview();
+  showToast('Editor ist jetzt bereit für eine neue Karte.');
+}
+
 function handleAddNotificationRule() {
   addNotificationRule({ triggerType: 'time' });
 }
@@ -327,6 +360,7 @@ function wireEvents() {
   document.getElementById('reset-btn').addEventListener('click', handleResetOtp);
   document.getElementById('new-pass-btn').addEventListener('click', handleNewPass);
   document.getElementById('save-pass-btn').addEventListener('click', handleSavePass);
+  document.getElementById('new-pass-btn').addEventListener('click', handleCreateNewPass);
   ui.logoutBtn.addEventListener('click', handleLogout);
 
   const previewFields = [
@@ -347,9 +381,12 @@ function wireEvents() {
     formElements.coffeeTarget,
     formElements.coffeeCurrent,
     formElements.coffeeReward,
+    formElements.coffeeShape,
     formElements.streakAction,
     formElements.streakTarget,
+    formElements.streakCurrent,
     formElements.streakGrace,
+    formElements.streakShape,
     formElements.creditBalance,
     formElements.creditCurrency,
     formElements.creditThreshold

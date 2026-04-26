@@ -57,6 +57,8 @@
             <div class="row-buttons">
               <button id="new-pass-btn" type="button" class="btn btn-secondary">Neue Karte</button>
               <button id="save-pass-btn" class="btn btn-primary">Pass speichern</button>
+              <button id="new-pass-btn" class="btn btn-secondary" type="button">Neue Karte erstellen</button>
+              <button id="save-pass-btn" class="btn btn-primary" type="button">Pass speichern</button>
             </div>
           </div>
 
@@ -134,6 +136,15 @@
                     Belohnungstext
                     <input id="coffee-reward" type="text" value="Jeder 10. Kaffee ist gratis." />
                   </label>
+                  <label>
+                    Feldform
+                    <select id="coffee-shape">
+                      <option value="circle">Kreis</option>
+                      <option value="octagon">Octagon</option>
+                      <option value="hexagon">Hexagon</option>
+                      <option value="star">Stern</option>
+                    </select>
+                  </label>
                 </div>
 
                 <div id="program-streak" class="program-panel hidden">
@@ -146,8 +157,21 @@
                     <input id="streak-target" type="number" min="1" value="30" />
                   </label>
                   <label>
+                    Aktuelle Stempel
+                    <input id="streak-current" type="number" min="0" value="0" />
+                  </label>
+                  <label>
                     Kulanzzeit in Stunden
                     <input id="streak-grace" type="number" min="1" value="24" />
+                  </label>
+                  <label>
+                    Feldform
+                    <select id="streak-shape">
+                      <option value="circle">Kreis</option>
+                      <option value="octagon">Octagon</option>
+                      <option value="hexagon">Hexagon</option>
+                      <option value="star">Stern</option>
+                    </select>
                   </label>
                 </div>
 
@@ -249,6 +273,7 @@
                   <p id="preview-subtitle" class="preview-subtitle"></p>
                   <h4 id="preview-title"></h4>
                   <p id="preview-description"></p>
+                  <div id="preview-stamp-grid" class="preview-stamp-grid hidden"></div>
                   <img id="preview-qr" alt="QR Code Vorschau" />
                 </div>
               </div>

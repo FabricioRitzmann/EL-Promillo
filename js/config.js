@@ -51,6 +51,7 @@ export const passTemplates = [
       stampTarget: 10,
       currentStamps: 0,
       rewardText: 'Jeder 10. Kaffee ist gratis.',
+      stampShape: 'circle',
       iconId: 'coffee-cup'
     }
   },
@@ -64,9 +65,11 @@ export const passTemplates = [
       description: 'Jeden Tag sammeln und Vorteile freischalten.',
       actionDefinition: 'Täglich 1x einchecken',
       targetDays: 30,
+      currentStamps: 0,
       graceHours: 24,
       iconId: 'soccer-ball',
-      streakIconId: 'soccer-ball'
+      streakIconId: 'soccer-ball',
+      streakShape: 'circle'
     }
   },
   {
