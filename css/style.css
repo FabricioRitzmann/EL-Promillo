@@ -243,6 +243,17 @@ select:focus {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  background: #fcfcfd;
+}
+
+.config-section h3 {
+  font-size: 1rem;
+}
+
+.design-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
 }
 
 .program-panel {
@@ -282,4 +293,10 @@ select:focus {
 .btn-danger {
   background: #ffefef;
   color: #a51212;
+}
+
+@media (max-width: 640px) {
+  .design-grid {
+    grid-template-columns: 1fr;
+  }
 }
