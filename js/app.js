@@ -65,7 +65,7 @@ async function handleRegister() {
     return;
   }
 
-  showToast('Registrierung gestartet. Prüfe deine E-Mails zur Bestätigung.');
+  showToast('Registrierung erfolgreich gestartet.');
 }
 
 async function handleLogin() {

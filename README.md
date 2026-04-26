@@ -34,11 +34,13 @@ projekt/
 
 1. `config/supabase.json` und `js/config.js` mit deinen Supabase Werten füllen.
 2. SQL aus `supabase/schema.sql` im Supabase SQL Editor ausführen.
-3. Projekt mit einem lokalen Static Server starten, z. B.:
+3. Für Test-Registrierungen mit beliebigen E-Mails in Supabase unter **Authentication → Providers → Email** die Option
+   **Confirm email** deaktivieren.
+4. Projekt mit einem lokalen Static Server starten, z. B.:
    ```bash
    python -m http.server 8080
    ```
-4. Browser öffnen: `http://localhost:8080`
+5. Browser öffnen: `http://localhost:8080`
 
 ## Hinweis zu echten Wallet-Dateien
 
