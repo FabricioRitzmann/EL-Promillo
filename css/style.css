@@ -216,12 +216,7 @@ select:focus {
 }
 
 .preview-pane.is-expanded {
-  position: static;
-  grid-column: 1 / -1;
-  align-self: stretch;
-  justify-self: stretch;
   width: 100%;
-  max-height: none;
   transform: translateY(0);
   box-shadow: none;
 }
