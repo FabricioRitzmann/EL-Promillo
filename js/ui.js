@@ -679,8 +679,13 @@ function renderWalletSimulationDetail(entry) {
   }
 
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=${encodeURIComponent(entry.qrContent)}`;
+  const issuer = entry.subtitle || 'Wallet Pass';
   ui.walletSimDetail.innerHTML = `
     <div class="wallet-sim-detail-pass" style="background:${getSimulationBackground(entry)}; color:${entry.foregroundColor};">
+      <div class="wallet-sim-detail-header">
+        <p class="wallet-sim-detail-issuer">${issuer}</p>
+        <span class="wallet-sim-detail-chip">Pass</span>
+      </div>
       <p class="wallet-sim-detail-subtitle">${entry.subtitle}</p>
       <h4 class="wallet-sim-detail-title">${getIconSymbol(entry.iconId)} ${entry.title}</h4>
       <img class="wallet-sim-detail-qr" src="${qrUrl}" alt="QR Code von ${entry.title}" />
@@ -695,7 +700,7 @@ function renderWalletSimulationStack() {
 
   ui.walletSimStack.innerHTML = '';
 
-  simulationPasses.forEach((entry) => {
+  simulationPasses.forEach((entry, index) => {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'wallet-sim-mini-pass';
@@ -703,6 +708,7 @@ function renderWalletSimulationStack() {
     button.setAttribute('aria-label', `Karte ${entry.title} öffnen`);
     button.style.background = getSimulationBackground(entry);
     button.style.color = entry.foregroundColor;
+    button.style.zIndex = String(simulationPasses.length - index);
     button.classList.toggle('is-active', entry.id === selectedSimulationPassId);
     button.innerHTML = `
       <p class="wallet-sim-mini-subtitle">${entry.subtitle}</p>
