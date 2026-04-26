@@ -448,6 +448,41 @@ select:focus {
   gap: 10px;
 }
 
+.saved-toolbar-dropdown {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.62);
+  padding: 10px 12px;
+}
+
+.saved-toolbar-dropdown summary {
+  cursor: pointer;
+  font-weight: 700;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.saved-toolbar-dropdown summary::-webkit-details-marker {
+  display: none;
+}
+
+.saved-toolbar-dropdown summary::before {
+  content: '▸';
+  transition: transform 0.2s ease;
+}
+
+.saved-toolbar-dropdown[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.saved-toolbar-dropdown-content {
+  margin-top: 10px;
+  display: grid;
+  gap: 10px;
+}
+
 .saved-toolbar-row {
   display: flex;
   flex-wrap: wrap;
