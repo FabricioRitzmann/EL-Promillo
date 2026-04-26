@@ -416,6 +416,7 @@ async function handleOpenSavedPass(passId) {
   currentUploadedIconUrl = selectedPass.custom_icon_url || '';
   currentUploadedBannerUrl = selectedPass.custom_banner_url || '';
   lastTemplateId = selectedPass.template_id || formElements.template.value;
+  setActiveTab('editor');
   refreshPreview();
   showToast('Karte im Editor geöffnet.');
 }
