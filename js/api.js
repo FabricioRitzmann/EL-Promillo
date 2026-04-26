@@ -174,7 +174,9 @@ export async function savePass(passPayload, userId) {
       card_program_type: passPayload.cardProgramType,
       program_config: passPayload.programConfig,
       push_enabled: passPayload.pushEnabled,
-      notification_rules: passPayload.notificationRules
+      notification_rules: passPayload.notificationRules,
+      passkit_enabled: passPayload.passkitConfig?.enabled ?? false,
+      passkit_config: passPayload.passkitConfig || {}
     };
 
     return await savePassWithSchemaFallback({

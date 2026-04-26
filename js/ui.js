@@ -1,4 +1,10 @@
 import { backgroundTemplates, bannerColorOptions, passTemplates, streakIcons, templateIcons } from './config.js';
+import {
+  getDefaultPasskitConfig,
+  normalizePasskitConfig,
+  passkitBarcodeFormats,
+  passkitPassTypes
+} from './passkit.js';
 
 export const ui = {
   authState: document.getElementById('auth-state'),
@@ -77,7 +83,22 @@ export const formElements = {
   creditBalance: document.getElementById('credit-balance'),
   creditCurrency: document.getElementById('credit-currency'),
   creditThreshold: document.getElementById('credit-threshold'),
-  stampFrameSection: document.getElementById('stamp-frame-section')
+  stampFrameSection: document.getElementById('stamp-frame-section'),
+  passkitEnabled: document.getElementById('passkit-enabled'),
+  passkitPassType: document.getElementById('passkit-pass-type'),
+  passkitPassTypeIdentifier: document.getElementById('passkit-pass-type-identifier'),
+  passkitTeamIdentifier: document.getElementById('passkit-team-identifier'),
+  passkitOrganizationName: document.getElementById('passkit-organization-name'),
+  passkitSerialNumber: document.getElementById('passkit-serial-number'),
+  passkitDescription: document.getElementById('passkit-description'),
+  passkitForegroundColor: document.getElementById('passkit-foreground-color'),
+  passkitBackgroundColor: document.getElementById('passkit-background-color'),
+  passkitLabelColor: document.getElementById('passkit-label-color'),
+  passkitRelevantDate: document.getElementById('passkit-relevant-date'),
+  passkitLatitude: document.getElementById('passkit-latitude'),
+  passkitLongitude: document.getElementById('passkit-longitude'),
+  passkitBarcodeFormat: document.getElementById('passkit-barcode-format'),
+  passkitMessageEncoding: document.getElementById('passkit-message-encoding')
 };
 
 let pendingConfirmResolver = null;
@@ -230,6 +251,22 @@ export function initTemplateSelect() {
     option.value = template.id;
     option.textContent = `🖼️ ${template.name}`;
     formElements.backgroundTemplate.appendChild(option);
+  }
+
+  formElements.passkitPassType.innerHTML = '';
+  for (const type of passkitPassTypes) {
+    const option = document.createElement('option');
+    option.value = type.id;
+    option.textContent = type.name;
+    formElements.passkitPassType.appendChild(option);
+  }
+
+  formElements.passkitBarcodeFormat.innerHTML = '';
+  for (const format of passkitBarcodeFormats) {
+    const option = document.createElement('option');
+    option.value = format.id;
+    option.textContent = format.name;
+    formElements.passkitBarcodeFormat.appendChild(option);
   }
 }
 
@@ -789,6 +826,28 @@ export function closeWalletSimulation() {
 
 export function getPassFormData() {
   const template = getTemplateById(formElements.template.value);
+  const passkitConfig = normalizePasskitConfig({
+    enabled: formElements.passkitEnabled.checked,
+    passType: formElements.passkitPassType.value,
+    passTypeIdentifier: formElements.passkitPassTypeIdentifier.value,
+    teamIdentifier: formElements.passkitTeamIdentifier.value,
+    organizationName: formElements.passkitOrganizationName.value,
+    serialNumber: formElements.passkitSerialNumber.value,
+    description: formElements.passkitDescription.value,
+    foregroundColor: formElements.passkitForegroundColor.value,
+    backgroundColor: formElements.passkitBackgroundColor.value,
+    labelColor: formElements.passkitLabelColor.value,
+    relevantDate: formElements.passkitRelevantDate.value,
+    location: {
+      latitude: formElements.passkitLatitude.value,
+      longitude: formElements.passkitLongitude.value
+    },
+    barcode: {
+      format: formElements.passkitBarcodeFormat.value,
+      messageEncoding: formElements.passkitMessageEncoding.value
+    }
+  });
+
   return {
     title: formElements.title.value.trim(),
     subtitle: formElements.subtitle.value.trim(),
@@ -817,7 +876,8 @@ export function getPassFormData() {
     cardProgramType: template.programType || 'generic',
     programConfig: getProgramConfig(template.programType || 'generic'),
     pushEnabled: formElements.pushEnabled.checked,
-    notificationRules: getNotificationRules()
+    notificationRules: getNotificationRules(),
+    passkitConfig
   };
 }
 
@@ -842,6 +902,7 @@ export function setLoggedOutView() {
 }
 
 export function fillEditorFromSavedPass(entry) {
+  const passkitConfig = normalizePasskitConfig(entry.passkit_config || getDefaultPasskitConfig());
   formElements.title.value = entry.title || '';
   formElements.subtitle.value = entry.subtitle || '';
   formElements.description.value = entry.description || '';
@@ -886,6 +947,22 @@ export function fillEditorFromSavedPass(entry) {
   formElements.creditBalance.value = programConfig.balance ?? 0;
   formElements.creditCurrency.value = programConfig.currency ?? 'EUR';
   formElements.creditThreshold.value = programConfig.lowBalanceThreshold ?? 5;
+
+  formElements.passkitEnabled.checked = Boolean(passkitConfig.enabled);
+  formElements.passkitPassType.value = passkitConfig.passType;
+  formElements.passkitPassTypeIdentifier.value = passkitConfig.passTypeIdentifier;
+  formElements.passkitTeamIdentifier.value = passkitConfig.teamIdentifier;
+  formElements.passkitOrganizationName.value = passkitConfig.organizationName;
+  formElements.passkitSerialNumber.value = passkitConfig.serialNumber;
+  formElements.passkitDescription.value = passkitConfig.description;
+  formElements.passkitForegroundColor.value = passkitConfig.foregroundColor;
+  formElements.passkitBackgroundColor.value = passkitConfig.backgroundColor;
+  formElements.passkitLabelColor.value = passkitConfig.labelColor;
+  formElements.passkitRelevantDate.value = passkitConfig.relevantDate;
+  formElements.passkitLatitude.value = passkitConfig.location.latitude ?? '';
+  formElements.passkitLongitude.value = passkitConfig.location.longitude ?? '';
+  formElements.passkitBarcodeFormat.value = passkitConfig.barcode.format;
+  formElements.passkitMessageEncoding.value = passkitConfig.barcode.messageEncoding;
 
   renderProgramFields(entry.card_program_type || 'generic');
   setNotificationRules(entry.notification_rules || []);

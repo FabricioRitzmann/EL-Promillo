@@ -38,6 +38,8 @@ create table if not exists public.wallet_passes (
   program_config jsonb not null default '{}'::jsonb,
   push_enabled boolean not null default false,
   notification_rules jsonb not null default '[]'::jsonb,
+  passkit_enabled boolean not null default false,
+  passkit_config jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -53,6 +55,8 @@ alter table public.wallet_passes
   add column if not exists program_config jsonb not null default '{}'::jsonb,
   add column if not exists push_enabled boolean not null default false,
   add column if not exists notification_rules jsonb not null default '[]'::jsonb,
+  add column if not exists passkit_enabled boolean not null default false,
+  add column if not exists passkit_config jsonb not null default '{}'::jsonb,
   add column if not exists banner_enabled boolean not null default false,
   add column if not exists banner_text text,
   add column if not exists banner_preset text,

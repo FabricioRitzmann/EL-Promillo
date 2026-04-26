@@ -115,6 +115,12 @@ p {
   gap: 12px;
 }
 
+.inline-checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
 label {
   display: flex;
   flex-direction: column;
