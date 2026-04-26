@@ -71,6 +71,16 @@ function buildPreviewPayload() {
 
 function refreshPreview() {
   updatePreview(buildPreviewPayload());
+  syncPreviewWalletTabs();
+}
+
+function syncPreviewWalletTabs() {
+  const selectedSkin = formElements.walletSkin?.value || 'apple';
+  document.querySelectorAll('[data-wallet-skin-tab]').forEach((button) => {
+    const isActive = button.dataset.walletSkinTab === selectedSkin;
+    button.classList.toggle('is-active', isActive);
+    button.setAttribute('aria-selected', String(isActive));
+  });
 }
 
 function focusEditorTab() {
@@ -605,6 +615,17 @@ function wireEvents() {
   );
   window.addEventListener('scroll', updatePreviewPaneSizeOnScroll, { passive: true });
   window.addEventListener('resize', updatePreviewPaneSizeOnScroll);
+  document.querySelectorAll('[data-wallet-skin-tab]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const selectedSkin = button.dataset.walletSkinTab;
+      if (!selectedSkin || formElements.walletSkin.value === selectedSkin) {
+        return;
+      }
+
+      formElements.walletSkin.value = selectedSkin;
+      formElements.walletSkin.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+  });
 }
 
 function init() {
