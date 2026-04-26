@@ -21,6 +21,10 @@ import {
   getTemplateById,
   initTemplateSelect,
   initSectionDropdowns,
+  clearFolderInput,
+  onCreateFolder,
+  onSavedCardFiltersChange,
+  onSavedPassFolderChange,
   onSavedPassOpen,
   onSavedPassScan,
   renderStats,
@@ -46,6 +50,13 @@ let currentEditingPassId = null;
 let latestPassEntries = [];
 let latestPassStats = [];
 let lastTemplateId = '';
+let passFoldersById = {};
+let savedFolderNames = [];
+let savedCardsFilters = {
+  folder: 'all',
+  cardType: 'all',
+  sort: 'newest'
+};
 
 function updatePreviewPaneSizeOnScroll() {
   const previewPane = document.querySelector('.preview-pane');
@@ -130,10 +141,62 @@ async function handleNewPass() {
   showToast('Neue Karte gestartet.');
 }
 
+function storageKeyForSavedCards(userId) {
+  return `passStudio.savedCards.${userId}`;
+}
+
+function loadSavedCardsOrganization(userId) {
+  if (!userId) return;
+  try {
+    const rawValue = localStorage.getItem(storageKeyForSavedCards(userId));
+    if (!rawValue) {
+      passFoldersById = {};
+      savedFolderNames = [];
+      return;
+    }
+    const parsed = JSON.parse(rawValue);
+    passFoldersById = parsed.passFoldersById || {};
+    savedFolderNames = Array.isArray(parsed.savedFolderNames) ? parsed.savedFolderNames : [];
+  } catch (_error) {
+    passFoldersById = {};
+    savedFolderNames = [];
+  }
+}
+
+function persistSavedCardsOrganization() {
+  if (!currentUser) return;
+  localStorage.setItem(
+    storageKeyForSavedCards(currentUser.id),
+    JSON.stringify({
+      passFoldersById,
+      savedFolderNames
+    })
+  );
+}
+
+function pruneFolderAssignments() {
+  const validPassIds = new Set(latestPassEntries.map((entry) => entry.id));
+  passFoldersById = Object.fromEntries(
+    Object.entries(passFoldersById).filter(([passId, folderName]) => {
+      return validPassIds.has(passId) && (folderName === 'none' || savedFolderNames.includes(folderName));
+    })
+  );
+}
+
+function renderSavedCardsView() {
+  renderSavedPasses(latestPassEntries, {
+    folderAssignments: passFoldersById,
+    folderNames: savedFolderNames,
+    filters: savedCardsFilters
+  });
+}
+
 async function refreshPasses() {
   if (!currentUser) {
     latestPassEntries = [];
-    renderSavedPasses([]);
+    passFoldersById = {};
+    savedFolderNames = [];
+    renderSavedCardsView();
     return;
   }
 
@@ -144,7 +207,9 @@ async function refreshPasses() {
   }
 
   latestPassEntries = data || [];
-  renderSavedPasses(latestPassEntries);
+  pruneFolderAssignments();
+  persistSavedCardsOrganization();
+  renderSavedCardsView();
 }
 
 function handleOpenWalletSimulation() {
@@ -164,6 +229,43 @@ async function refreshStats() {
   }
   latestPassStats = data || [];
   renderStats(latestPassStats);
+}
+
+function handleSavedPassFolderChange(passId, folderName) {
+  passFoldersById[passId] = folderName;
+  pruneFolderAssignments();
+  persistSavedCardsOrganization();
+  renderSavedCardsView();
+}
+
+function handleSavedCardsFilterChange(nextFilters) {
+  savedCardsFilters = { ...savedCardsFilters, ...nextFilters };
+  renderSavedCardsView();
+}
+
+function handleCreateFolder(folderNameInput) {
+  const folderName = folderNameInput.trim();
+  if (!folderName) {
+    showToast('Bitte einen Ordnernamen eingeben.', true);
+    return;
+  }
+
+  if (folderName.toLowerCase() === 'none' || folderName.toLowerCase() === 'all') {
+    showToast('Dieser Ordnername ist reserviert.', true);
+    return;
+  }
+
+  const alreadyExists = savedFolderNames.some((entry) => entry.toLowerCase() === folderName.toLowerCase());
+  if (alreadyExists) {
+    showToast('Ordner existiert bereits.', true);
+    return;
+  }
+
+  savedFolderNames = [...savedFolderNames, folderName].sort((a, b) => a.localeCompare(b, 'de-DE', { sensitivity: 'base' }));
+  persistSavedCardsOrganization();
+  clearFolderInput();
+  showToast(`Ordner „${folderName}“ erstellt.`);
+  renderSavedCardsView();
 }
 
 async function handleRegister() {
@@ -190,6 +292,7 @@ async function handleLogin() {
   }
 
   currentUser = data.user;
+  loadSavedCardsOrganization(currentUser.id);
   setAuthenticatedView(currentUser.email);
   showToast('Login erfolgreich.');
   await refreshPasses();
@@ -228,6 +331,10 @@ async function handleLogout() {
   currentUploadedIconUrl = '';
   currentUploadedBannerUrl = '';
   currentEditingPassId = null;
+  passFoldersById = {};
+  savedFolderNames = [];
+  savedCardsFilters = { folder: 'all', cardType: 'all', sort: 'newest' };
+  renderSavedCardsView();
   setLoggedOutView();
   showToast('Du wurdest abgemeldet.');
 }
@@ -524,24 +631,30 @@ async function bootstrapAuth() {
 
   currentUser = session?.user ?? null;
   if (currentUser) {
+    loadSavedCardsOrganization(currentUser.id);
     setAuthenticatedView(currentUser.email);
     setActiveTab('editor');
     await refreshPasses();
     await refreshStats();
   } else {
     setLoggedOutView();
+    renderSavedCardsView();
   }
 
   supabaseClient.auth.onAuthStateChange((_event, sessionData) => {
     currentUser = sessionData?.user ?? null;
     if (currentUser) {
+      loadSavedCardsOrganization(currentUser.id);
       setAuthenticatedView(currentUser.email);
       setActiveTab('editor');
       refreshPasses();
       refreshStats();
     } else {
+      passFoldersById = {};
+      savedFolderNames = [];
+      savedCardsFilters = { folder: 'all', cardType: 'all', sort: 'newest' };
       setLoggedOutView();
-      renderSavedPasses([]);
+      renderSavedCardsView();
     }
   });
 }
@@ -609,6 +722,9 @@ function wireEvents() {
   ui.notificationRules.addEventListener('click', handleRuleLocationClick);
   onSavedPassOpen(handleOpenSavedPass);
   onSavedPassScan(handleScanPass);
+  onSavedPassFolderChange(handleSavedPassFolderChange);
+  onSavedCardFiltersChange(handleSavedCardsFilterChange);
+  onCreateFolder(handleCreateFolder);
   ui.openWalletSimBtn?.addEventListener('click', handleOpenWalletSimulation);
   document.querySelectorAll('.tab-btn').forEach((button) =>
     button.addEventListener('click', () => setActiveTab(button.dataset.tab))

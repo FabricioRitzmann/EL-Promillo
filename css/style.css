@@ -441,6 +441,44 @@ select:focus {
   align-self: flex-end;
 }
 
+
+.saved-toolbar {
+  margin-top: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.saved-toolbar-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.saved-toolbar-row label {
+  min-width: 220px;
+  flex: 1;
+}
+
+.saved-toolbar-filters {
+  align-items: flex-end;
+}
+
+.saved-folder-create {
+  display: flex;
+  gap: 8px;
+}
+
+.saved-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 210px;
+}
+
+.saved-actions .row-buttons {
+  justify-content: flex-end;
+}
+
 .saved-list {
   margin: 14px 0 0;
   padding: 0;
@@ -496,6 +534,24 @@ select:focus {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
+  }
+
+  .saved-list li {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .saved-actions,
+  .saved-toolbar-row label {
+    width: 100%;
+  }
+
+  .saved-actions .row-buttons {
+    justify-content: flex-start;
+  }
+
+  .saved-folder-create {
+    flex-direction: column;
   }
 
   .preview-pane,

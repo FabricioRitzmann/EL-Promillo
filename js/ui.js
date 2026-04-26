@@ -21,7 +21,12 @@ export const ui = {
   walletSimModal: document.getElementById('wallet-sim-modal'),
   walletSimCloseBtn: document.getElementById('wallet-sim-close-btn'),
   walletSimStack: document.getElementById('wallet-sim-stack'),
-  walletSimDetail: document.getElementById('wallet-sim-detail')
+  walletSimDetail: document.getElementById('wallet-sim-detail'),
+  savedFolderNameInput: document.getElementById('saved-folder-name'),
+  createFolderBtn: document.getElementById('create-folder-btn'),
+  savedFolderFilter: document.getElementById('saved-folder-filter'),
+  savedTypeFilter: document.getElementById('saved-type-filter'),
+  savedSort: document.getElementById('saved-sort')
 };
 
 export const formElements = {
@@ -850,7 +855,95 @@ export function fillEditorFromSavedPass(entry) {
   setNotificationRules(entry.notification_rules || []);
 }
 
-export function renderSavedPasses(entries) {
+function normalizeForSearch(value) {
+  return String(value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '');
+}
+
+function getCardKind(entry) {
+  const searchText = normalizeForSearch(`${entry.template_id || ''} ${entry.title || ''} ${entry.subtitle || ''}`);
+  const programType = normalizeForSearch(entry.card_program_type || '');
+
+  if (searchText.includes('vip')) return 'vip';
+  if (searchText.includes('mitglied') || searchText.includes('member') || searchText.includes('membership')) return 'member';
+  if (programType === 'coffee' || programType === 'streak' || searchText.includes('stempel') || searchText.includes('stamp')) {
+    return 'stamp';
+  }
+  return 'other';
+}
+
+function getCardKindLabel(kind) {
+  const labels = {
+    stamp: 'Stempelkarte',
+    member: 'Memberkarte',
+    vip: 'VIP-Karte',
+    other: 'Sonstige'
+  };
+  return labels[kind] || labels.other;
+}
+
+function sortSavedEntries(entries, sortMode) {
+  const sorted = [...entries];
+  sorted.sort((a, b) => {
+    if (sortMode === 'oldest') {
+      return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+    }
+    if (sortMode === 'title-asc') {
+      return (a.title || '').localeCompare(b.title || '', 'de-DE', { sensitivity: 'base' });
+    }
+    if (sortMode === 'title-desc') {
+      return (b.title || '').localeCompare(a.title || '', 'de-DE', { sensitivity: 'base' });
+    }
+    if (sortMode === 'type') {
+      const kindOrder = ['stamp', 'member', 'vip', 'other'];
+      const left = kindOrder.indexOf(getCardKind(a));
+      const right = kindOrder.indexOf(getCardKind(b));
+      if (left !== right) return left - right;
+      return (a.title || '').localeCompare(b.title || '', 'de-DE', { sensitivity: 'base' });
+    }
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
+  return sorted;
+}
+
+function renderFolderFilterOptions(folderNames, selectedFolder) {
+  if (!ui.savedFolderFilter) return;
+  const options = ['all', 'none', ...folderNames];
+  const labels = {
+    all: 'Alle Ordner',
+    none: 'Ohne Ordner'
+  };
+
+  ui.savedFolderFilter.innerHTML = '';
+  for (const folderId of options) {
+    const option = document.createElement('option');
+    option.value = folderId;
+    option.textContent = labels[folderId] || folderId;
+    ui.savedFolderFilter.appendChild(option);
+  }
+  ui.savedFolderFilter.value = options.includes(selectedFolder) ? selectedFolder : 'all';
+}
+
+export function renderSavedPasses(entries, options = {}) {
+  const folderAssignments = options.folderAssignments || {};
+  const folderNames = options.folderNames || [];
+  const filters = {
+    folder: options.filters?.folder || 'all',
+    cardType: options.filters?.cardType || 'all',
+    sort: options.filters?.sort || 'newest'
+  };
+
+  renderFolderFilterOptions(folderNames, filters.folder);
+
+  if (ui.savedTypeFilter) {
+    ui.savedTypeFilter.value = filters.cardType;
+  }
+  if (ui.savedSort) {
+    ui.savedSort.value = filters.sort;
+  }
+
   ui.passList.innerHTML = '';
   if (!entries.length) {
     const empty = document.createElement('li');
@@ -859,24 +952,60 @@ export function renderSavedPasses(entries) {
     return;
   }
 
-  for (const entry of entries) {
+  const filteredEntries = entries.filter((entry) => {
+    const assignedFolder = folderAssignments[entry.id] || 'none';
+    const folderMatches = filters.folder === 'all' || assignedFolder === filters.folder;
+    const cardKind = getCardKind(entry);
+    const typeMatches = filters.cardType === 'all' || cardKind === filters.cardType;
+    return folderMatches && typeMatches;
+  });
+
+  const sortedEntries = sortSavedEntries(filteredEntries, filters.sort);
+
+  if (!sortedEntries.length) {
+    const empty = document.createElement('li');
+    empty.textContent = 'Keine Karten entsprechen dem gewählten Filter.';
+    ui.passList.appendChild(empty);
+    return;
+  }
+
+  for (const entry of sortedEntries) {
     const li = document.createElement('li');
     li.dataset.passId = entry.id;
     const ruleCount = Array.isArray(entry.notification_rules) ? entry.notification_rules.length : 0;
+    const currentFolder = folderAssignments[entry.id] || 'none';
+    const folderOptionItems = ['none', ...folderNames]
+      .map((folderName) => {
+        const label = folderName === 'none' ? 'Kein Ordner' : folderName;
+        const selected = folderName === currentFolder ? 'selected' : '';
+        return `<option value="${folderName}" ${selected}>${label}</option>`;
+      })
+      .join('');
+
+    const cardKind = getCardKind(entry);
+
     li.innerHTML = `
       <div>
         <strong>${entry.title}</strong>
         <p class="muted small">${entry.subtitle || 'Kein Untertitel'} · ${new Date(entry.created_at).toLocaleString('de-DE')}</p>
-        <p class="muted small">Typ: ${entry.card_program_type || 'generic'} · Push-Regeln: ${ruleCount}</p>
+        <p class="muted small">Art: ${getCardKindLabel(cardKind)} · Push-Regeln: ${ruleCount}</p>
         <p class="muted small">Betrieb: ${entry.business_name || 'Nicht angegeben'} · Kategorie: ${entry.business_category || 'n/a'}</p>
         <p class="muted small">Vorlagenpfad: ${entry.template_storage_path || 'wird beim Speichern erzeugt'}</p>
       </div>
-      <div class="row-buttons">
-        <button type="button" class="btn btn-secondary open-pass-btn">Öffnen</button>
-        <button type="button" class="btn btn-secondary scan-pass-btn">Karte scannen</button>
-        <a class="btn btn-secondary" href="https://api.qrserver.com/v1/create-qr-code/?size=420x420&data=${encodeURIComponent(
-          entry.qr_content
-        )}" target="_blank" rel="noreferrer">QR öffnen</a>
+      <div class="saved-actions">
+        <label class="small muted">
+          Ordner
+          <select class="saved-pass-folder-select" data-pass-id="${entry.id}">
+            ${folderOptionItems}
+          </select>
+        </label>
+        <div class="row-buttons">
+          <button type="button" class="btn btn-secondary open-pass-btn">Öffnen</button>
+          <button type="button" class="btn btn-secondary scan-pass-btn">Karte scannen</button>
+          <a class="btn btn-secondary" href="https://api.qrserver.com/v1/create-qr-code/?size=420x420&data=${encodeURIComponent(
+            entry.qr_content
+          )}" target="_blank" rel="noreferrer">QR öffnen</a>
+        </div>
       </div>
     `;
     ui.passList.appendChild(li);
@@ -935,6 +1064,48 @@ export function onSavedPassScan(handler) {
     if (!row) return;
     handler(row.dataset.passId);
   });
+}
+
+export function onSavedPassFolderChange(handler) {
+  ui.passList.addEventListener('change', (event) => {
+    const select = event.target.closest('.saved-pass-folder-select');
+    if (!select) return;
+    handler(select.dataset.passId, select.value);
+  });
+}
+
+export function onSavedCardFiltersChange(handler) {
+  const controls = [ui.savedFolderFilter, ui.savedTypeFilter, ui.savedSort].filter(Boolean);
+  controls.forEach((control) => {
+    control.addEventListener('change', () => {
+      handler({
+        folder: ui.savedFolderFilter?.value || 'all',
+        cardType: ui.savedTypeFilter?.value || 'all',
+        sort: ui.savedSort?.value || 'newest'
+      });
+    });
+  });
+}
+
+export function onCreateFolder(handler) {
+  if (!ui.createFolderBtn || !ui.savedFolderNameInput) return;
+
+  ui.createFolderBtn.addEventListener('click', () => {
+    handler(ui.savedFolderNameInput.value || '');
+  });
+
+  ui.savedFolderNameInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      handler(ui.savedFolderNameInput.value || '');
+    }
+  });
+}
+
+export function clearFolderInput() {
+  if (ui.savedFolderNameInput) {
+    ui.savedFolderNameInput.value = '';
+  }
 }
 
 export function setActiveTab(tabName) {

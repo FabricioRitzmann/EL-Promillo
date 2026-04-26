@@ -394,6 +394,43 @@
 
         <section id="saved-card" class="card saved-card hidden">
           <h2>Gespeicherte Karten</h2>
+          <div class="saved-toolbar">
+            <div class="saved-toolbar-row">
+              <label>
+                Neuer Ordner
+                <div class="saved-folder-create">
+                  <input id="saved-folder-name" type="text" placeholder="z. B. Stammkunden" />
+                  <button id="create-folder-btn" type="button" class="btn btn-secondary">Ordner erstellen</button>
+                </div>
+              </label>
+            </div>
+            <div class="saved-toolbar-row saved-toolbar-filters">
+              <label>
+                Ordner
+                <select id="saved-folder-filter"></select>
+              </label>
+              <label>
+                Kartenart
+                <select id="saved-type-filter">
+                  <option value="all">Alle Kartenarten</option>
+                  <option value="stamp">Stempelkarte</option>
+                  <option value="member">Memberkarte</option>
+                  <option value="vip">VIP-Karte</option>
+                  <option value="other">Sonstige</option>
+                </select>
+              </label>
+              <label>
+                Sortieren
+                <select id="saved-sort">
+                  <option value="newest">Neueste zuerst</option>
+                  <option value="oldest">Älteste zuerst</option>
+                  <option value="title-asc">Titel A–Z</option>
+                  <option value="title-desc">Titel Z–A</option>
+                  <option value="type">Nach Kartenart</option>
+                </select>
+              </label>
+            </div>
+          </div>
           <ul id="saved-pass-list" class="saved-list"></ul>
         </section>
 
