@@ -73,6 +73,12 @@ function refreshPreview() {
   updatePreview(buildPreviewPayload());
 }
 
+function focusEditorTab() {
+  setActiveTab('editor');
+  requestAnimationFrame(() => setActiveTab('editor'));
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 async function handleTemplateChange() {
   const template = getTemplateById(formElements.template.value);
   applyTemplateDefaults(template);
