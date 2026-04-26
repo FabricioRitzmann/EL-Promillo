@@ -203,6 +203,48 @@ select:focus {
   gap: 8px;
 }
 
+.preview-stamp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.stamp-slot {
+  width: 42px;
+  height: 42px;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.stamp-slot[data-shape='circle'] {
+  border-radius: 999px;
+}
+
+.stamp-slot[data-shape='octagon'] {
+  clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+}
+
+.stamp-slot[data-shape='hexagon'] {
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+}
+
+.stamp-slot[data-shape='star'] {
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+
+.stamp-slot-filled {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.2);
+}
+
 .preview-subtitle {
   text-transform: uppercase;
   letter-spacing: 0.08em;
