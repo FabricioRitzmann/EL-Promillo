@@ -216,6 +216,12 @@ select:focus {
   color: #e6edf7;
 }
 
+.preview-pane.is-windowed {
+  position: static;
+  bottom: auto;
+  max-height: none;
+}
+
 .preview-pane.is-expanded {
   width: 100%;
   transform: translateY(0);
