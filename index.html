@@ -462,40 +462,48 @@
         <section id="saved-card" class="card saved-card hidden">
           <h2>Gespeicherte Karten</h2>
           <div class="saved-toolbar">
-            <details class="saved-toolbar-dropdown">
-              <summary>Neuer Ordner</summary>
-              <div class="saved-toolbar-dropdown-content">
-                <div class="saved-toolbar-row">
-                  <label>
-                    Neuer Ordnername
-                    <div class="saved-folder-create">
-                      <input id="saved-folder-name" type="text" placeholder="z. B. Stammkunden" />
-                      <button id="create-folder-btn" type="button" class="btn btn-secondary">Ordner erstellen</button>
-                    </div>
-                  </label>
+            <div class="saved-toolbar-actions" aria-label="Ordner und Filter Aktionen">
+              <button id="saved-filter-toggle-btn" type="button" class="saved-icon-btn" aria-label="Filter anzeigen">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 6h16M7 12h10M10 18h4" />
+                </svg>
+              </button>
+              <button id="saved-folder-toggle-btn" type="button" class="saved-icon-btn" aria-label="Neuen Ordner erstellen">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 8.5A2.5 2.5 0 0 1 6.5 6H11l1.5 2h5A2.5 2.5 0 0 1 20 10.5v7A2.5 2.5 0 0 1 17.5 20h-11A2.5 2.5 0 0 1 4 17.5z" />
+                  <path d="M12 11v6M9 14h6" />
+                </svg>
+              </button>
+            </div>
+            <div id="saved-filters-panel" class="saved-toolbar-row saved-toolbar-filters hidden">
+              <label>
+                Ordner
+                <select id="saved-folder-filter"></select>
+              </label>
+              <label>
+                Kartenart
+                <select id="saved-type-filter"></select>
+              </label>
+              <label>
+                Sortieren
+                <select id="saved-sort">
+                  <option value="newest">Neueste zuerst</option>
+                  <option value="oldest">Älteste zuerst</option>
+                  <option value="title-asc">Titel A–Z</option>
+                  <option value="title-desc">Titel Z–A</option>
+                  <option value="type">Nach Kartenart</option>
+                </select>
+              </label>
+            </div>
+            <div id="saved-folder-panel" class="saved-toolbar-row hidden">
+              <label>
+                Neuer Ordnername
+                <div class="saved-folder-create">
+                  <input id="saved-folder-name" type="text" placeholder="z. B. Stammkunden" />
+                  <button id="create-folder-btn" type="button" class="btn btn-secondary">Ordner erstellen</button>
                 </div>
-                <div class="saved-toolbar-row saved-toolbar-filters">
-                  <label>
-                    Ordner
-                    <select id="saved-folder-filter"></select>
-                  </label>
-                  <label>
-                    Kartenart
-                    <select id="saved-type-filter"></select>
-                  </label>
-                  <label>
-                    Sortieren
-                    <select id="saved-sort">
-                      <option value="newest">Neueste zuerst</option>
-                      <option value="oldest">Älteste zuerst</option>
-                      <option value="title-asc">Titel A–Z</option>
-                      <option value="title-desc">Titel Z–A</option>
-                      <option value="type">Nach Kartenart</option>
-                    </select>
-                  </label>
-                </div>
-              </div>
-            </details>
+              </label>
+            </div>
           </div>
           <ul id="saved-pass-list" class="saved-list"></ul>
         </section>

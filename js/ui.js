@@ -30,6 +30,10 @@ export const ui = {
   walletSimDetail: document.getElementById('wallet-sim-detail'),
   savedFolderNameInput: document.getElementById('saved-folder-name'),
   createFolderBtn: document.getElementById('create-folder-btn'),
+  savedFilterToggleBtn: document.getElementById('saved-filter-toggle-btn'),
+  savedFolderToggleBtn: document.getElementById('saved-folder-toggle-btn'),
+  savedFiltersPanel: document.getElementById('saved-filters-panel'),
+  savedFolderPanel: document.getElementById('saved-folder-panel'),
   savedFolderFilter: document.getElementById('saved-folder-filter'),
   savedTypeFilter: document.getElementById('saved-type-filter'),
   savedSort: document.getElementById('saved-sort')
@@ -1217,6 +1221,22 @@ export function onCreateFolder(handler) {
       event.preventDefault();
       handler(ui.savedFolderNameInput.value || '');
     }
+  });
+}
+
+export function onSavedToolbarToggle() {
+  const mappings = [
+    { button: ui.savedFilterToggleBtn, panel: ui.savedFiltersPanel },
+    { button: ui.savedFolderToggleBtn, panel: ui.savedFolderPanel }
+  ];
+
+  mappings.forEach(({ button, panel }) => {
+    if (!button || !panel) return;
+    button.addEventListener('click', () => {
+      const isHidden = panel.classList.contains('hidden');
+      panel.classList.toggle('hidden', !isHidden);
+      button.classList.toggle('is-active', isHidden);
+    });
   });
 }
 
