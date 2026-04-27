@@ -79,10 +79,6 @@ const rememberSessionKey = 'passStudio.auth.rememberSession';
 const rememberedCredentialsKey = 'passStudio.auth.rememberedCredentials';
 const sessionMarkerKey = 'passStudio.auth.activeSessionMarker';
 let authBootstrapPromise = null;
-const emergencyAccessProfile = {
-  email: 'fabricio@ritzmann.ch',
-  password: '123456'
-};
 
 function codeRegistryStorageKey(userId) {
   return `passStudio.codeRegistry.${userId}`;
@@ -570,39 +566,10 @@ function getFriendlyAuthErrorMessage(errorMessage) {
   return errorMessage || 'Unbekannter Auth-Fehler';
 }
 
-function matchesEmergencyAccess(email, password) {
-  return (
-    String(email || '').trim().toLowerCase() === emergencyAccessProfile.email &&
-    String(password || '').trim() === emergencyAccessProfile.password
-  );
-}
-
-function activateEmergencyEditorAccess(email) {
-  currentUser = {
-    id: `local-${btoa(email).replace(/=/g, '').toLowerCase()}`,
-    email,
-    isEmergencyLocalUser: true
-  };
-  setAuthenticatedView(currentUser.email);
-  setActiveTab('editor');
-  showToast('Notfall-Login aktiv. Editor ist lokal verfügbar (ohne Supabase-Speicherung).');
-}
-
-async function awaitAuthBootstrap() {
-  if (!authBootstrapPromise) return;
-
-  const timeoutPromise = new Promise((resolve) => {
-    setTimeout(resolve, 1500);
-  });
-
-  await Promise.race([
-    authBootstrapPromise.catch(() => null),
-    timeoutPromise
-  ]);
-}
-
 async function handleRegister() {
-  await awaitAuthBootstrap();
+  if (authBootstrapPromise) {
+    await authBootstrapPromise;
+  }
 
   const email = formElements.email.value.trim();
   const password = formElements.password.value.trim();
@@ -617,7 +584,9 @@ async function handleRegister() {
 }
 
 async function handleLogin() {
-  await awaitAuthBootstrap();
+  if (authBootstrapPromise) {
+    await authBootstrapPromise;
+  }
 
   const authForm = document.getElementById('auth-form');
   if (authForm && !authForm.reportValidity()) {
@@ -630,10 +599,6 @@ async function handleLogin() {
 
   const { data, error } = await loginWithEmail(email, password);
   if (error) {
-    if (matchesEmergencyAccess(email, password)) {
-      activateEmergencyEditorAccess(email);
-      return;
-    }
     showToast(getFriendlyAuthErrorMessage(error.message), true);
     return;
   }
@@ -1086,7 +1051,7 @@ async function handleScanPass(passId) {
 
 async function bootstrapAuth() {
   if (!isRememberSessionEnabled() && !hasActiveSessionMarker()) {
-    supabaseClient.auth.signOut({ scope: 'local' }).catch(() => null);
+    await supabaseClient.auth.signOut({ scope: 'local' });
   }
 
   const {
