@@ -31,6 +31,7 @@ import {
   onSavedPassScan,
   renderStats,
   renderProgramFields,
+  renderEditorFolderOptions,
   renderSavedPasses,
   renderWalletSimulation,
   resetNotificationRules,
@@ -59,6 +60,26 @@ let savedCardsFilters = {
   cardType: 'all',
   sort: 'newest'
 };
+
+function normalizeFolderNames(folderNames = []) {
+  const uniqueNames = new Map();
+  folderNames.forEach((entry) => {
+    const normalized = String(entry || '').trim();
+    if (!normalized) return;
+    const reservedName = normalized.toLowerCase() === 'none' || normalized.toLowerCase() === 'all';
+    if (reservedName) return;
+    const key = normalized.toLocaleLowerCase('de-DE');
+    if (!uniqueNames.has(key)) {
+      uniqueNames.set(key, normalized);
+    }
+  });
+  return Array.from(uniqueNames.values()).sort((a, b) => a.localeCompare(b, 'de-DE', { sensitivity: 'base' }));
+}
+
+function syncFolderNamesFromAssignments() {
+  const folderNamesFromAssignments = Object.values(passFoldersById).filter((folderName) => folderName && folderName !== 'none');
+  savedFolderNames = normalizeFolderNames([...savedFolderNames, ...folderNamesFromAssignments]);
+}
 
 function updatePreviewPaneSizeOnScroll() {
   const previewPane = document.querySelector('.preview-pane');
@@ -175,6 +196,7 @@ function loadSavedCardsOrganization(userId) {
     const parsed = JSON.parse(rawValue);
     passFoldersById = parsed.passFoldersById || {};
     savedFolderNames = Array.isArray(parsed.savedFolderNames) ? parsed.savedFolderNames : [];
+    syncFolderNamesFromAssignments();
   } catch (_error) {
     passFoldersById = {};
     savedFolderNames = [];
@@ -199,9 +221,12 @@ function pruneFolderAssignments() {
       return validPassIds.has(passId) && (folderName === 'none' || savedFolderNames.includes(folderName));
     })
   );
+  syncFolderNamesFromAssignments();
 }
 
 function renderSavedCardsView() {
+  const selectedEditorFolder = formElements.folder?.value || 'none';
+  renderEditorFolderOptions(savedFolderNames, selectedEditorFolder);
   renderSavedPasses(latestPassEntries, {
     folderAssignments: passFoldersById,
     folderNames: savedFolderNames,
@@ -251,6 +276,7 @@ async function refreshStats() {
 
 function handleSavedPassFolderChange(passId, folderName) {
   passFoldersById[passId] = folderName;
+  syncFolderNamesFromAssignments();
   pruneFolderAssignments();
   persistSavedCardsOrganization();
   renderSavedCardsView();
@@ -280,6 +306,7 @@ function handleCreateFolder(folderNameInput) {
   }
 
   savedFolderNames = [...savedFolderNames, folderName].sort((a, b) => a.localeCompare(b, 'de-DE', { sensitivity: 'base' }));
+  savedFolderNames = normalizeFolderNames(savedFolderNames);
   persistSavedCardsOrganization();
   clearFolderInput();
   showToast(`Ordner „${folderName}“ erstellt.`);
@@ -475,7 +502,7 @@ async function handleSavePass() {
     ? latestPassEntries.find((entry) => entry.id === currentEditingPassId)
     : null;
 
-  const { error } = await savePass(
+  const { data, error } = await savePass(
     {
       ...passData,
       id: currentEditingPassId,
@@ -490,6 +517,13 @@ async function handleSavePass() {
   if (error) {
     showToast(`Speichern fehlgeschlagen: ${error.message}`, true);
     return;
+  }
+
+  const savedPassId = currentEditingPassId || data?.id || null;
+  const selectedFolder = passData.folderName || 'none';
+  if (savedPassId) {
+    passFoldersById[savedPassId] = selectedFolder;
+    persistSavedCardsOrganization();
   }
 
   showToast(currentEditingPassId ? 'Karte erfolgreich aktualisiert.' : 'Pass erfolgreich gespeichert.');
@@ -526,6 +560,9 @@ async function handleCreateNewPass() {
   lastTemplateId = formElements.template.value;
   applyTemplateDefaults(getTemplateById(formElements.template.value));
   renderProgramFields(getTemplateById(formElements.template.value).programType || 'generic');
+  if (formElements.folder) {
+    formElements.folder.value = 'none';
+  }
   syncBannerFields();
   applyBannerColorPreset();
   refreshPreview();
@@ -584,6 +621,9 @@ async function handleOpenSavedPass(passId) {
   currentUploadedIconUrl = selectedPass.custom_icon_url || '';
   currentUploadedBannerUrl = selectedPass.custom_banner_url || '';
   lastTemplateId = selectedPass.template_id || formElements.template.value;
+  if (formElements.folder) {
+    formElements.folder.value = passFoldersById[selectedPass.id] || 'none';
+  }
   setActiveTab('editor');
   refreshPreview();
   showToast('Karte im Editor geöffnet.');
