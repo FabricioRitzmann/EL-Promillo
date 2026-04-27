@@ -75,9 +75,63 @@ let savedCardsFilters = {
 };
 let destroyDragDrop = null;
 let currentPreviewMode = 'horizontal';
+const rememberSessionKey = 'passStudio.auth.rememberSession';
+const rememberedCredentialsKey = 'passStudio.auth.rememberedCredentials';
+const sessionMarkerKey = 'passStudio.auth.activeSessionMarker';
 
 function codeRegistryStorageKey(userId) {
   return `passStudio.codeRegistry.${userId}`;
+}
+
+function isRememberSessionEnabled() {
+  return localStorage.getItem(rememberSessionKey) === '1';
+}
+
+function setRememberSessionPreference(enabled) {
+  localStorage.setItem(rememberSessionKey, enabled ? '1' : '0');
+}
+
+function saveRememberedCredentials(email, password) {
+  const normalizedEmail = String(email || '').trim();
+  const normalizedPassword = String(password || '').trim();
+  if (!normalizedEmail || !normalizedPassword) {
+    localStorage.removeItem(rememberedCredentialsKey);
+    return;
+  }
+  localStorage.setItem(
+    rememberedCredentialsKey,
+    JSON.stringify({
+      email: normalizedEmail,
+      password: normalizedPassword
+    })
+  );
+}
+
+function loadRememberedCredentials() {
+  try {
+    const raw = localStorage.getItem(rememberedCredentialsKey);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed?.email || !parsed?.password) return null;
+    return {
+      email: String(parsed.email).trim(),
+      password: String(parsed.password).trim()
+    };
+  } catch (_error) {
+    return null;
+  }
+}
+
+function clearRememberedCredentials() {
+  localStorage.removeItem(rememberedCredentialsKey);
+}
+
+function setActiveSessionMarker() {
+  sessionStorage.setItem(sessionMarkerKey, '1');
+}
+
+function hasActiveSessionMarker() {
+  return sessionStorage.getItem(sessionMarkerKey) === '1';
 }
 
 function loadCodeRegistry(userId) {
@@ -514,6 +568,7 @@ async function handleLogin() {
 
   const email = formElements.email.value.trim();
   const password = formElements.password.value.trim();
+  const rememberSession = Boolean(formElements.rememberMe?.checked);
 
   const { data, error } = await loginWithEmail(email, password);
   if (error) {
@@ -538,6 +593,13 @@ async function handleLogin() {
     currentUser = authenticatedUser;
   }
 
+  setRememberSessionPreference(rememberSession);
+  if (rememberSession) {
+    saveRememberedCredentials(email, password);
+  } else {
+    clearRememberedCredentials();
+  }
+  setActiveSessionMarker();
   loadSavedCardsOrganization(currentUser.id);
   setAuthenticatedView(currentUser.email);
   showToast('Login erfolgreich.');
@@ -617,6 +679,9 @@ async function handleLogout() {
   }
 
   currentUser = null;
+  clearRememberedCredentials();
+  setRememberSessionPreference(false);
+  sessionStorage.removeItem(sessionMarkerKey);
   currentUploadedImageUrl = '';
   currentUploadedIconUrl = '';
   currentUploadedBannerUrl = '';
@@ -958,18 +1023,48 @@ async function handleScanPass(passId) {
 }
 
 async function bootstrapAuth() {
+  if (!isRememberSessionEnabled() && !hasActiveSessionMarker()) {
+    await logout();
+  }
+
   const {
     data: { session }
   } = await supabaseClient.auth.getSession();
 
   currentUser = session?.user ?? null;
+  if (!currentUser && isRememberSessionEnabled()) {
+    const rememberedCredentials = loadRememberedCredentials();
+    if (rememberedCredentials?.email && rememberedCredentials?.password) {
+      const { data: loginData, error: loginError } = await loginWithEmail(
+        rememberedCredentials.email,
+        rememberedCredentials.password
+      );
+      if (!loginError) {
+        currentUser = loginData?.user ?? null;
+        if (!currentUser) {
+          const {
+            data: { user }
+          } = await supabaseClient.auth.getUser();
+          currentUser = user ?? null;
+        }
+      }
+    }
+  }
+
   if (currentUser) {
+    if (formElements.rememberMe) {
+      formElements.rememberMe.checked = isRememberSessionEnabled();
+    }
+    setActiveSessionMarker();
     loadSavedCardsOrganization(currentUser.id);
     setAuthenticatedView(currentUser.email);
     setActiveTab(isRecoveryLinkOpened() ? 'reset' : 'editor');
     await refreshPasses();
     await refreshStats();
   } else {
+    if (formElements.rememberMe) {
+      formElements.rememberMe.checked = isRememberSessionEnabled();
+    }
     setLoggedOutView();
     renderSavedCardsView();
   }
@@ -977,12 +1072,14 @@ async function bootstrapAuth() {
   supabaseClient.auth.onAuthStateChange((_event, sessionData) => {
     currentUser = sessionData?.user ?? null;
     if (currentUser) {
+      setActiveSessionMarker();
       loadSavedCardsOrganization(currentUser.id);
       setAuthenticatedView(currentUser.email);
       setActiveTab(isRecoveryLinkOpened() ? 'reset' : 'editor');
       refreshPasses();
       refreshStats();
     } else {
+      sessionStorage.removeItem(sessionMarkerKey);
       passFoldersById = {};
       savedFolderNames = [];
       savedCardsFilters = { folder: 'all', cardType: 'all', sort: 'newest' };
@@ -1139,6 +1236,9 @@ function wireEvents() {
 
 function init() {
   document.body.classList.add('logged-out');
+  if (formElements.rememberMe) {
+    formElements.rememberMe.checked = isRememberSessionEnabled();
+  }
   initTemplateSelect();
   initSectionDropdowns();
   resetNotificationRules();
