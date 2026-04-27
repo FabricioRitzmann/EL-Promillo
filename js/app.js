@@ -13,6 +13,7 @@ import {
 } from './api.js';
 import {
   addNotificationRule,
+  applyTemplatePresetFromGallery,
   applyTemplateDefaults,
   applyBannerColorPreset,
   askForConfirmation,
@@ -45,7 +46,9 @@ import {
   updatePreview,
   openWalletSimulation,
   getLayoutConfig,
+  getPreviewMode,
   setLayoutConfig,
+  setPreviewMode,
   resetLayoutConfig
 } from './ui.js';
 import { setupWalletDragDrop } from './walletDrag.js';
@@ -280,6 +283,11 @@ async function handleTemplateChange() {
   refreshPreview();
 }
 
+function handlePreviewModeToggle(mode) {
+  setPreviewMode(mode);
+  refreshPreview();
+}
+
 async function handleNewPass() {
   const confirmed = await askForConfirmation({
     title: 'Neue Karte starten?',
@@ -308,6 +316,7 @@ async function handleNewPass() {
   });
   lastTemplateId = formElements.template.value;
   syncBannerFields();
+  setPreviewMode('horizontal');
   applyBannerColorPreset();
   refreshPreview();
   showToast('Neue Karte gestartet.');
@@ -667,6 +676,7 @@ async function handleSavePass() {
       customBannerUrl: currentUploadedBannerUrl,
       walletTemplateConfig: {
         templateType: passData.templateType,
+        previewMode: passData.previewMode,
         designConfig: {
           primaryColor: passData.backgroundColor,
           textColor: passData.foregroundColor,
@@ -728,6 +738,7 @@ async function handleCreateNewPass() {
   currentUploadedBannerUrl = '';
   formElements.upload.value = '';
   initTemplateSelect();
+  setPreviewMode('horizontal');
   resetLayoutConfig();
   resetNotificationRules();
   addNotificationRule({
@@ -1007,9 +1018,16 @@ function wireEvents() {
   formElements.duplicateTemplateBtn?.addEventListener('click', () => {
     showToast('Template als Variante dupliziert (lokale Vorschau).');
   });
-  onTemplateGalleryUse((templateId) => {
+  onTemplateGalleryUse(({ templateId, variantId }) => {
+    applyTemplatePresetFromGallery(variantId);
     formElements.template.value = templateId;
     formElements.template.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  formElements.previewModeHorizontal?.addEventListener('change', () => {
+    if (formElements.previewModeHorizontal.checked) handlePreviewModeToggle('horizontal');
+  });
+  formElements.previewModeVertical?.addEventListener('change', () => {
+    if (formElements.previewModeVertical.checked) handlePreviewModeToggle('vertical');
   });
 
   formElements.upload.addEventListener('change', handleImageUpload);
@@ -1060,6 +1078,7 @@ function init() {
   applyBannerColorPreset();
   setActiveTab('editor');
   handleTemplateChange();
+  setPreviewMode(getPreviewMode());
   refreshPreview();
   wireEvents();
   updatePreviewPaneSizeOnScroll();

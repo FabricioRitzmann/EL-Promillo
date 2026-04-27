@@ -293,6 +293,22 @@ select:focus {
   padding: 4px;
 }
 
+.wallet-preview-mode-toggle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 0.72rem;
+}
+
+.wallet-preview-mode-toggle label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(148, 163, 184, 0.2);
+  border-radius: 999px;
+  padding: 4px 8px;
+}
+
 .wallet-preview-tab {
   border: 0;
   border-radius: 999px;
@@ -318,15 +334,21 @@ select:focus {
 .pass-preview {
   width: 100%;
   max-width: 360px;
-  min-height: 560px;
+  min-height: 230px;
   background: linear-gradient(160deg, #1f1f1f, #3a3a3a);
-  border-radius: 30px;
+  border-radius: 20px;
   overflow: hidden;
   color: #fff;
   position: relative;
   border: 1px solid rgba(255, 255, 255, 0.18);
   box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
   margin: 0 auto;
+}
+
+.pass-preview[data-preview-mode='vertical'] {
+  max-width: 320px;
+  min-height: 530px;
+  border-radius: 28px;
 }
 
 .pass-preview[data-wallet-skin='apple'] {
@@ -1400,7 +1422,7 @@ select:focus {
 
 .template-gallery {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 10px;
   margin-top: 10px;
 }
@@ -1421,6 +1443,44 @@ select:focus {
   font-size: 0.68rem;
   color: var(--muted);
   margin-top: 4px;
+}
+
+.template-variants {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.template-variant {
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.template-variant-preview {
+  border-radius: 10px;
+  min-height: 88px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: left;
+}
+
+.template-variant-preview small {
+  font-size: 0.58rem;
+  opacity: 0.9;
+  text-transform: uppercase;
+}
+
+.template-variant-preview strong {
+  font-size: 0.76rem;
+}
+
+.template-variant-preview-blank {
+  background: repeating-linear-gradient(135deg, #e5e7eb 0px, #e5e7eb 8px, #f8fafc 8px, #f8fafc 16px);
+  color: #374151;
 }
 
 .wallet-preview-canvas {
@@ -1450,6 +1510,42 @@ select:focus {
 
 .wallet-preview-element strong {
   font-size: 1rem;
+}
+
+.wallet-preview-vertical {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  padding: 18px;
+}
+
+.wallet-preview-vertical h4 {
+  margin: 6px 0 0;
+  font-size: 1.1rem;
+}
+
+.wallet-preview-vertical-specs {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.wallet-preview-vertical-specs span small {
+  display: block;
+  opacity: 0.72;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+}
+
+.wallet-preview-vertical-code {
+  margin: 16px auto 0;
+  padding: 12px;
+  border-radius: 14px;
+  background: #fff;
+  color: #111;
+  text-align: center;
 }
 
 .wallet-stamp-grid {

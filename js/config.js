@@ -30,6 +30,12 @@ export const streakIcons = [
 
 export const passTemplates = [
   {
+    id: 'blank',
+    name: 'Blank Template',
+    programType: 'generic',
+    defaults: { title: 'Leere Karte', subtitle: 'Blank Template', description: 'Starte ohne vorgegebene Struktur.', iconId: 'gift' }
+  },
+  {
     id: 'loyalty',
     name: 'Loyalty Card',
     programType: 'loyalty',
