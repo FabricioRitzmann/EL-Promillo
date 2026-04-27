@@ -31,6 +31,7 @@ import {
   onSavedPassScan,
   renderStats,
   renderProgramFields,
+  renderEditorFolderOptions,
   renderSavedPasses,
   renderWalletSimulation,
   resetNotificationRules,
@@ -202,6 +203,8 @@ function pruneFolderAssignments() {
 }
 
 function renderSavedCardsView() {
+  const selectedEditorFolder = formElements.folder?.value || 'none';
+  renderEditorFolderOptions(savedFolderNames, selectedEditorFolder);
   renderSavedPasses(latestPassEntries, {
     folderAssignments: passFoldersById,
     folderNames: savedFolderNames,
@@ -292,30 +295,15 @@ function handleExportExcel() {
     return;
   }
 
-  try {
-    const { fileName, blob } = createPassesExcelExport(latestPassEntries);
-
-    if (window.navigator.msSaveOrOpenBlob) {
-      window.navigator.msSaveOrOpenBlob(blob, fileName);
-      showToast('Excel-Datei wurde erstellt und heruntergeladen.');
-      return;
-    }
-
-    const downloadUrl = URL.createObjectURL(blob);
-    const anchor = document.createElement('a');
-    anchor.href = downloadUrl;
-    anchor.download = fileName;
-    anchor.style.display = 'none';
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
-
-    // Firefox/Safari brauchen teilweise mehr Zeit bis der Download wirklich startet.
-    setTimeout(() => URL.revokeObjectURL(downloadUrl), 30000);
-    showToast('Excel-Datei wurde erstellt und heruntergeladen.');
-  } catch (error) {
-    showToast(`Excel-Export fehlgeschlagen: ${error.message}`, true);
-  }
+  const { fileName, downloadUrl } = createPassesExcelExport(latestPassEntries);
+  const anchor = document.createElement('a');
+  anchor.href = downloadUrl;
+  anchor.download = fileName;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
+  showToast('Excel-Datei wurde erstellt und heruntergeladen.');
 }
 
 async function handleRegister() {
@@ -490,7 +478,7 @@ async function handleSavePass() {
     ? latestPassEntries.find((entry) => entry.id === currentEditingPassId)
     : null;
 
-  const { error } = await savePass(
+  const { data, error } = await savePass(
     {
       ...passData,
       id: currentEditingPassId,
@@ -505,6 +493,13 @@ async function handleSavePass() {
   if (error) {
     showToast(`Speichern fehlgeschlagen: ${error.message}`, true);
     return;
+  }
+
+  const savedPassId = currentEditingPassId || data?.id || null;
+  const selectedFolder = passData.folderName || 'none';
+  if (savedPassId) {
+    passFoldersById[savedPassId] = selectedFolder;
+    persistSavedCardsOrganization();
   }
 
   showToast(currentEditingPassId ? 'Karte erfolgreich aktualisiert.' : 'Pass erfolgreich gespeichert.');
@@ -541,6 +536,9 @@ async function handleCreateNewPass() {
   lastTemplateId = formElements.template.value;
   applyTemplateDefaults(getTemplateById(formElements.template.value));
   renderProgramFields(getTemplateById(formElements.template.value).programType || 'generic');
+  if (formElements.folder) {
+    formElements.folder.value = 'none';
+  }
   syncBannerFields();
   applyBannerColorPreset();
   refreshPreview();
@@ -599,6 +597,9 @@ async function handleOpenSavedPass(passId) {
   currentUploadedIconUrl = selectedPass.custom_icon_url || '';
   currentUploadedBannerUrl = selectedPass.custom_banner_url || '';
   lastTemplateId = selectedPass.template_id || formElements.template.value;
+  if (formElements.folder) {
+    formElements.folder.value = passFoldersById[selectedPass.id] || 'none';
+  }
   setActiveTab('editor');
   refreshPreview();
   showToast('Karte im Editor geöffnet.');
