@@ -122,6 +122,28 @@ body.logged-out #stats-card {
   max-width: 480px;
 }
 
+.auth-remember-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: -2px;
+}
+
+.remember-toggle {
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--muted);
+  background: rgba(99, 112, 133, 0.08);
+  border: 1px solid rgba(99, 112, 133, 0.18);
+  border-radius: 999px;
+  padding: 5px 10px;
+}
+
+.remember-toggle input {
+  accent-color: var(--primary);
+}
+
 .editor-grid {
   display: grid;
   grid-template-columns: minmax(260px, 1fr) minmax(280px, 420px);
