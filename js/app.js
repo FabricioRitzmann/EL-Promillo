@@ -361,6 +361,11 @@ async function handleRegister() {
 }
 
 async function handleLogin() {
+  const authForm = document.getElementById('auth-form');
+  if (authForm && !authForm.reportValidity()) {
+    return;
+  }
+
   const email = formElements.email.value.trim();
   const password = formElements.password.value.trim();
 
@@ -370,7 +375,23 @@ async function handleLogin() {
     return;
   }
 
-  currentUser = data.user;
+  const authenticatedUser = data?.user ?? null;
+  if (!authenticatedUser) {
+    const {
+      data: { user },
+      error: userError
+    } = await supabaseClient.auth.getUser();
+
+    if (userError || !user) {
+      showToast('Login konnte nicht bestätigt werden. Bitte versuche es erneut.', true);
+      return;
+    }
+
+    currentUser = user;
+  } else {
+    currentUser = authenticatedUser;
+  }
+
   loadSavedCardsOrganization(currentUser.id);
   setAuthenticatedView(currentUser.email);
   showToast('Login erfolgreich.');
@@ -901,6 +922,7 @@ function wireEvents() {
 }
 
 function init() {
+  document.body.classList.add('logged-out');
   initTemplateSelect();
   initSectionDropdowns();
   resetNotificationRules();

@@ -1010,6 +1010,7 @@ export function renderEditorFolderOptions(folderNames = [], selectedFolder = 'no
 }
 
 export function setAuthenticatedView(email) {
+  document.body.classList.remove('logged-out');
   ui.authState.textContent = email;
   animateCardOut(ui.authCard);
   ui.tabbar.classList.remove('hidden');
@@ -1020,6 +1021,7 @@ export function setAuthenticatedView(email) {
 }
 
 export function setLoggedOutView() {
+  document.body.classList.add('logged-out');
   ui.authState.textContent = '';
   animateCardIn(ui.authCard);
   ui.tabbar.classList.add('hidden');
