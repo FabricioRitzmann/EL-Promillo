@@ -126,8 +126,33 @@ export async function loginWithEmail(email, password) {
 export async function requestPasswordOtp(email) {
   if (!isConfigured) return notConfiguredError();
   try {
+    return await supabaseClient.auth.signInWithOtp({
+      email,
+      options: {
+        shouldCreateUser: false
+      }
+    });
+  } catch (error) {
+    return networkError(error);
+  }
+}
+
+export async function requestPasswordResetLink(email, redirectTo) {
+  if (!isConfigured) return notConfiguredError();
+  try {
     return await supabaseClient.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.href
+      redirectTo: redirectTo || window.location.href
+    });
+  } catch (error) {
+    return networkError(error);
+  }
+}
+
+export async function updateCurrentUserPassword(newPassword) {
+  if (!isConfigured) return notConfiguredError();
+  try {
+    return await supabaseClient.auth.updateUser({
+      password: newPassword
     });
   } catch (error) {
     return networkError(error);
