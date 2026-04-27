@@ -719,12 +719,13 @@ function renderWalletSimulationDetail(entry) {
         <p class="wallet-sim-detail-stamp-progress">${progressText}</p>
       </div>`
     : '';
+  const isLivePreview = entry.id === 'live-preview';
 
   ui.walletSimDetail.innerHTML = `
     <div class="wallet-sim-detail-pass" style="background:${getSimulationBackground(entry)}; color:${entry.foregroundColor};">
       <div class="wallet-sim-detail-header">
         <p class="wallet-sim-detail-issuer">${issuer}</p>
-        <span class="wallet-sim-detail-chip">Pass</span>
+        <span class="wallet-sim-detail-chip">${isLivePreview ? 'Live' : 'Gespeichert'}</span>
       </div>
       <p class="wallet-sim-detail-subtitle">${entry.subtitle}</p>
       <h4 class="wallet-sim-detail-title">${getIconSymbol(entry.iconId)} ${entry.title}</h4>
@@ -746,6 +747,7 @@ function renderWalletSimulationStack() {
     button.type = 'button';
     button.className = 'wallet-sim-mini-pass';
     button.dataset.simPassId = entry.id;
+    button.style.setProperty('--stack-order', String(index));
     button.setAttribute('aria-label', `Karte ${entry.title} öffnen`);
     button.style.background = getSimulationBackground(entry);
     button.style.color = entry.foregroundColor;
