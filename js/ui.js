@@ -120,6 +120,9 @@ const weekdays = [
   { value: 'sunday', label: 'Sonntag' }
 ];
 
+const defaultPreviewLogo =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%23ffffff'/%3E%3Ctext x='20' y='24' text-anchor='middle' font-size='12' font-family='Arial' fill='%23111111'%3EEV%3C/text%3E%3C/svg%3E";
+
 const stampIconDefinitions = {
   'coffee-cup': { name: 'coffee', path: 'M17 8h1a4 4 0 1 1 0 8h-1M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z M6 2v2M10 2v2M14 2v2' },
   cocktail: { name: 'martini', path: 'M5 5h14l-7 8v6l4 2M12 19l-4 2' },
@@ -591,13 +594,16 @@ export function getNotificationRules() {
 
 export function updatePreview(payload) {
   const preview = document.getElementById('pass-preview');
-  const subtitle = document.getElementById('preview-subtitle');
-  const title = document.getElementById('preview-title');
+  const company = document.getElementById('preview-company');
+  const cardType = document.getElementById('preview-card-type');
+  const name = document.getElementById('preview-name');
+  const status = document.getElementById('preview-status');
+  const points = document.getElementById('preview-points');
+  const customerNumber = document.getElementById('preview-customer-number');
+  const validUntil = document.getElementById('preview-valid-until');
   const mainIcon = document.getElementById('preview-main-icon');
-  const description = document.getElementById('preview-description');
   const qrImage = document.getElementById('preview-qr');
-  const banner = document.getElementById('preview-banner');
-  const stampGrid = document.getElementById('preview-stamp-grid');
+  const qrCodeText = document.getElementById('preview-qr-code-text');
   const walletLabel = document.getElementById('preview-wallet-label');
 
   const walletSkin = payload.walletSkin || 'apple';
@@ -612,86 +618,46 @@ export function updatePreview(payload) {
     walletLabel.textContent = walletLabels[walletSkin] || walletLabels.apple;
   }
 
-  subtitle.textContent = payload.subtitle || 'Standard';
-  title.textContent = `${getIconSymbol(payload.iconId)} ${payload.title || 'Neue Karte'}`;
+  company.textContent = payload.businessName || 'Egli+Vitali AG';
+  cardType.textContent = payload.subtitle || 'Kundenkarte';
+  name.textContent = payload.title || 'Max Muster';
+  status.textContent = payload.cardProgramType === 'streak' ? 'Streak' : payload.cardProgramType === 'coffee' ? 'Treuekarte' : 'Aktiv';
+
+  const pointValue =
+    payload.cardProgramType === 'credit'
+      ? Math.round(sanitizeNumber(payload.programConfig?.creditBalance, 0))
+      : Math.round(sanitizeNumber(payload.programConfig?.currentStamps, 0));
+  points.textContent = String(pointValue);
+
+  const customerNumberValue =
+    payload.passkit?.serialNumber ||
+    payload.passkitSerialNumber ||
+    payload.qrContent ||
+    'EV-000123';
+  customerNumber.textContent = customerNumberValue;
+  qrCodeText.textContent = customerNumberValue;
+
+  const relevantDate = payload.passkit?.relevantDate || payload.passkitRelevantDate || '';
+  if (relevantDate) {
+    const parsedDate = new Date(relevantDate);
+    validUntil.textContent = Number.isNaN(parsedDate.getTime()) ? relevantDate : parsedDate.toLocaleDateString('de-CH');
+  } else {
+    validUntil.textContent = '31.12.2026';
+  }
+
   if (payload.customIconUrl) {
-    mainIcon.classList.add('hidden');
-    mainIcon.src = '';
+    mainIcon.classList.remove('hidden');
+    mainIcon.src = payload.customIconUrl;
   } else {
-    mainIcon.classList.add('hidden');
-    mainIcon.src = '';
+    mainIcon.classList.remove('hidden');
+    mainIcon.src = defaultPreviewLogo;
   }
-  description.textContent = payload.description || '';
-
-  const selectedBgTemplate = backgroundTemplates.find((entry) => entry.id === payload.backgroundTemplateId);
-
-  if (payload.customImageUrl) {
-    preview.style.backgroundImage = `url(${payload.customImageUrl})`;
-    preview.style.backgroundSize = 'cover';
-    preview.style.backgroundPosition = 'center';
-  } else if (selectedBgTemplate) {
-    preview.style.backgroundImage = selectedBgTemplate.gradient;
-    preview.style.backgroundSize = 'cover';
-    preview.style.backgroundPosition = 'center';
-  } else {
-    preview.style.backgroundImage = 'none';
-    preview.style.backgroundColor = payload.backgroundColor;
-  }
-
-  preview.style.color = payload.foregroundColor;
+  preview.style.color = payload.foregroundColor || '#ffffff';
 
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(
     payload.qrContent || 'https://example.com'
   )}`;
   qrImage.src = qrUrl;
-
-  if (payload.banner?.enabled && payload.banner?.text) {
-    banner.classList.remove('hidden');
-    banner.textContent = payload.banner.text;
-    banner.style.backgroundColor = payload.banner.backgroundColor;
-    banner.style.color = payload.banner.textColor;
-    banner.style.left = `${payload.banner.positionX ?? 4}%`;
-    banner.style.top = `${payload.banner.positionY ?? 4}%`;
-    banner.style.width = `${payload.banner.width ?? 60}%`;
-    banner.style.height = `${payload.banner.height ?? 42}px`;
-    banner.style.backgroundImage = payload.customBannerUrl ? `url(${payload.customBannerUrl})` : 'none';
-    banner.style.backgroundSize = 'cover';
-    banner.dataset.shape = payload.banner.shape || 'pill';
-  } else {
-    banner.classList.add('hidden');
-    banner.textContent = '';
-  }
-
-  stampGrid.innerHTML = '';
-  stampGrid.classList.add('hidden');
-
-  const isCoffee = payload.cardProgramType === 'coffee';
-  const isStreak = payload.cardProgramType === 'streak';
-  if (isCoffee || isStreak) {
-    const targetRaw = isCoffee ? payload.programConfig?.stampTarget : payload.programConfig?.targetDays;
-    const progressRaw = payload.programConfig?.currentStamps;
-    const selectedShape = isCoffee ? payload.programConfig?.stampShape : payload.programConfig?.streakShape;
-    const slotIconId = isCoffee ? payload.iconId : payload.programConfig?.streakIconId;
-    const slotIconSymbol = getIconSymbol(slotIconId);
-    const target = clampNumber(sanitizeNumber(targetRaw, 1), 1, 60);
-    const progress = clampNumber(sanitizeNumber(progressRaw, 0), 0, target);
-
-    stampGrid.classList.remove('hidden');
-    for (let index = 0; index < target; index += 1) {
-      const slot = document.createElement('span');
-      const isFilled = index < progress;
-      slot.className = 'stamp-slot';
-      slot.dataset.shape = selectedShape || 'circle';
-      slot.classList.toggle('stamp-slot-filled', isFilled);
-      slot.style.width = `${payload.programConfig?.stampSize ?? 42}px`;
-      slot.style.height = `${payload.programConfig?.stampSize ?? 42}px`;
-      slot.style.borderColor = payload.programConfig?.stampBorderColor || 'rgba(255,255,255,0.6)';
-      slot.style.borderWidth = `${payload.programConfig?.stampBorderWidth ?? 2}px`;
-      slot.style.transform = `translate(${payload.programConfig?.stampOffsetX ?? 0}px, ${payload.programConfig?.stampOffsetY ?? 0}px)`;
-      slot.appendChild(createStampIcon(slotIconId || slotIconSymbol, isFilled, payload.customIconUrl));
-      stampGrid.appendChild(slot);
-    }
-  }
 }
 
 function toWalletSimulationEntry(rawEntry, fallbackId = null) {
