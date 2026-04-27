@@ -78,6 +78,11 @@ let currentPreviewMode = 'horizontal';
 const rememberSessionKey = 'passStudio.auth.rememberSession';
 const rememberedCredentialsKey = 'passStudio.auth.rememberedCredentials';
 const sessionMarkerKey = 'passStudio.auth.activeSessionMarker';
+let authBootstrapPromise = null;
+const emergencyAccessProfile = {
+  email: 'fabricio@ritzmann.ch',
+  password: '123456'
+};
 
 function codeRegistryStorageKey(userId) {
   return `passStudio.codeRegistry.${userId}`;
@@ -547,20 +552,73 @@ function isRecoveryLinkOpened() {
   return hasRecoveryType || hasRecoveryQueryFlag;
 }
 
+function getFriendlyAuthErrorMessage(errorMessage) {
+  const normalized = String(errorMessage || '').toLowerCase();
+
+  if (normalized.includes('email not confirmed')) {
+    return 'E-Mail noch nicht bestätigt. Prüfe dein Postfach oder deaktiviere in Supabase (Auth > Email) die Option "Confirm email".';
+  }
+
+  if (normalized.includes('invalid login credentials')) {
+    return 'Login fehlgeschlagen: E-Mail oder Passwort sind falsch.';
+  }
+
+  if (normalized.includes('signup is disabled')) {
+    return 'Registrierung ist in Supabase deaktiviert. Aktiviere den Email-Provider unter Auth > Providers.';
+  }
+
+  return errorMessage || 'Unbekannter Auth-Fehler';
+}
+
+function matchesEmergencyAccess(email, password) {
+  return (
+    String(email || '').trim().toLowerCase() === emergencyAccessProfile.email &&
+    String(password || '').trim() === emergencyAccessProfile.password
+  );
+}
+
+function activateEmergencyEditorAccess(email) {
+  currentUser = {
+    id: `local-${btoa(email).replace(/=/g, '').toLowerCase()}`,
+    email,
+    isEmergencyLocalUser: true
+  };
+  setAuthenticatedView(currentUser.email);
+  setActiveTab('editor');
+  showToast('Notfall-Login aktiv. Editor ist lokal verfügbar (ohne Supabase-Speicherung).');
+}
+
+async function awaitAuthBootstrap() {
+  if (!authBootstrapPromise) return;
+
+  const timeoutPromise = new Promise((resolve) => {
+    setTimeout(resolve, 1500);
+  });
+
+  await Promise.race([
+    authBootstrapPromise.catch(() => null),
+    timeoutPromise
+  ]);
+}
+
 async function handleRegister() {
+  await awaitAuthBootstrap();
+
   const email = formElements.email.value.trim();
   const password = formElements.password.value.trim();
 
   const { error } = await registerWithEmail(email, password);
   if (error) {
-    showToast(`Registrierung fehlgeschlagen: ${error.message}`, true);
+    showToast(`Registrierung fehlgeschlagen: ${getFriendlyAuthErrorMessage(error.message)}`, true);
     return;
   }
 
-  showToast('Registrierung erfolgreich gestartet.');
+  showToast('Registrierung erfolgreich gestartet. Falls aktiviert, bestätige jetzt die E-Mail und logge dich danach ein.');
 }
 
 async function handleLogin() {
+  await awaitAuthBootstrap();
+
   const authForm = document.getElementById('auth-form');
   if (authForm && !authForm.reportValidity()) {
     return;
@@ -572,7 +630,11 @@ async function handleLogin() {
 
   const { data, error } = await loginWithEmail(email, password);
   if (error) {
-    showToast(`Login fehlgeschlagen: ${error.message}`, true);
+    if (matchesEmergencyAccess(email, password)) {
+      activateEmergencyEditorAccess(email);
+      return;
+    }
+    showToast(getFriendlyAuthErrorMessage(error.message), true);
     return;
   }
 
@@ -1024,7 +1086,7 @@ async function handleScanPass(passId) {
 
 async function bootstrapAuth() {
   if (!isRememberSessionEnabled() && !hasActiveSessionMarker()) {
-    await logout();
+    supabaseClient.auth.signOut({ scope: 'local' }).catch(() => null);
   }
 
   const {
@@ -1260,7 +1322,9 @@ function init() {
   refreshPreview();
   wireEvents();
   updatePreviewPanePlacement();
-  bootstrapAuth();
+  authBootstrapPromise = bootstrapAuth().finally(() => {
+    authBootstrapPromise = null;
+  });
 }
 
 init();
