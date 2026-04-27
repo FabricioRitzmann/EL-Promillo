@@ -49,6 +49,7 @@ export const ui = {
 export const formElements = {
   email: document.getElementById('email'),
   password: document.getElementById('password'),
+  rememberMe: document.getElementById('remember-me'),
   title: document.getElementById('pass-title'),
   subtitle: document.getElementById('pass-subtitle'),
   description: document.getElementById('pass-description'),
