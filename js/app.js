@@ -208,32 +208,10 @@ function syncFolderNamesFromAssignments() {
   savedFolderNames = normalizeFolderNames([...savedFolderNames, ...folderNamesFromAssignments]);
 }
 
-function updatePreviewPaneSizeOnScroll() {
+function updatePreviewPanePlacement() {
   const previewPane = document.querySelector('.preview-pane');
   if (!previewPane) return;
-
-  const isFullscreenLayout = isWindowCoveringScreen();
-  previewPane.classList.toggle('is-windowed', !isFullscreenLayout);
-
-  if (!isFullscreenLayout) {
-    previewPane.classList.remove('is-expanded');
-    return;
-  }
-
-  const bottomThresholdPx = 24;
-  const scrolledBottom = window.scrollY + window.innerHeight;
-  const docHeight = document.documentElement.scrollHeight;
-  const hasReachedBottom = scrolledBottom >= docHeight - bottomThresholdPx;
-
-  previewPane.classList.toggle('is-expanded', hasReachedBottom);
-}
-
-function isWindowCoveringScreen() {
-  const widthGap = Math.abs(window.outerWidth - window.screen.availWidth);
-  const heightGap = Math.abs(window.outerHeight - window.screen.availHeight);
-  const allowedGapPx = 24;
-
-  return widthGap <= allowedGapPx && heightGap <= allowedGapPx;
+  previewPane.classList.toggle('is-horizontal-mode', currentPreviewMode === 'horizontal');
 }
 
 function buildPreviewPayload() {
@@ -243,7 +221,7 @@ function buildPreviewPayload() {
     customImageUrl: currentUploadedImageUrl,
     customIconUrl: currentUploadedIconUrl,
     customBannerUrl: currentUploadedBannerUrl,
-    previewMode: currentPreviewMode
+    previewMode: getPreviewMode()
   };
 }
 
@@ -264,6 +242,7 @@ function refreshPreview() {
   }
   syncPreviewWalletTabs();
   syncPreviewModeTabs();
+  updatePreviewPanePlacement();
 }
 
 function syncPreviewWalletTabs() {
@@ -298,6 +277,7 @@ async function handleTemplateChange() {
 }
 
 function handlePreviewModeToggle(mode) {
+  currentPreviewMode = mode === 'vertical' ? 'vertical' : 'horizontal';
   setPreviewMode(mode);
   refreshPreview();
 }
@@ -830,6 +810,7 @@ async function handleOpenSavedPass(passId) {
     formElements.folder.value = passFoldersById[selectedPass.id] || 'none';
   }
   currentPreviewMode = selectedPass.wallet_template_config?.previewMode === 'vertical' ? 'vertical' : 'horizontal';
+  setPreviewMode(currentPreviewMode);
   setActiveTab('editor');
   refreshPreview();
   showToast('Karte im Editor geöffnet.');
@@ -1062,8 +1043,7 @@ function wireEvents() {
   document.querySelectorAll('.tab-btn').forEach((button) =>
     button.addEventListener('click', () => setActiveTab(button.dataset.tab))
   );
-  window.addEventListener('scroll', updatePreviewPaneSizeOnScroll, { passive: true });
-  window.addEventListener('resize', updatePreviewPaneSizeOnScroll);
+  window.addEventListener('resize', updatePreviewPanePlacement);
   document.querySelectorAll('[data-wallet-skin-tab]').forEach((button) => {
     button.addEventListener('click', () => {
       const selectedSkin = button.dataset.walletSkinTab;
@@ -1080,8 +1060,7 @@ function wireEvents() {
     button.addEventListener('click', () => {
       const selectedMode = button.dataset.previewMode === 'vertical' ? 'vertical' : 'horizontal';
       if (selectedMode === currentPreviewMode) return;
-      currentPreviewMode = selectedMode;
-      refreshPreview();
+      handlePreviewModeToggle(selectedMode);
     });
   });
 }
@@ -1104,9 +1083,10 @@ function init() {
   setActiveTab('editor');
   handleTemplateChange();
   setPreviewMode(getPreviewMode());
+  currentPreviewMode = getPreviewMode();
   refreshPreview();
   wireEvents();
-  updatePreviewPaneSizeOnScroll();
+  updatePreviewPanePlacement();
   bootstrapAuth();
 }
 
