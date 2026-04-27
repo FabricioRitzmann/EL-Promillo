@@ -912,7 +912,9 @@ export function getPassFormData() {
     },
     barcode: {
       format: formElements.passkitBarcodeFormat.value,
-      messageEncoding: formElements.passkitMessageEncoding.value
+      messageEncoding: formElements.passkitMessageEncoding.value,
+      message: formElements.barcodeValue?.value.trim() || formElements.qrContent.value.trim(),
+      altText: formElements.barcodeShowText?.checked ? formElements.barcodeValue?.value.trim() || '' : ''
     }
   });
 

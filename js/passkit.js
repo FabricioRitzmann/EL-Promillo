@@ -29,7 +29,9 @@ export function getDefaultPasskitConfig() {
     locations: [],
     barcode: {
       format: 'PKBarcodeFormatQR',
-      messageEncoding: 'iso-8859-1'
+      messageEncoding: 'utf-8',
+      message: '',
+      altText: ''
     }
   };
 }
@@ -67,7 +69,9 @@ export function normalizePasskitConfig(config = {}) {
     },
     barcode: {
       format: sanitizeString(config.barcode?.format) || fallback.barcode.format,
-      messageEncoding: sanitizeString(config.barcode?.messageEncoding) || fallback.barcode.messageEncoding
+      messageEncoding: sanitizeString(config.barcode?.messageEncoding) || fallback.barcode.messageEncoding,
+      message: sanitizeString(config.barcode?.message),
+      altText: sanitizeString(config.barcode?.altText)
     }
   };
 }
