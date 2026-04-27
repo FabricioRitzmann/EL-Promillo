@@ -442,19 +442,51 @@
                   <button type="button" class="wallet-preview-tab" data-wallet-skin-tab="google">Google</button>
                   <button type="button" class="wallet-preview-tab" data-wallet-skin-tab="samsung">Samsung</button>
                 </div>
-                <div id="pass-preview" class="pass-preview" data-wallet-skin="apple">
-                <div class="pass-overlay">
-                  <p id="preview-banner" class="preview-banner hidden"></p>
-                  <p id="preview-subtitle" class="preview-subtitle"></p>
-                  <div class="preview-title-row">
-                    <img id="preview-main-icon" class="preview-main-icon hidden" alt="Karten Icon" />
-                    <h4 id="preview-title"></h4>
+                <div id="pass-preview" class="pass-preview wallet-pass" data-wallet-skin="apple">
+                  <div class="pass-header">
+                    <img
+                      id="preview-main-icon"
+                      src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%23ffffff'/%3E%3Ctext x='20' y='24' text-anchor='middle' font-size='12' font-family='Arial' fill='%23111111'%3EEV%3C/text%3E%3C/svg%3E"
+                      alt="Logo"
+                      class="pass-logo"
+                    />
+                    <span id="preview-company" class="logo-text">Egli+Vitali AG</span>
                   </div>
-                  <p id="preview-description"></p>
-                  <div id="preview-stamp-grid" class="preview-stamp-grid hidden"></div>
-                  <img id="preview-qr" alt="QR Code Vorschau" />
+
+                  <div class="pass-strip">
+                    <div>
+                      <span id="preview-card-type" class="label">Kundenkarte</span>
+                      <h1 id="preview-name">Max Muster</h1>
+                    </div>
+                  </div>
+
+                  <div class="pass-content">
+                    <div class="field primary">
+                      <span class="label">Status</span>
+                      <strong id="preview-status">Gold</strong>
+                    </div>
+
+                    <div class="field">
+                      <span class="label">Punkte</span>
+                      <strong id="preview-points">250</strong>
+                    </div>
+
+                    <div class="field">
+                      <span class="label">Kundennummer</span>
+                      <strong id="preview-customer-number">EV-000123</strong>
+                    </div>
+
+                    <div class="field">
+                      <span class="label">Gültig bis</span>
+                      <strong id="preview-valid-until">31.12.2026</strong>
+                    </div>
+                  </div>
+
+                  <div class="barcode-box">
+                    <img id="preview-qr" alt="QR Code Vorschau" />
+                    <span id="preview-qr-code-text">EV-000123</span>
+                  </div>
                 </div>
-              </div>
               </div>
               <p class="muted small">
                 Hinweis: Für echte .pkpass-Dateien kann im nächsten Schritt ein Server-Endpunkt eingebunden werden.
