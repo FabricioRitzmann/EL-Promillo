@@ -233,7 +233,7 @@ select:focus {
   border-radius: 20px;
   padding: 16px;
   position: sticky;
-  bottom: 12px;
+  top: 12px;
   align-self: end;
   max-height: calc(100vh - 24px);
   overflow: auto;
@@ -246,7 +246,7 @@ select:focus {
 
 .preview-pane.is-windowed {
   position: static;
-  bottom: auto;
+  top: auto;
   max-height: none;
 }
 
@@ -1161,6 +1161,8 @@ select:focus {
   background: linear-gradient(180deg, #f8f9fb 0%, #eef1f5 100%);
   min-height: 520px;
   padding: 16px;
+  display: flex;
+  flex-direction: column;
 }
 
 .wallet-sim-screen-title {
@@ -1169,11 +1171,17 @@ select:focus {
   margin-bottom: 14px;
 }
 
-.wallet-sim-stack {
+.wallet-sim-layout {
   display: flex;
   flex-direction: column;
-  gap: 0;
-  margin-bottom: 16px;
+  gap: 12px;
+  flex: 1;
+}
+
+.wallet-sim-detail {
+  margin-top: 0;
+  flex: 1;
+  order: 1;
 }
 
 .wallet-sim-mini-pass {
@@ -1188,10 +1196,13 @@ select:focus {
   gap: 10px;
   cursor: pointer;
   box-shadow: 0 8px 16px rgba(15, 23, 42, 0.2);
-  margin-top: -30px;
+  margin-top: 0;
   transition: transform 140ms ease, box-shadow 140ms ease;
   position: relative;
   overflow: hidden;
+  min-width: 220px;
+  max-width: 260px;
+  flex: 0 0 auto;
 }
 
 .wallet-sim-mini-pass:first-child {
@@ -1203,51 +1214,18 @@ select:focus {
   box-shadow: 0 12px 20px rgba(15, 23, 42, 0.24);
 }
 
-.wallet-sim-mini-pass.is-active {
-  outline: 3px solid rgba(0, 113, 227, 0.32);
-  transform: translateY(-1px);
-}
-
-.wallet-sim-mini-pass.is-collapsed {
-  min-height: 68px;
-  margin-top: -42px;
-  box-shadow: 0 5px 10px rgba(15, 23, 42, 0.16);
-}
-
-.wallet-sim-mini-pass.is-collapsed::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(4, 8, 15, 0.18), rgba(4, 8, 15, 0.04) 44%, rgba(255, 255, 255, 0.06));
-  pointer-events: none;
-}
-
-.wallet-sim-mini-pass.is-collapsed .wallet-sim-mini-subtitle {
-  opacity: 0.72;
-}
-
-.wallet-sim-mini-pass.is-collapsed .wallet-sim-mini-title {
-  font-size: 0.95rem;
-}
-
-.wallet-sim-mini-pass.is-collapsed .wallet-sim-mini-icon {
-  width: 34px;
-  height: 34px;
-  font-size: 1.08rem;
-  border-radius: 9px;
-}
-
-.wallet-sim-mini-pass.is-collapsed .wallet-sim-mini-progress {
-  opacity: 0.86;
-  font-size: 0.7rem;
-  padding: 5px 8px;
-}
-
 .wallet-sim-mini-subtitle {
   font-size: 0.68rem;
   letter-spacing: 0.07em;
   text-transform: uppercase;
   opacity: 0.9;
+}
+
+.wallet-sim-mini-provider {
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.8;
 }
 
 .wallet-sim-mini-title {
@@ -1290,19 +1268,21 @@ select:focus {
   border: 1px solid rgba(255, 255, 255, 0.35);
 }
 
-.wallet-sim-detail {
-  margin-top: 6px;
-}
-
 .wallet-sim-detail-pass {
   border-radius: 18px;
   padding: 14px 14px 16px;
-  min-height: 280px;
+  min-height: 200px;
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 14px;
   border: 1px solid rgba(255, 255, 255, 0.42);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.48), 0 18px 30px rgba(15, 23, 42, 0.22);
+}
+
+.wallet-sim-detail-pass > *:not(.wallet-sim-detail-qr) {
+  max-width: calc(100% - 210px);
 }
 
 .wallet-sim-detail-header {
@@ -1318,6 +1298,14 @@ select:focus {
   letter-spacing: 0.04em;
   text-transform: uppercase;
   font-weight: 600;
+}
+
+.wallet-sim-detail-provider {
+  margin-top: 3px;
+  font-size: 0.67rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.88;
 }
 
 .wallet-sim-detail-chip {
@@ -1372,14 +1360,42 @@ select:focus {
   font-weight: 800;
 }
 
+.wallet-sim-detail-spec {
+  margin-top: auto;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.88;
+}
+
 .wallet-sim-detail-qr {
-  width: 180px;
-  height: 180px;
-  align-self: center;
+  width: 160px;
+  height: 160px;
+  align-self: flex-end;
   background: #fff;
   border-radius: 12px;
   padding: 8px;
-  margin-top: auto;
+  margin-top: 0;
+}
+
+.wallet-sim-stack {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 6px 2px 2px;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+  position: sticky;
+  bottom: 0;
+  background: linear-gradient(180deg, rgba(248, 249, 251, 0.15) 0%, #eef1f5 35%);
+  order: 2;
+}
+
+.wallet-sim-empty-hint {
+  margin: 0;
+  color: rgba(15, 23, 42, 0.56);
+  font-size: 0.82rem;
+  padding: 8px 4px;
 }
 
 .template-gallery {
