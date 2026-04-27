@@ -30,6 +30,7 @@
           <button class="btn btn-secondary tab-btn is-active" data-tab="editor" type="button">Editor</button>
           <button class="btn btn-secondary tab-btn" data-tab="saved" type="button">Karten</button>
           <button class="btn btn-secondary tab-btn" data-tab="stats" type="button">Statistik</button>
+          <button class="btn btn-secondary tab-btn" data-tab="reset" type="button" id="reset-tab-btn">Passwort zurücksetzen</button>
         </nav>
 
         <section id="auth-card" class="card auth-card">
@@ -52,7 +53,8 @@
               <button type="button" id="login-btn" class="btn btn-primary">Login</button>
             </div>
             <div class="row-buttons">
-              <button type="button" id="reset-btn" class="btn btn-secondary">OTP / Reset anfordern</button>
+              <button type="button" id="otp-btn" class="btn btn-secondary">Einmalpasswort anfordern</button>
+              <button type="button" id="reset-btn" class="btn btn-secondary">Reset-Link anfordern</button>
             </div>
           </form>
         </section>
@@ -583,6 +585,24 @@
         <section id="stats-card" class="card saved-card hidden">
           <h2>Statistik</h2>
           <ul id="stats-list" class="saved-list"></ul>
+        </section>
+
+        <section id="reset-card" class="card auth-card hidden">
+          <h2>Passwort zurücksetzen</h2>
+          <p class="muted">Diese Seite ist für Einmal-Links gedacht. Das Passwort wird beim Tippen als Sternchen (*) maskiert.</p>
+          <form id="reset-password-form" class="stack-form">
+            <label>
+              Neues Passwort
+              <input type="password" id="new-password" placeholder="********" autocomplete="new-password" required />
+            </label>
+            <label>
+              Neues Passwort wiederholen
+              <input type="password" id="confirm-new-password" placeholder="********" autocomplete="new-password" required />
+            </label>
+            <div class="row-buttons">
+              <button type="submit" id="save-new-password-btn" class="btn btn-primary">Neues Passwort speichern</button>
+            </div>
+          </form>
         </section>
       </main>
     </div>

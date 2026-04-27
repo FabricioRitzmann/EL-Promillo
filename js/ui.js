@@ -21,6 +21,8 @@ export const ui = {
   editorCard: document.getElementById('editor-card'),
   savedCard: document.getElementById('saved-card'),
   statsCard: document.getElementById('stats-card'),
+  resetCard: document.getElementById('reset-card'),
+  resetTabBtn: document.getElementById('reset-tab-btn'),
   toast: document.getElementById('toast'),
   passList: document.getElementById('saved-pass-list'),
   statsList: document.getElementById('stats-list'),
@@ -49,6 +51,8 @@ export const ui = {
 export const formElements = {
   email: document.getElementById('email'),
   password: document.getElementById('password'),
+  newPassword: document.getElementById('new-password'),
+  confirmNewPassword: document.getElementById('confirm-new-password'),
   title: document.getElementById('pass-title'),
   subtitle: document.getElementById('pass-subtitle'),
   description: document.getElementById('pass-description'),
@@ -1118,6 +1122,7 @@ export function setAuthenticatedView(email) {
   animateCardIn(ui.editorCard);
   animateCardIn(ui.savedCard);
   animateCardIn(ui.statsCard);
+  animateCardIn(ui.resetCard);
 }
 
 export function setLoggedOutView() {
@@ -1129,6 +1134,12 @@ export function setLoggedOutView() {
   animateCardOut(ui.editorCard);
   animateCardOut(ui.savedCard);
   animateCardOut(ui.statsCard);
+  animateCardOut(ui.resetCard);
+}
+
+export function setResetTabVisibility(isVisible) {
+  if (!ui.resetTabBtn) return;
+  ui.resetTabBtn.classList.toggle('hidden', !isVisible);
 }
 
 export function fillEditorFromSavedPass(entry) {
@@ -1538,6 +1549,7 @@ export function setActiveTab(tabName) {
   ui.editorCard.classList.toggle('hidden', tabName !== 'editor');
   ui.savedCard.classList.toggle('hidden', tabName !== 'saved');
   ui.statsCard.classList.toggle('hidden', tabName !== 'stats');
+  ui.resetCard.classList.toggle('hidden', tabName !== 'reset');
 }
 
 export function resetNotificationRules() {

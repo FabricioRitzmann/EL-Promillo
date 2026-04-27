@@ -5,12 +5,15 @@ import {
   listPassStats,
   loginWithEmail,
   logout,
+  requestPasswordResetLink,
   registerWithEmail,
   requestPasswordOtp,
   savePass,
   supabaseClient,
+  updateCurrentUserPassword,
   uploadCustomImage
 } from './api.js';
+import { appConfig } from './config.js';
 import {
   addNotificationRule,
   applyTemplatePresetFromGallery,
@@ -40,6 +43,7 @@ import {
   setActiveTab,
   setAuthenticatedView,
   setLoggedOutView,
+  setResetTabVisibility,
   showToast,
   syncBannerFields,
   ui,
@@ -467,6 +471,28 @@ function handleExportExcel() {
   showToast('Excel-Datei wurde erstellt und heruntergeladen.');
 }
 
+function buildRecoveryRedirectUrl() {
+  const url = new URL(window.location.href);
+  url.hash = '';
+  url.searchParams.set('recovery', '1');
+  return url.toString();
+}
+
+function clearRecoveryUrlState() {
+  const cleanedUrl = new URL(window.location.href);
+  cleanedUrl.hash = '';
+  cleanedUrl.searchParams.delete('recovery');
+  window.history.replaceState({}, '', cleanedUrl.toString());
+}
+
+function isRecoveryLinkOpened() {
+  const hash = window.location.hash.replace(/^#/, '');
+  const hashParams = new URLSearchParams(hash);
+  const hasRecoveryType = hashParams.get('type') === 'recovery';
+  const hasRecoveryQueryFlag = new URLSearchParams(window.location.search).get('recovery') === '1';
+  return hasRecoveryType || hasRecoveryQueryFlag;
+}
+
 async function handleRegister() {
   const email = formElements.email.value.trim();
   const password = formElements.password.value.trim();
@@ -536,7 +562,51 @@ async function handleResetOtp() {
     return;
   }
 
-  showToast('OTP/Reset-E-Mail wurde verschickt.');
+  showToast('Einmalpasswort wurde per E-Mail verschickt.');
+}
+
+async function handleResetLinkRequest() {
+  const email = formElements.email.value.trim();
+  if (!email) {
+    showToast('Bitte zuerst eine E-Mail eingeben.', true);
+    return;
+  }
+
+  const { error } = await requestPasswordResetLink(email, buildRecoveryRedirectUrl());
+  if (error) {
+    showToast(`Reset-Link konnte nicht angefordert werden: ${error.message}`, true);
+    return;
+  }
+
+  showToast('Reset-Link wurde per E-Mail verschickt.');
+}
+
+async function handleSaveNewPassword(event) {
+  event.preventDefault();
+  const nextPassword = formElements.newPassword?.value.trim() || '';
+  const confirmPassword = formElements.confirmNewPassword?.value.trim() || '';
+
+  if (!nextPassword || !confirmPassword) {
+    showToast('Bitte beide Passwort-Felder ausfüllen.', true);
+    return;
+  }
+
+  if (nextPassword !== confirmPassword) {
+    showToast('Die beiden Passwörter sind nicht identisch.', true);
+    return;
+  }
+
+  const { error } = await updateCurrentUserPassword(nextPassword);
+  if (error) {
+    showToast(`Passwort konnte nicht aktualisiert werden: ${error.message}`, true);
+    return;
+  }
+
+  if (formElements.newPassword) formElements.newPassword.value = '';
+  if (formElements.confirmNewPassword) formElements.confirmNewPassword.value = '';
+  clearRecoveryUrlState();
+  showToast('Passwort erfolgreich geändert. Bitte neu einloggen.');
+  await handleLogout();
 }
 
 async function handleLogout() {
@@ -896,7 +966,7 @@ async function bootstrapAuth() {
   if (currentUser) {
     loadSavedCardsOrganization(currentUser.id);
     setAuthenticatedView(currentUser.email);
-    setActiveTab('editor');
+    setActiveTab(isRecoveryLinkOpened() ? 'reset' : 'editor');
     await refreshPasses();
     await refreshStats();
   } else {
@@ -909,7 +979,7 @@ async function bootstrapAuth() {
     if (currentUser) {
       loadSavedCardsOrganization(currentUser.id);
       setAuthenticatedView(currentUser.email);
-      setActiveTab('editor');
+      setActiveTab(isRecoveryLinkOpened() ? 'reset' : 'editor');
       refreshPasses();
       refreshStats();
     } else {
@@ -926,7 +996,9 @@ function wireEvents() {
   document.getElementById('auth-form').addEventListener('submit', handleAuthSubmit);
   document.getElementById('register-btn').addEventListener('click', handleRegister);
   document.getElementById('login-btn').addEventListener('click', handleLogin);
-  document.getElementById('reset-btn').addEventListener('click', handleResetOtp);
+  document.getElementById('otp-btn').addEventListener('click', handleResetOtp);
+  document.getElementById('reset-btn').addEventListener('click', handleResetLinkRequest);
+  document.getElementById('reset-password-form').addEventListener('submit', handleSaveNewPassword);
   document.getElementById('save-pass-btn').addEventListener('click', handleSavePass);
   document.getElementById('new-pass-btn').addEventListener('click', handleCreateNewPass);
   ui.logoutBtn.addEventListener('click', handleLogout);
@@ -1080,6 +1152,7 @@ function init() {
   lastTemplateId = formElements.template.value;
   syncBannerFields();
   applyBannerColorPreset();
+  setResetTabVisibility(Boolean(appConfig.showResetTab));
   setActiveTab('editor');
   handleTemplateChange();
   setPreviewMode(getPreviewMode());

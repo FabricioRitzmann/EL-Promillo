@@ -2,7 +2,9 @@ export const appConfig = {
   supabaseUrl: 'https://fcnnrtkvmkpbnsbhfwee.supabase.co',
   supabaseAnonKey: 'sb_publishable_ai6tT-97fCKJpCWyrHWFXw_IZ2vPDyz',
   // Optional: Externer Endpunkt für echte PassKit-Dateien (.pkpass)
-  passkitServiceUrl: ''
+  passkitServiceUrl: '',
+  // Temporär sichtbar in der Tabbar. Kann später auf false gesetzt werden.
+  showResetTab: true
 };
 
 export const templateIcons = [
