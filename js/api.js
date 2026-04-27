@@ -178,7 +178,8 @@ export async function savePass(passPayload, userId) {
       push_enabled: passPayload.pushEnabled,
       notification_rules: passPayload.notificationRules,
       passkit_enabled: passPayload.passkitConfig?.enabled ?? false,
-      passkit_config: passPayload.passkitConfig || {}
+      passkit_config: passPayload.passkitConfig || {},
+      wallet_template_config: passPayload.walletTemplateConfig || null
     };
 
     return await savePassWithSchemaFallback({

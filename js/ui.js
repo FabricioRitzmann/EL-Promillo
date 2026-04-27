@@ -1,4 +1,5 @@
 import { backgroundTemplates, bannerColorOptions, passTemplates, streakIcons, templateIcons } from './config.js';
+import { defaultWalletCard, templateSupportsField, WALLET_TEMPLATE_TYPES } from './walletTemplates.js';
 import {
   getDefaultPasskitConfig,
   normalizePasskitConfig,
@@ -103,7 +104,41 @@ export const formElements = {
   passkitLatitude: document.getElementById('passkit-latitude'),
   passkitLongitude: document.getElementById('passkit-longitude'),
   passkitBarcodeFormat: document.getElementById('passkit-barcode-format'),
-  passkitMessageEncoding: document.getElementById('passkit-message-encoding')
+  passkitMessageEncoding: document.getElementById('passkit-message-encoding'),
+  fullName: document.getElementById('full-name'),
+  customerNumber: document.getElementById('customer-number'),
+  memberTier: document.getElementById('member-tier'),
+  loyaltyPoints: document.getElementById('loyalty-points'),
+  balanceValue: document.getElementById('balance-value'),
+  balanceCurrency: document.getElementById('balance-currency'),
+  validUntil: document.getElementById('valid-until'),
+  memberSince: document.getElementById('member-since'),
+  memberEmail: document.getElementById('member-email'),
+  eventName: document.getElementById('event-name'),
+  eventDate: document.getElementById('event-date'),
+  eventTime: document.getElementById('event-time'),
+  eventLocation: document.getElementById('event-location'),
+  eventSection: document.getElementById('event-section'),
+  eventRow: document.getElementById('event-row'),
+  eventSeat: document.getElementById('event-seat'),
+  departure: document.getElementById('departure'),
+  destination: document.getElementById('destination'),
+  gate: document.getElementById('gate'),
+  flightNumber: document.getElementById('flight-number'),
+  boardingTime: document.getElementById('boarding-time'),
+  policyName: document.getElementById('policy-name'),
+  coverage: document.getElementById('coverage'),
+  deductible: document.getElementById('deductible'),
+  coInsurance: document.getElementById('co-insurance'),
+  barcodeType: document.getElementById('barcode-type'),
+  barcodeValue: document.getElementById('barcode-value'),
+  barcodeShowText: document.getElementById('barcode-show-text'),
+  stampTotal: document.getElementById('stamp-total'),
+  stampCollected: document.getElementById('stamp-collected'),
+  stampRewardText: document.getElementById('stamp-reward-text'),
+  templateGallery: document.getElementById('template-gallery'),
+  duplicateTemplateBtn: document.getElementById('duplicate-template-btn'),
+  resetLayoutBtn: document.getElementById('reset-layout-btn')
 };
 
 let pendingConfirmResolver = null;
@@ -123,6 +158,19 @@ const weekdays = [
 
 const defaultPreviewLogo =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%23ffffff'/%3E%3Ctext x='20' y='24' text-anchor='middle' font-size='12' font-family='Arial' fill='%23111111'%3EEV%3C/text%3E%3C/svg%3E";
+let currentLayoutConfig = { ...defaultWalletCard.layoutConfig };
+
+export function getLayoutConfig() {
+  return { ...currentLayoutConfig };
+}
+
+export function setLayoutConfig(nextLayout = {}) {
+  currentLayoutConfig = { ...currentLayoutConfig, ...nextLayout };
+}
+
+export function resetLayoutConfig() {
+  currentLayoutConfig = { ...defaultWalletCard.layoutConfig };
+}
 
 const stampIconDefinitions = {
   'coffee-cup': { name: 'coffee', path: 'M17 8h1a4 4 0 1 1 0 8h-1M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z M6 2v2M10 2v2M14 2v2' },
@@ -239,6 +287,7 @@ export function initTemplateSelect() {
     option.textContent = template.name;
     formElements.template.appendChild(option);
   }
+  renderTemplateGallery();
 
   formElements.template.value = passTemplates[0].id;
   setSelectOptions(formElements.icon, templateIcons);
@@ -278,6 +327,47 @@ export function initTemplateSelect() {
   }
 }
 
+function renderTemplateGallery() {
+  if (!formElements.templateGallery) return;
+  formElements.templateGallery.innerHTML = '';
+  WALLET_TEMPLATE_TYPES.forEach((template) => {
+    const card = document.createElement('article');
+    card.className = 'template-gallery-card';
+    card.innerHTML = `<h4>${template.label}</h4><p>${template.description}</p><button type=\"button\" class=\"btn btn-secondary\" data-template-use=\"${template.id}\">Template verwenden</button>`;
+    formElements.templateGallery.appendChild(card);
+  });
+}
+
+export function renderTemplateDependentFields(templateType) {
+  const groups = [
+    ['member-since', 'memberSince'],
+    ['member-email', 'email'],
+    ['event-name', 'eventName'],
+    ['event-date', 'eventDate'],
+    ['event-time', 'eventTime'],
+    ['event-location', 'eventLocation'],
+    ['event-section', 'section'],
+    ['event-row', 'row'],
+    ['event-seat', 'seat'],
+    ['departure', 'departure'],
+    ['destination', 'destination'],
+    ['gate', 'gate'],
+    ['flight-number', 'flightNumber'],
+    ['boarding-time', 'boardingTime'],
+    ['policy-name', 'policyName'],
+    ['coverage', 'coverage'],
+    ['deductible', 'deductible'],
+    ['co-insurance', 'coInsurance']
+  ];
+  groups.forEach(([id, key]) => {
+    const input = document.getElementById(id);
+    const label = input?.closest('label');
+    if (label) {
+      label.classList.toggle('hidden', !templateSupportsField(templateType, key));
+    }
+  });
+}
+
 export function getTemplateById(id) {
   return passTemplates.find((template) => template.id === id) || passTemplates[0];
 }
@@ -289,8 +379,9 @@ export function renderProgramFields(programType) {
 
   const streakIconWrap = document.getElementById('streak-icon-wrap');
   streakIconWrap.classList.toggle('hidden', programType !== 'streak');
-  const hasStampBackground = programType === 'coffee' || programType === 'streak';
+  const hasStampBackground = programType === 'coffee' || programType === 'streak' || programType === 'stamp_card';
   formElements.stampFrameSection.classList.toggle('hidden', !hasStampBackground);
+  renderTemplateDependentFields(programType);
 }
 
 export function initSectionDropdowns() {
@@ -368,7 +459,7 @@ export function applyTemplateDefaults(template) {
 
   formElements.icon.value = template.defaults.iconId || templateIcons[0].id;
 
-  if (template.programType === 'coffee') {
+  if (template.programType === 'coffee' || template.programType === 'stamp_card') {
     formElements.coffeeTarget.value = template.defaults.stampTarget;
     formElements.coffeeCurrent.value = template.defaults.currentStamps;
     formElements.coffeeReward.value = template.defaults.rewardText;
@@ -384,11 +475,14 @@ export function applyTemplateDefaults(template) {
     formElements.streakShape.value = template.defaults.streakShape || 'circle';
   }
 
-  if (template.programType === 'credit') {
+  if (template.programType === 'credit' || template.programType === 'gift_card') {
     formElements.creditBalance.value = template.defaults.balance;
     formElements.creditCurrency.value = template.defaults.currency;
     formElements.creditThreshold.value = template.defaults.lowBalanceThreshold;
   }
+
+  formElements.memberTier.value = formElements.memberTier.value || 'Gold';
+  formElements.validUntil.value = formElements.validUntil.value || '31.12.2026';
 }
 
 export function getProgramConfig(programType) {
@@ -595,100 +689,67 @@ export function getNotificationRules() {
 
 export function updatePreview(payload) {
   const preview = document.getElementById('pass-preview');
-  const company = document.getElementById('preview-company');
-  const cardType = document.getElementById('preview-card-type');
-  const name = document.getElementById('preview-name');
-  const status = document.getElementById('preview-status');
-  const points = document.getElementById('preview-points');
-  const customerNumber = document.getElementById('preview-customer-number');
-  const validUntil = document.getElementById('preview-valid-until');
-  const statusLabel = document.getElementById('preview-label-status');
-  const pointsLabel = document.getElementById('preview-label-points');
-  const customerNumberLabel = document.getElementById('preview-label-customer-number');
-  const validUntilLabel = document.getElementById('preview-label-valid-until');
-  const mainIcon = document.getElementById('preview-main-icon');
-  const qrImage = document.getElementById('preview-qr');
-  const qrCodeText = document.getElementById('preview-qr-code-text');
   const walletLabel = document.getElementById('preview-wallet-label');
+  if (!preview) return;
 
   const walletSkin = payload.walletSkin || 'apple';
-  const walletLabels = {
-    apple: 'Apple Wallet',
-    google: 'Google Wallet',
-    samsung: 'Samsung Wallet'
-  };
-  const walletFieldLabels = {
-    apple: {
-      status: 'Status',
-      points: 'Punkte',
-      customerNumber: 'Kundennummer',
-      validUntil: 'Gültig bis'
-    },
-    google: {
-      status: 'Status',
-      points: 'Punkte',
-      customerNumber: 'Kundennummer',
-      validUntil: 'Gültig bis'
-    },
-    samsung: {
-      status: 'Tier',
-      points: 'Points',
-      customerNumber: 'Member ID',
-      validUntil: 'Valid Until'
-    }
-  };
-
+  const walletLabels = { apple: 'Apple Wallet', google: 'Google Wallet', samsung: 'Samsung Wallet' };
   preview.dataset.walletSkin = walletSkin;
-  if (walletLabel) {
-    walletLabel.textContent = walletLabels[walletSkin] || walletLabels.apple;
-  }
-  const selectedFieldLabels = walletFieldLabels[walletSkin] || walletFieldLabels.apple;
-  if (statusLabel) statusLabel.textContent = selectedFieldLabels.status;
-  if (pointsLabel) pointsLabel.textContent = selectedFieldLabels.points;
-  if (customerNumberLabel) customerNumberLabel.textContent = selectedFieldLabels.customerNumber;
-  if (validUntilLabel) validUntilLabel.textContent = selectedFieldLabels.validUntil;
+  if (walletLabel) walletLabel.textContent = walletLabels[walletSkin] || walletLabels.apple;
 
-  company.textContent = payload.businessName || 'Egli+Vitali AG';
-  const fallbackCardType = walletSkin === 'samsung' ? 'Membership Card' : 'Kundenkarte';
-  cardType.textContent = payload.subtitle || fallbackCardType;
-  name.textContent = payload.title || 'Max Muster';
-  status.textContent = payload.cardProgramType === 'streak' ? 'Streak' : payload.cardProgramType === 'coffee' ? 'Treuekarte' : 'Aktiv';
+  const layout = payload.layoutConfig || currentLayoutConfig || defaultWalletCard.layoutConfig;
+  currentLayoutConfig = { ...defaultWalletCard.layoutConfig, ...layout };
 
-  const pointValue =
-    payload.cardProgramType === 'credit'
-      ? Math.round(sanitizeNumber(payload.programConfig?.creditBalance, 0))
-      : Math.round(sanitizeNumber(payload.programConfig?.currentStamps, 0));
-  points.textContent = String(pointValue);
+  const companyName = payload.businessName || 'Egli+Vitali AG';
+  const title = payload.subtitle || 'Wallet Card';
+  const fullName = payload.fields?.fullName || payload.title || 'Max Muster';
+  const tier = payload.fields?.tier || 'Gold';
+  const points = payload.fields?.points ?? 0;
+  const balance = payload.fields?.balance ?? 0;
+  const currency = payload.fields?.currency || 'CHF';
+  const customerNumber = payload.fields?.customerNumber || payload.qrContent || 'EV-000123';
+  const validUntil = payload.fields?.validUntil || '31.12.2026';
+  const barcodeValue = payload.barcodeConfig?.value || payload.qrContent || customerNumber;
 
-  const customerNumberValue =
-    payload.passkit?.serialNumber ||
-    payload.passkitSerialNumber ||
-    payload.qrContent ||
-    'EV-000123';
-  customerNumber.textContent = customerNumberValue;
-  qrCodeText.textContent = customerNumberValue;
+  const stampTotal = Number(payload.stampConfig?.totalStamps || 10);
+  const stampCollected = Number(payload.stampConfig?.collectedStamps || 0);
+  const stampDots = Array.from({ length: Math.max(1, Math.min(stampTotal, 10)) })
+    .map((_, idx) => `<span class="wallet-stamp-dot ${idx < stampCollected ? 'is-active' : ''}"></span>`)
+    .join('');
 
-  const relevantDate = payload.passkit?.relevantDate || payload.passkitRelevantDate || '';
-  if (relevantDate) {
-    const parsedDate = new Date(relevantDate);
-    validUntil.textContent = Number.isNaN(parsedDate.getTime()) ? relevantDate : parsedDate.toLocaleDateString('de-CH');
-  } else {
-    validUntil.textContent = '31.12.2026';
-  }
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(barcodeValue)}`;
+  const showStamp = payload.templateId === 'stamp_card';
+  const showBalance = payload.templateId === 'gift_card';
 
-  if (payload.customIconUrl) {
-    mainIcon.classList.remove('hidden');
-    mainIcon.src = payload.customIconUrl;
-  } else {
-    mainIcon.classList.remove('hidden');
-    mainIcon.src = defaultPreviewLogo;
-  }
-  preview.style.color = payload.foregroundColor || '#ffffff';
+  preview.style.background = payload.customImageUrl ? `url(${payload.customImageUrl}) center/cover` : payload.backgroundColor || '#4654B8';
+  preview.style.color = payload.foregroundColor || '#fff';
 
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(
-    payload.qrContent || 'https://example.com'
-  )}`;
-  qrImage.src = qrUrl;
+  const at = (key) => currentLayoutConfig[key] || { x: 16, y: 16 };
+
+  preview.innerHTML = `
+    <div class="wallet-preview-element" data-drag-key="logo" style="left:${at('logo').x}px;top:${at('logo').y}px;">
+      <img id="preview-main-icon" src="${payload.customIconUrl || defaultPreviewLogo}" alt="Logo" class="pass-logo" />
+      <span class="logo-text">${companyName}</span>
+    </div>
+    <div class="wallet-preview-element" data-drag-key="title" style="left:${at('title').x}px;top:${at('title').y}px;">
+      <span class="label">${title}</span><strong>${fullName}</strong>
+    </div>
+    <div class="wallet-preview-element" data-drag-key="mainValue" style="left:${at('mainValue').x}px;top:${at('mainValue').y}px;">
+      <span class="label">STATUS</span><strong>${tier}</strong>
+    </div>
+    <div class="wallet-preview-element" data-drag-key="points" style="left:${at('points').x}px;top:${at('points').y}px;">
+      <span class="label">PUNKTE</span><strong>${points}</strong>
+    </div>
+    <div class="wallet-preview-element" data-drag-key="secondaryValue" style="left:${at('secondaryValue').x}px;top:${at('secondaryValue').y}px;">
+      <span class="label">KUNDENNUMMER</span><strong>${customerNumber}</strong><br/><span class="label">GÜLTIG BIS ${validUntil}</span>
+    </div>
+    ${showBalance ? `<div class="wallet-preview-element" data-drag-key="balance" style="left:${at('balance').x}px;top:${at('balance').y}px;"><span class="label">GUTHABEN</span><strong>${Number(balance).toFixed(2)} ${currency}</strong></div>` : ''}
+    ${showStamp ? `<div class="wallet-preview-element" data-drag-key="stampGrid" style="left:${at('stampGrid').x}px;top:${at('stampGrid').y}px;"><div class="wallet-stamp-grid">${stampDots}</div><span class="label">${payload.stampConfig?.rewardText || ''}</span></div>` : ''}
+    <div class="wallet-preview-element" data-drag-key="barcode" style="left:${at('barcode').x}px;top:${at('barcode').y}px;">
+      <img id="preview-qr" alt="QR" src="${qrUrl}" width="64" height="64" />
+      ${payload.barcodeConfig?.showText ? `<span class="label">${barcodeValue}</span>` : ''}
+    </div>
+  `;
 }
 
 function toWalletSimulationEntry(rawEntry, fallbackId = null) {
@@ -883,6 +944,47 @@ export function getPassFormData() {
     },
     cardProgramType: template.programType || 'generic',
     programConfig: getProgramConfig(template.programType || 'generic'),
+    templateType: template.id,
+    fields: {
+      companyName: formElements.businessName.value.trim(),
+      title: formElements.subtitle.value.trim(),
+      fullName: formElements.fullName?.value.trim() || '',
+      customerNumber: formElements.customerNumber?.value.trim() || '',
+      memberSince: formElements.memberSince?.value.trim() || '',
+      validUntil: formElements.validUntil?.value.trim() || '',
+      tier: formElements.memberTier?.value.trim() || '',
+      points: sanitizeNumber(formElements.loyaltyPoints?.value, 0),
+      balance: sanitizeNumber(formElements.balanceValue?.value, 0),
+      currency: formElements.balanceCurrency?.value || 'CHF',
+      email: formElements.memberEmail?.value.trim() || '',
+      eventName: formElements.eventName?.value.trim() || '',
+      eventDate: formElements.eventDate?.value.trim() || '',
+      eventTime: formElements.eventTime?.value.trim() || '',
+      eventLocation: formElements.eventLocation?.value.trim() || '',
+      section: formElements.eventSection?.value.trim() || '',
+      row: formElements.eventRow?.value.trim() || '',
+      seat: formElements.eventSeat?.value.trim() || '',
+      departure: formElements.departure?.value.trim() || '',
+      destination: formElements.destination?.value.trim() || '',
+      gate: formElements.gate?.value.trim() || '',
+      flightNumber: formElements.flightNumber?.value.trim() || '',
+      boardingTime: formElements.boardingTime?.value.trim() || '',
+      policyName: formElements.policyName?.value.trim() || '',
+      coverage: formElements.coverage?.value.trim() || '',
+      deductible: formElements.deductible?.value.trim() || '',
+      coInsurance: formElements.coInsurance?.value.trim() || ''
+    },
+    barcodeConfig: {
+      type: formElements.barcodeType?.value || 'QR',
+      value: formElements.barcodeValue?.value.trim() || formElements.qrContent.value.trim(),
+      showText: Boolean(formElements.barcodeShowText?.checked)
+    },
+    stampConfig: {
+      totalStamps: sanitizeNumber(formElements.stampTotal?.value, 10),
+      collectedStamps: sanitizeNumber(formElements.stampCollected?.value, 0),
+      rewardText: formElements.stampRewardText?.value.trim() || ''
+    },
+    layoutConfig: getLayoutConfig(),
     pushEnabled: formElements.pushEnabled.checked,
     notificationRules: getNotificationRules(),
     passkitConfig
@@ -955,6 +1057,8 @@ export function fillEditorFromSavedPass(entry) {
   syncBannerFields();
 
   const programConfig = entry.program_config || {};
+  const walletTemplateConfig = entry.wallet_template_config || {};
+  const savedFields = walletTemplateConfig.fields || {};
   formElements.coffeeTarget.value = programConfig.stampTarget ?? 10;
   formElements.coffeeCurrent.value = programConfig.currentStamps ?? 0;
   formElements.coffeeReward.value = programConfig.rewardText ?? '';
@@ -973,6 +1077,38 @@ export function fillEditorFromSavedPass(entry) {
   formElements.creditBalance.value = programConfig.balance ?? 0;
   formElements.creditCurrency.value = programConfig.currency ?? 'EUR';
   formElements.creditThreshold.value = programConfig.lowBalanceThreshold ?? 5;
+  if (formElements.fullName) formElements.fullName.value = savedFields.fullName || '';
+  if (formElements.customerNumber) formElements.customerNumber.value = savedFields.customerNumber || entry.qr_content || '';
+  if (formElements.memberTier) formElements.memberTier.value = savedFields.tier || 'Gold';
+  if (formElements.loyaltyPoints) formElements.loyaltyPoints.value = savedFields.points ?? 0;
+  if (formElements.balanceValue) formElements.balanceValue.value = savedFields.balance ?? 0;
+  if (formElements.balanceCurrency) formElements.balanceCurrency.value = savedFields.currency || 'CHF';
+  if (formElements.validUntil) formElements.validUntil.value = savedFields.validUntil || '';
+  if (formElements.memberSince) formElements.memberSince.value = savedFields.memberSince || '';
+  if (formElements.memberEmail) formElements.memberEmail.value = savedFields.email || '';
+  if (formElements.eventName) formElements.eventName.value = savedFields.eventName || '';
+  if (formElements.eventDate) formElements.eventDate.value = savedFields.eventDate || '';
+  if (formElements.eventTime) formElements.eventTime.value = savedFields.eventTime || '';
+  if (formElements.eventLocation) formElements.eventLocation.value = savedFields.eventLocation || '';
+  if (formElements.eventSection) formElements.eventSection.value = savedFields.section || '';
+  if (formElements.eventRow) formElements.eventRow.value = savedFields.row || '';
+  if (formElements.eventSeat) formElements.eventSeat.value = savedFields.seat || '';
+  if (formElements.departure) formElements.departure.value = savedFields.departure || '';
+  if (formElements.destination) formElements.destination.value = savedFields.destination || '';
+  if (formElements.gate) formElements.gate.value = savedFields.gate || '';
+  if (formElements.flightNumber) formElements.flightNumber.value = savedFields.flightNumber || '';
+  if (formElements.boardingTime) formElements.boardingTime.value = savedFields.boardingTime || '';
+  if (formElements.policyName) formElements.policyName.value = savedFields.policyName || '';
+  if (formElements.coverage) formElements.coverage.value = savedFields.coverage || '';
+  if (formElements.deductible) formElements.deductible.value = savedFields.deductible || '';
+  if (formElements.coInsurance) formElements.coInsurance.value = savedFields.coInsurance || '';
+  if (formElements.barcodeType) formElements.barcodeType.value = walletTemplateConfig.barcodeConfig?.type || 'QR';
+  if (formElements.barcodeValue) formElements.barcodeValue.value = walletTemplateConfig.barcodeConfig?.value || entry.qr_content || '';
+  if (formElements.barcodeShowText) formElements.barcodeShowText.checked = walletTemplateConfig.barcodeConfig?.showText ?? true;
+  if (formElements.stampTotal) formElements.stampTotal.value = walletTemplateConfig.stampConfig?.totalStamps ?? 10;
+  if (formElements.stampCollected) formElements.stampCollected.value = walletTemplateConfig.stampConfig?.collectedStamps ?? 0;
+  if (formElements.stampRewardText) formElements.stampRewardText.value = walletTemplateConfig.stampConfig?.rewardText ?? '';
+  currentLayoutConfig = { ...defaultWalletCard.layoutConfig, ...(walletTemplateConfig.layoutConfig || {}) };
 
   formElements.passkitEnabled.checked = Boolean(passkitConfig.enabled);
   formElements.passkitPassType.value = passkitConfig.passType;
@@ -1207,6 +1343,15 @@ export function onSavedPassScan(handler) {
     const row = button.closest('li[data-pass-id]');
     if (!row) return;
     handler(row.dataset.passId);
+  });
+}
+
+export function onTemplateGalleryUse(handler) {
+  if (!formElements.templateGallery) return;
+  formElements.templateGallery.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-template-use]');
+    if (!button) return;
+    handler(button.dataset.templateUse);
   });
 }
 

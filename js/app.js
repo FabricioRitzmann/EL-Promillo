@@ -29,6 +29,7 @@ import {
   onSavedPassFolderChange,
   onSavedPassOpen,
   onSavedPassScan,
+  onTemplateGalleryUse,
   renderStats,
   renderProgramFields,
   renderEditorFolderOptions,
@@ -42,8 +43,13 @@ import {
   syncBannerFields,
   ui,
   updatePreview,
-  openWalletSimulation
+  openWalletSimulation,
+  getLayoutConfig,
+  setLayoutConfig,
+  resetLayoutConfig
 } from './ui.js';
+import { setupWalletDragDrop } from './walletDrag.js';
+import { mapEditorToApplePass, mapEditorToGoogleWallet, mapEditorToSamsungWallet } from './walletMappers.js';
 
 let currentUser = null;
 let currentUploadedImageUrl = '';
@@ -60,6 +66,7 @@ let savedCardsFilters = {
   cardType: 'all',
   sort: 'newest'
 };
+let destroyDragDrop = null;
 
 function normalizeFolderNames(folderNames = []) {
   const uniqueNames = new Map();
@@ -121,6 +128,16 @@ function buildPreviewPayload() {
 
 function refreshPreview() {
   updatePreview(buildPreviewPayload());
+  if (destroyDragDrop) destroyDragDrop();
+  destroyDragDrop = setupWalletDragDrop({
+    container: document.getElementById('pass-preview'),
+    getLayout: () => getLayoutConfig(),
+    onLayoutChange: (nextLayout) => {
+      setLayoutConfig(nextLayout);
+      updatePreview(buildPreviewPayload());
+    },
+    snap: 2
+  });
   syncPreviewWalletTabs();
 }
 
@@ -509,7 +526,25 @@ async function handleSavePass() {
       templateStoragePath: currentEntry?.template_storage_path || '',
       customImageUrl: currentUploadedImageUrl,
       customIconUrl: currentUploadedIconUrl,
-      customBannerUrl: currentUploadedBannerUrl
+      customBannerUrl: currentUploadedBannerUrl,
+      walletTemplateConfig: {
+        templateType: passData.templateType,
+        designConfig: {
+          primaryColor: passData.backgroundColor,
+          textColor: passData.foregroundColor,
+          labelColor: passData.passkitConfig?.labelColor || 'rgba(255,255,255,0.75)',
+          borderRadius: 16
+        },
+        fields: passData.fields,
+        barcodeConfig: passData.barcodeConfig,
+        stampConfig: passData.stampConfig,
+        layoutConfig: passData.layoutConfig,
+        exports: {
+          apple: mapEditorToApplePass(passData),
+          google: mapEditorToGoogleWallet(passData),
+          samsung: mapEditorToSamsungWallet(passData)
+        }
+      }
     },
     currentUser.id
   );
@@ -550,6 +585,7 @@ async function handleCreateNewPass() {
   currentUploadedBannerUrl = '';
   formElements.upload.value = '';
   initTemplateSelect();
+  resetLayoutConfig();
   resetNotificationRules();
   addNotificationRule({
     name: 'Beispiel Reminder',
@@ -686,7 +722,8 @@ async function handleScanPass(passId) {
       cardProgramType: selectedPass.card_program_type,
       programConfig,
       pushEnabled: selectedPass.push_enabled,
-      notificationRules: selectedPass.notification_rules
+      notificationRules: selectedPass.notification_rules,
+      walletTemplateConfig: selectedPass.wallet_template_config || null
     },
     currentUser.id
   );
@@ -780,15 +817,57 @@ function wireEvents() {
     formElements.stampSize,
     formElements.stampBorderWidth,
     formElements.stampOffsetX,
-    formElements.stampOffsetY
+    formElements.stampOffsetY,
+    formElements.fullName,
+    formElements.customerNumber,
+    formElements.memberTier,
+    formElements.loyaltyPoints,
+    formElements.balanceValue,
+    formElements.balanceCurrency,
+    formElements.validUntil,
+    formElements.memberSince,
+    formElements.memberEmail,
+    formElements.eventName,
+    formElements.eventDate,
+    formElements.eventTime,
+    formElements.eventLocation,
+    formElements.eventSection,
+    formElements.eventRow,
+    formElements.eventSeat,
+    formElements.departure,
+    formElements.destination,
+    formElements.gate,
+    formElements.flightNumber,
+    formElements.boardingTime,
+    formElements.policyName,
+    formElements.coverage,
+    formElements.deductible,
+    formElements.coInsurance,
+    formElements.barcodeType,
+    formElements.barcodeValue,
+    formElements.barcodeShowText,
+    formElements.stampTotal,
+    formElements.stampCollected,
+    formElements.stampRewardText
   ];
 
-  previewFields.forEach((field) => field.addEventListener('input', refreshPreview));
-  previewFields.forEach((field) => field.addEventListener('change', refreshPreview));
+  previewFields.filter(Boolean).forEach((field) => field.addEventListener('input', refreshPreview));
+  previewFields.filter(Boolean).forEach((field) => field.addEventListener('change', refreshPreview));
 
   formElements.template.addEventListener('change', handleTemplateChange);
   formElements.bannerEnabled.addEventListener('change', syncBannerFields);
   formElements.bannerColor.addEventListener('change', applyBannerColorPreset);
+  formElements.resetLayoutBtn?.addEventListener('click', () => {
+    resetLayoutConfig();
+    refreshPreview();
+  });
+  formElements.duplicateTemplateBtn?.addEventListener('click', () => {
+    showToast('Template als Variante dupliziert (lokale Vorschau).');
+  });
+  onTemplateGalleryUse((templateId) => {
+    formElements.template.value = templateId;
+    formElements.template.dispatchEvent(new Event('change', { bubbles: true }));
+  });
 
   formElements.upload.addEventListener('change', handleImageUpload);
   formElements.iconUpload.addEventListener('change', handleIconUpload);
