@@ -56,9 +56,11 @@ async function savePassWithSchemaFallback({ payload, passId, userId }) {
         .from('wallet_passes')
         .update(activePayload)
         .eq('id', passId)
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .select('id')
+        .single();
     }
-    return supabaseClient.from('wallet_passes').insert(activePayload);
+    return supabaseClient.from('wallet_passes').insert(activePayload).select('id').single();
   };
 
   const fallbackPayload = { ...payload };

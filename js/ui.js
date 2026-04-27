@@ -48,6 +48,7 @@ export const formElements = {
   qrContent: document.getElementById('pass-qr-content'),
   businessName: document.getElementById('business-name'),
   businessCategory: document.getElementById('business-category'),
+  folder: document.getElementById('pass-folder'),
   template: document.getElementById('pass-template'),
   icon: document.getElementById('pass-icon'),
   iconUpload: document.getElementById('pass-icon-upload'),
@@ -859,6 +860,7 @@ export function getPassFormData() {
     qrContent: formElements.qrContent.value.trim(),
     businessName: formElements.businessName.value.trim(),
     businessCategory: formElements.businessCategory.value,
+    folderName: formElements.folder.value || 'none',
     templateId: formElements.template.value,
     iconId: formElements.icon.value,
     walletSkin: formElements.walletSkin.value,
@@ -883,6 +885,24 @@ export function getPassFormData() {
     notificationRules: getNotificationRules(),
     passkitConfig
   };
+}
+
+export function renderEditorFolderOptions(folderNames = [], selectedFolder = 'none') {
+  if (!formElements.folder) return;
+  const availableFolders = ['none', ...folderNames];
+  const labels = {
+    none: 'Kein Ordner'
+  };
+
+  formElements.folder.innerHTML = '';
+  for (const folderName of availableFolders) {
+    const option = document.createElement('option');
+    option.value = folderName;
+    option.textContent = labels[folderName] || folderName;
+    formElements.folder.appendChild(option);
+  }
+
+  formElements.folder.value = availableFolders.includes(selectedFolder) ? selectedFolder : 'none';
 }
 
 export function setAuthenticatedView(email) {
