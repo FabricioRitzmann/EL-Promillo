@@ -566,21 +566,10 @@ function getFriendlyAuthErrorMessage(errorMessage) {
   return errorMessage || 'Unbekannter Auth-Fehler';
 }
 
-async function awaitAuthBootstrap() {
-  if (!authBootstrapPromise) return;
-
-  const timeoutPromise = new Promise((resolve) => {
-    setTimeout(resolve, 1500);
-  });
-
-  await Promise.race([
-    authBootstrapPromise.catch(() => null),
-    timeoutPromise
-  ]);
-}
-
 async function handleRegister() {
-  await awaitAuthBootstrap();
+  if (authBootstrapPromise) {
+    await authBootstrapPromise;
+  }
 
   const email = formElements.email.value.trim();
   const password = formElements.password.value.trim();
@@ -595,7 +584,9 @@ async function handleRegister() {
 }
 
 async function handleLogin() {
-  await awaitAuthBootstrap();
+  if (authBootstrapPromise) {
+    await authBootstrapPromise;
+  }
 
   const authForm = document.getElementById('auth-form');
   if (authForm && !authForm.reportValidity()) {
@@ -1060,7 +1051,7 @@ async function handleScanPass(passId) {
 
 async function bootstrapAuth() {
   if (!isRememberSessionEnabled() && !hasActiveSessionMarker()) {
-    supabaseClient.auth.signOut({ scope: 'local' }).catch(() => null);
+    await supabaseClient.auth.signOut({ scope: 'local' });
   }
 
   const {
