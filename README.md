@@ -1,4 +1,4 @@
-# Pass Studio (PassKit-inspiriert)
+# WallPass (PassKit-inspiriert)
 
 Eine moderne Web-App mit:
 
