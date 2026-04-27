@@ -795,6 +795,25 @@ function getSimulationBackground(entry) {
   return entry.backgroundColor;
 }
 
+function getWalletProviderMeta(walletSkin) {
+  const providerBySkin = {
+    apple: {
+      name: 'Apple Wallet',
+      spec: 'PassKit • Horizontal Pass'
+    },
+    google: {
+      name: 'Google Wallet',
+      spec: 'Google Wallet API • Horizontal Card'
+    },
+    samsung: {
+      name: 'Samsung Wallet',
+      spec: 'Samsung Wallet • Horizontal Card'
+    }
+  };
+
+  return providerBySkin[walletSkin] || providerBySkin.apple;
+}
+
 function renderWalletSimulationDetail(entry) {
   if (!ui.walletSimDetail) {
     return;
@@ -812,16 +831,21 @@ function renderWalletSimulationDetail(entry) {
       </div>`
     : '';
   const isLivePreview = entry.id === 'live-preview';
+  const providerMeta = getWalletProviderMeta(entry.walletSkin);
 
   ui.walletSimDetail.innerHTML = `
     <div class="wallet-sim-detail-pass" data-wallet-skin="${entry.walletSkin}" style="background:${getSimulationBackground(entry)}; color:${entry.foregroundColor};">
       <div class="wallet-sim-detail-header">
-        <p class="wallet-sim-detail-issuer">${issuer}</p>
+        <div>
+          <p class="wallet-sim-detail-issuer">${issuer}</p>
+          <p class="wallet-sim-detail-provider">${providerMeta.name}</p>
+        </div>
         <span class="wallet-sim-detail-chip">${isLivePreview ? 'Live' : 'Gespeichert'}</span>
       </div>
       <p class="wallet-sim-detail-subtitle">${entry.subtitle}</p>
       <h4 class="wallet-sim-detail-title">${getIconSymbol(entry.iconId)} ${entry.title}</h4>
       ${stampPreview}
+      <p class="wallet-sim-detail-spec">${providerMeta.spec}</p>
       <img class="wallet-sim-detail-qr" src="${qrUrl}" alt="QR Code von ${entry.title}" />
     </div>
   `;
@@ -834,7 +858,13 @@ function renderWalletSimulationStack() {
 
   ui.walletSimStack.innerHTML = '';
 
-  simulationPasses.forEach((entry, index) => {
+  const unselectedPasses = simulationPasses.filter((entry) => entry.id !== selectedSimulationPassId);
+  if (!unselectedPasses.length) {
+    ui.walletSimStack.innerHTML = '<p class="wallet-sim-empty-hint">Keine weiteren Karten im Stapel.</p>';
+    return;
+  }
+
+  unselectedPasses.forEach((entry, index) => {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'wallet-sim-mini-pass';
@@ -844,18 +874,17 @@ function renderWalletSimulationStack() {
     button.setAttribute('aria-label', `Karte ${entry.title} öffnen`);
     button.style.background = getSimulationBackground(entry);
     button.style.color = entry.foregroundColor;
-    button.style.zIndex = String(simulationPasses.length - index);
-    const isActive = entry.id === selectedSimulationPassId;
-    button.classList.toggle('is-active', isActive);
-    button.classList.toggle('is-collapsed', !isActive);
+    button.style.zIndex = String(unselectedPasses.length - index);
     const hasStampProgram = entry.cardProgramType === 'coffee' || entry.cardProgramType === 'streak';
     const progressText = hasStampProgram ? `Stempel ${entry.currentStamps} von ${entry.stampTarget}` : '';
+    const providerMeta = getWalletProviderMeta(entry.walletSkin);
     button.innerHTML = `
       <div class="wallet-sim-mini-leading">
         <span class="wallet-sim-mini-icon">${getIconSymbol(entry.iconId)}</span>
         <div class="wallet-sim-mini-copy">
           <p class="wallet-sim-mini-subtitle">${entry.subtitle}</p>
           <p class="wallet-sim-mini-title">${entry.title}</p>
+          <p class="wallet-sim-mini-provider">${providerMeta.name}</p>
         </div>
       </div>
       ${hasStampProgram ? `<p class="wallet-sim-mini-progress">${progressText}</p>` : ''}
