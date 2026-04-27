@@ -268,6 +268,101 @@ export async function uploadCustomImage(file, userId) {
   return { data: { path: objectPath, publicUrl: data.publicUrl }, error: null };
 }
 
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+function buildQrImageUrl(content) {
+  const encodedContent = encodeURIComponent(content || '');
+  return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=0&data=${encodedContent}`;
+}
+
+function buildExportRow(entry) {
+  const cardTitle = escapeHtml(entry.title || 'Ohne Titel');
+  const subtitle = escapeHtml(entry.subtitle || '');
+  const description = escapeHtml(entry.description || '');
+  const businessName = escapeHtml(entry.business_name || 'Unbekannter Betrieb');
+  const backgroundColor = escapeHtml(entry.background_color || '#1f6feb');
+  const foregroundColor = escapeHtml(entry.foreground_color || '#ffffff');
+  const qrImage = buildQrImageUrl(entry.qr_content || '');
+  const qrContent = escapeHtml(entry.qr_content || '');
+
+  return `
+    <tr>
+      <td class="card-col">
+        <div class="credit-card" style="background:${backgroundColor}; color:${foregroundColor};">
+          <div class="card-label">KARTE</div>
+          <div class="card-title">${cardTitle}</div>
+          <div class="card-subtitle">${subtitle}</div>
+          <div class="card-business">${businessName}</div>
+          <div class="card-description">${description}</div>
+        </div>
+      </td>
+      <td class="qr-col">
+        <img class="qr-image" src="${qrImage}" alt="QR Code" />
+        <div class="qr-content">${qrContent}</div>
+      </td>
+    </tr>
+  `;
+}
+
+export function createPassesExcelExport(entries = []) {
+  const safeEntries = Array.isArray(entries) ? entries : [];
+
+  const html = `
+    <html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:x="urn:schemas-microsoft-com:office:excel"
+      xmlns="http://www.w3.org/TR/REC-html40">
+      <head>
+        <meta charset="UTF-8" />
+        <style>
+          body { font-family: Arial, sans-serif; padding: 8px; }
+          table { border-collapse: separate; border-spacing: 0 8px; }
+          td { vertical-align: middle; }
+          .card-col { width: 330px; padding-right: 16px; }
+          .qr-col { width: 200px; text-align: center; }
+          .credit-card {
+            width: 85.6mm;
+            height: 53.98mm;
+            border-radius: 12px;
+            box-sizing: border-box;
+            padding: 10px;
+            overflow: hidden;
+          }
+          .card-label { font-size: 10px; letter-spacing: 0.08em; opacity: 0.8; }
+          .card-title { margin-top: 8px; font-size: 18px; font-weight: 700; }
+          .card-subtitle { margin-top: 4px; font-size: 13px; opacity: 0.95; }
+          .card-business { margin-top: 12px; font-size: 12px; font-weight: 600; }
+          .card-description { margin-top: 4px; font-size: 11px; opacity: 0.9; }
+          .qr-image { width: 45mm; height: 45mm; object-fit: contain; display: block; margin: 0 auto; }
+          .qr-content { margin-top: 6px; font-size: 9px; color: #333; word-break: break-all; max-width: 180px; }
+        </style>
+      </head>
+      <body>
+        <table>
+          ${safeEntries.map((entry) => buildExportRow(entry)).join('\n')}
+        </table>
+      </body>
+    </html>
+  `;
+
+  const blob = new Blob([`\ufeff${html}`], {
+    type: 'application/vnd.ms-excel;charset=utf-8;'
+  });
+
+  const timestamp = new Date().toISOString().replaceAll(':', '-').slice(0, 19);
+  const fileName = `karten-export-${timestamp}.xls`;
+
+  return {
+    fileName,
+    blob
+  };
+}
 
 export async function issuePassToWallet({ passId, businessUserId, endUserId, walletProvider = 'apple_wallet' }) {
   if (!isConfigured) return notConfiguredError();

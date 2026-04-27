@@ -1,5 +1,6 @@
 import {
   addCompletionStat,
+  createPassesExcelExport,
   listPasses,
   listPassStats,
   loginWithEmail,
@@ -283,6 +284,38 @@ function handleCreateFolder(folderNameInput) {
   clearFolderInput();
   showToast(`Ordner „${folderName}“ erstellt.`);
   renderSavedCardsView();
+}
+
+function handleExportExcel() {
+  if (!latestPassEntries.length) {
+    showToast('Es sind keine gespeicherten Karten für den Export vorhanden.', true);
+    return;
+  }
+
+  try {
+    const { fileName, blob } = createPassesExcelExport(latestPassEntries);
+
+    if (window.navigator.msSaveOrOpenBlob) {
+      window.navigator.msSaveOrOpenBlob(blob, fileName);
+      showToast('Excel-Datei wurde erstellt und heruntergeladen.');
+      return;
+    }
+
+    const downloadUrl = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = downloadUrl;
+    anchor.download = fileName;
+    anchor.style.display = 'none';
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+
+    // Firefox/Safari brauchen teilweise mehr Zeit bis der Download wirklich startet.
+    setTimeout(() => URL.revokeObjectURL(downloadUrl), 30000);
+    showToast('Excel-Datei wurde erstellt und heruntergeladen.');
+  } catch (error) {
+    showToast(`Excel-Export fehlgeschlagen: ${error.message}`, true);
+  }
 }
 
 async function handleRegister() {
@@ -743,6 +776,7 @@ function wireEvents() {
   onSavedCardFiltersChange(handleSavedCardsFilterChange);
   onCreateFolder(handleCreateFolder);
   onSavedToolbarToggle();
+  document.getElementById('export-excel-btn')?.addEventListener('click', handleExportExcel);
   ui.openWalletSimBtn?.addEventListener('click', handleOpenWalletSimulation);
   document.querySelectorAll('.tab-btn').forEach((button) =>
     button.addEventListener('click', () => setActiveTab(button.dataset.tab))
