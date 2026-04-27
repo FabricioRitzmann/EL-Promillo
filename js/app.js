@@ -78,6 +78,7 @@ let currentPreviewMode = 'horizontal';
 const rememberSessionKey = 'passStudio.auth.rememberSession';
 const rememberedCredentialsKey = 'passStudio.auth.rememberedCredentials';
 const sessionMarkerKey = 'passStudio.auth.activeSessionMarker';
+let authBootstrapPromise = null;
 
 function codeRegistryStorageKey(userId) {
   return `passStudio.codeRegistry.${userId}`;
@@ -566,6 +567,10 @@ function getFriendlyAuthErrorMessage(errorMessage) {
 }
 
 async function handleRegister() {
+  if (authBootstrapPromise) {
+    await authBootstrapPromise;
+  }
+
   const email = formElements.email.value.trim();
   const password = formElements.password.value.trim();
 
@@ -579,6 +584,10 @@ async function handleRegister() {
 }
 
 async function handleLogin() {
+  if (authBootstrapPromise) {
+    await authBootstrapPromise;
+  }
+
   const authForm = document.getElementById('auth-form');
   if (authForm && !authForm.reportValidity()) {
     return;
@@ -1042,7 +1051,7 @@ async function handleScanPass(passId) {
 
 async function bootstrapAuth() {
   if (!isRememberSessionEnabled() && !hasActiveSessionMarker()) {
-    await logout();
+    await supabaseClient.auth.signOut({ scope: 'local' });
   }
 
   const {
@@ -1278,7 +1287,9 @@ function init() {
   refreshPreview();
   wireEvents();
   updatePreviewPanePlacement();
-  bootstrapAuth();
+  authBootstrapPromise = bootstrapAuth().finally(() => {
+    authBootstrapPromise = null;
+  });
 }
 
 init();
