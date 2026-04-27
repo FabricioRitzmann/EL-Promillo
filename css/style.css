@@ -49,10 +49,32 @@ p {
   -webkit-backdrop-filter: blur(14px);
 }
 
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .eyebrow {
   color: var(--muted);
   font-size: 0.85rem;
   margin-bottom: 6px;
+}
+
+body.logged-out .topbar-subtitle,
+body.logged-out .topbar-actions {
+  display: none;
+}
+
+body.logged-out .layout-grid {
+  justify-items: center;
+}
+
+body.logged-out #main-tabbar,
+body.logged-out #editor-card,
+body.logged-out #saved-card,
+body.logged-out #stats-card {
+  display: none !important;
 }
 
 .layout-grid {
