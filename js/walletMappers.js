@@ -1,19 +1,21 @@
-function mapBarcodeTypeForApple(type) {
-  const map = {
-    QR: 'PKBarcodeFormatQR',
-    PDF417: 'PKBarcodeFormatPDF417',
-    Code128: 'PKBarcodeFormatCode128'
-  };
-  return map[type] || 'PKBarcodeFormatQR';
-}
+import { mapToApplePass } from './applePassMapper.js';
+import { mapToGoogleWallet } from './googleWalletMapper.js';
+import { mapToSamsungWallet } from './samsungWalletMapper.js';
+import { mapWalletCardForExport } from './walletExportMapper.js';
 
-function mapBarcodeTypeForGoogle(type) {
-  const map = {
-    QR: 'QR_CODE',
-    PDF417: 'PDF_417',
-    Code128: 'CODE_128'
+function toWalletCardData(payload = {}) {
+  return {
+    templateType: payload.templateType,
+    fields: payload.fields || {},
+    designConfig: {
+      backgroundColor: payload.backgroundColor || payload.designConfig?.backgroundColor || payload.designConfig?.primaryColor || '#4654B8',
+      textColor: payload.foregroundColor || payload.designConfig?.textColor || '#ffffff',
+      labelColor: payload.passkitConfig?.labelColor || payload.designConfig?.labelColor || 'rgba(255,255,255,0.75)'
+    },
+    barcodeConfig: payload.barcodeConfig || { type: 'QR', value: payload.qrContent || '', showText: true },
+    stampConfig: payload.stampConfig,
+    backsideConfig: payload.backsideConfig
   };
-  return map[type] || 'QR_CODE';
 }
 
 function shouldIncludeBarcode(payload) {
@@ -132,3 +134,5 @@ export function mapEditorToSamsungWallet(payload) {
     }
   };
 }
+
+export { mapToApplePass, mapToGoogleWallet, mapToSamsungWallet, mapWalletCardForExport };

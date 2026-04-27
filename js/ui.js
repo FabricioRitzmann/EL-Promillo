@@ -743,12 +743,15 @@ export function updatePreview(payload) {
   preview.dataset.previewMode = previewMode;
   if (walletLabel) walletLabel.textContent = walletLabels[walletSkin] || walletLabels.apple;
 
+  const previewMode = payload.previewMode === 'vertical' ? 'vertical' : 'horizontal';
+  preview.dataset.previewMode = previewMode;
+
   const layout = payload.layoutConfig || currentLayoutConfig || defaultWalletCard.layoutConfig;
   currentLayoutConfig = { ...defaultWalletCard.layoutConfig, ...layout };
 
-  const companyName = payload.businessName || 'Egli+Vitali AG';
-  const title = payload.subtitle || 'Wallet Card';
-  const fullName = payload.fields?.fullName || payload.title || 'Max Muster';
+  const companyName = payload.businessName || payload.fields?.companyName || 'Egli+Vitali AG';
+  const title = payload.subtitle || payload.fields?.title || 'Wallet Card';
+  const fullName = payload.fields?.fullName || payload.title || payload.fields?.eventName || 'Max Muster';
   const tier = payload.fields?.tier || 'Gold';
   const points = payload.fields?.points ?? 0;
   const balance = payload.fields?.balance ?? 0;
@@ -763,7 +766,6 @@ export function updatePreview(payload) {
     .map((_, idx) => `<span class="wallet-stamp-dot ${idx < stampCollected ? 'is-active' : ''}"></span>`)
     .join('');
 
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(barcodeValue)}`;
   const showStamp = payload.templateId === 'stamp_card';
   const showBalance = payload.templateId === 'gift_card';
 

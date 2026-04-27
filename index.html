@@ -514,7 +514,11 @@
                   <button type="button" class="wallet-preview-tab" data-wallet-skin-tab="google">Google</button>
                   <button type="button" class="wallet-preview-tab" data-wallet-skin-tab="samsung">Samsung</button>
                 </div>
-                <div id="pass-preview" class="pass-preview wallet-pass wallet-preview-canvas" data-wallet-skin="apple"></div>
+                <div class="wallet-preview-mode-toggle" role="tablist" aria-label="Vorschau Format">
+                  <button type="button" class="wallet-preview-mode-tab is-active" data-preview-mode="horizontal">Kreditkartenformat</button>
+                  <button type="button" class="wallet-preview-mode-tab" data-preview-mode="vertical">Wallet hochkant</button>
+                </div>
+                <div id="pass-preview" class="pass-preview wallet-pass wallet-preview-canvas" data-wallet-skin="apple" data-preview-mode="horizontal"></div>
               </div>
               <p class="muted small">
                 Hinweis: Für echte .pkpass-Dateien kann im nächsten Schritt ein Server-Endpunkt eingebunden werden.
