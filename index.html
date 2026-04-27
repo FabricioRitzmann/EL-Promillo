@@ -124,6 +124,70 @@
                   Template
                   <select id="pass-template"></select>
                 </label>
+                <div id="template-gallery" class="template-gallery"></div>
+                <div class="row-buttons">
+                  <button id="duplicate-template-btn" type="button" class="btn btn-secondary">Template duplizieren</button>
+                  <button id="reset-layout-btn" type="button" class="btn btn-secondary">Layout zurücksetzen</button>
+                </div>
+              </section>
+
+              <section class="config-section">
+                <h3>🏷️ Hauptinformationen</h3>
+                <div class="design-grid">
+                  <label>Vollständiger Name<input id="full-name" type="text" value="Max Muster" /></label>
+                  <label>Kundennummer / Mitgliedsnummer<input id="customer-number" type="text" value="EV-000123" /></label>
+                  <label>Status / Tier<input id="member-tier" type="text" value="Gold" /></label>
+                  <label>Punkte<input id="loyalty-points" type="number" min="0" value="88" /></label>
+                  <label>Guthaben<input id="balance-value" type="number" min="0" step="0.01" value="88.00" /></label>
+                  <label>Währung
+                    <select id="balance-currency"><option>CHF</option><option>EUR</option><option>USD</option></select>
+                  </label>
+                  <label>Gültig bis<input id="valid-until" type="text" value="31.12.2026" /></label>
+                </div>
+              </section>
+
+              <section class="config-section">
+                <h3>🧾 Template-Felder</h3>
+                <div class="design-grid">
+                  <label>Mitglied seit<input id="member-since" type="text" placeholder="01.01.2024" /></label>
+                  <label>E-Mail / ID<input id="member-email" type="text" placeholder="max@example.com" /></label>
+                  <label>Event Name<input id="event-name" type="text" /></label>
+                  <label>Event Datum<input id="event-date" type="text" /></label>
+                  <label>Event Zeit<input id="event-time" type="text" /></label>
+                  <label>Location<input id="event-location" type="text" /></label>
+                  <label>Sektion<input id="event-section" type="text" /></label>
+                  <label>Reihe<input id="event-row" type="text" /></label>
+                  <label>Sitzplatz<input id="event-seat" type="text" /></label>
+                  <label>Abflug<input id="departure" type="text" /></label>
+                  <label>Ziel<input id="destination" type="text" /></label>
+                  <label>Gate<input id="gate" type="text" /></label>
+                  <label>Flugnummer<input id="flight-number" type="text" /></label>
+                  <label>Boarding Zeit<input id="boarding-time" type="text" /></label>
+                  <label>Policy / Vertrag<input id="policy-name" type="text" /></label>
+                  <label>Deckung / Plan<input id="coverage" type="text" /></label>
+                  <label>Selbstbehalt<input id="deductible" type="text" /></label>
+                  <label>Co-Insurance<input id="co-insurance" type="text" /></label>
+                </div>
+              </section>
+
+              <section class="config-section">
+                <h3>🔳 Barcode / QR</h3>
+                <div class="design-grid">
+                  <label>Barcode-Typ
+                    <select id="barcode-type"><option value="QR">QR</option><option value="PDF417">PDF417</option><option value="Code128">Code128</option></select>
+                  </label>
+                  <label>Barcode-Wert<input id="barcode-value" type="text" value="EV-000123" /></label>
+                  <label class="inline-checkbox"><input id="barcode-show-text" type="checkbox" checked /> Klartext anzeigen</label>
+                </div>
+              </section>
+
+              <section class="config-section">
+                <h3>📌 Stempelkarte</h3>
+                <div class="design-grid">
+                  <label>Gesamtstempel<input id="stamp-total" type="number" min="1" value="10" /></label>
+                  <label>Gesammelte Stempel<input id="stamp-collected" type="number" min="0" value="3" /></label>
+                  <label>Belohnungstext<input id="stamp-reward-text" type="text" value="Belohnung nach 10 Stempeln" /></label>
+                </div>
               </section>
 
               <section class="config-section">
@@ -442,51 +506,7 @@
                   <button type="button" class="wallet-preview-tab" data-wallet-skin-tab="google">Google</button>
                   <button type="button" class="wallet-preview-tab" data-wallet-skin-tab="samsung">Samsung</button>
                 </div>
-                <div id="pass-preview" class="pass-preview wallet-pass" data-wallet-skin="apple">
-                  <div class="pass-header">
-                    <img
-                      id="preview-main-icon"
-                      src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%23ffffff'/%3E%3Ctext x='20' y='24' text-anchor='middle' font-size='12' font-family='Arial' fill='%23111111'%3EEV%3C/text%3E%3C/svg%3E"
-                      alt="Logo"
-                      class="pass-logo"
-                    />
-                    <span id="preview-company" class="logo-text">Egli+Vitali AG</span>
-                  </div>
-
-                  <div class="pass-strip">
-                    <div>
-                      <span id="preview-card-type" class="label">Kundenkarte</span>
-                      <h1 id="preview-name">Max Muster</h1>
-                    </div>
-                  </div>
-
-                  <div class="pass-content">
-                    <div class="field primary">
-                      <span id="preview-label-status" class="label">Status</span>
-                      <strong id="preview-status">Gold</strong>
-                    </div>
-
-                    <div class="field">
-                      <span id="preview-label-points" class="label">Punkte</span>
-                      <strong id="preview-points">250</strong>
-                    </div>
-
-                    <div class="field">
-                      <span id="preview-label-customer-number" class="label">Kundennummer</span>
-                      <strong id="preview-customer-number">EV-000123</strong>
-                    </div>
-
-                    <div class="field">
-                      <span id="preview-label-valid-until" class="label">Gültig bis</span>
-                      <strong id="preview-valid-until">31.12.2026</strong>
-                    </div>
-                  </div>
-
-                  <div class="barcode-box">
-                    <img id="preview-qr" alt="QR Code Vorschau" />
-                    <span id="preview-qr-code-text">EV-000123</span>
-                  </div>
-                </div>
+                <div id="pass-preview" class="pass-preview wallet-pass wallet-preview-canvas" data-wallet-skin="apple"></div>
               </div>
               <p class="muted small">
                 Hinweis: Für echte .pkpass-Dateien kann im nächsten Schritt ein Server-Endpunkt eingebunden werden.

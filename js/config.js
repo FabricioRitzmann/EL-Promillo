@@ -30,24 +30,49 @@ export const streakIcons = [
 
 export const passTemplates = [
   {
-    id: 'vip-membership',
-    name: 'VIP-Mitgliedskarte',
-    programType: 'generic',
-    defaults: {
-      title: 'VIP Membership',
-      subtitle: 'Premium Club',
-      description: 'Zutritt für Events und Lounge.',
-      iconId: 'gift'
-    }
+    id: 'loyalty',
+    name: 'Loyalty Card',
+    programType: 'loyalty',
+    defaults: { title: 'Treuekarte', subtitle: 'Loyalty Card', description: 'Sammle Punkte und erreiche neue Stufen.', iconId: 'gift' }
   },
   {
-    id: 'coffee-stamp',
-    name: 'Stempelkarte',
-    programType: 'coffee',
+    id: 'membership',
+    name: 'Membership Card',
+    programType: 'membership',
+    defaults: { title: 'Membership', subtitle: 'Member Card', description: 'Mitgliedschaft mit Status und Laufzeit.', iconId: 'menu-card' }
+  },
+  {
+    id: 'coupon',
+    name: 'Coupon',
+    programType: 'coupon',
+    defaults: { title: 'Special Offer', subtitle: 'Coupon', description: 'Zeige diesen Coupon beim Checkout.', iconId: 'gift' }
+  },
+  {
+    id: 'event_ticket',
+    name: 'Event Ticket',
+    programType: 'event_ticket',
+    defaults: { title: 'Event Ticket', subtitle: 'General Admission', description: 'Zutritt zum Event.', iconId: 'soccer-ball' }
+  },
+  {
+    id: 'boarding_pass',
+    name: 'Boarding Pass',
+    programType: 'boarding_pass',
+    defaults: { title: 'Boarding Pass', subtitle: 'Flight', description: 'Check-in und Boarding Information.', iconId: 'running' }
+  },
+  {
+    id: 'gift_card',
+    name: 'Gift Card',
+    programType: 'gift_card',
+    defaults: { title: 'Gift Card', subtitle: 'Geschenkkarte', description: 'Aktuelles Guthaben und Barcode.', iconId: 'gift' }
+  },
+  {
+    id: 'stamp_card',
+    name: 'Stamp Card',
+    programType: 'stamp_card',
     defaults: {
-      title: 'Coffee Club',
-      subtitle: 'Sammle Stempel',
-      description: 'Treueprogramm für deine täglichen Kaffees.',
+      title: 'Stamp Card',
+      subtitle: 'Sammelkarte',
+      description: 'Sammle Stempel für deine Belohnung.',
       stampTarget: 10,
       currentStamps: 0,
       rewardText: 'Jeder 10. Kaffee ist gratis.',
@@ -56,43 +81,10 @@ export const passTemplates = [
     }
   },
   {
-    id: 'stamp-card',
-    name: 'Streak Karte',
-    programType: 'streak',
-    defaults: {
-      title: '30 Tage Stempel-Challenge',
-      subtitle: 'Bleib dran',
-      description: 'Jeden Tag sammeln und Vorteile freischalten.',
-      actionDefinition: 'Täglich 1x einchecken',
-      targetDays: 30,
-      currentStamps: 0,
-      graceHours: 24,
-      iconId: 'soccer-ball',
-      streakIconId: 'soccer-ball',
-      streakShape: 'circle'
-    }
-  },
-  {
-    id: 'recharge-credit',
-    name: 'Aufladbare Guthabenkarte',
-    programType: 'credit',
-    defaults: {
-      title: 'Store Wallet',
-      subtitle: 'Dein Guthaben',
-      description: 'Aufladen, bezahlen und Bonus sammeln.',
-      balance: 25,
-      currency: 'EUR',
-      lowBalanceThreshold: 5,
-      iconId: 'menu-card'
-    }
-  },
-  {
-    id: 'coupon-card',
-    name: 'Couponkarte',
-    programType: 'generic',
-    defaults: {
-      iconId: 'gift'
-    }
+    id: 'policy_pass',
+    name: 'Policy Pass',
+    programType: 'policy_pass',
+    defaults: { title: 'Policy Pass', subtitle: 'Versicherung', description: 'Deckung, Plan und Mitgliedsdaten.', iconId: 'menu-card' }
   }
 ];
 

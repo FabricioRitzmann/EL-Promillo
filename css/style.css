@@ -1359,3 +1359,75 @@ select:focus {
   padding: 8px;
   margin-top: auto;
 }
+
+.template-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.template-gallery-card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  padding: 8px;
+}
+
+.template-gallery-card h4 {
+  color: var(--primary);
+  font-size: 0.78rem;
+}
+
+.template-gallery-card p {
+  font-size: 0.68rem;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.wallet-preview-canvas {
+  width: 100%;
+  min-height: 230px;
+  height: 230px;
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.22);
+}
+
+.wallet-preview-element {
+  position: absolute;
+  cursor: grab;
+  user-select: none;
+  max-width: 160px;
+}
+
+.wallet-preview-element .label {
+  display: block;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  opacity: 0.74;
+  letter-spacing: 0.06em;
+}
+
+.wallet-preview-element strong {
+  font-size: 1rem;
+}
+
+.wallet-stamp-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 18px);
+  gap: 6px;
+}
+
+.wallet-stamp-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.wallet-stamp-dot.is-active {
+  background: #fff;
+}
