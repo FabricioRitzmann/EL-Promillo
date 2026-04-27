@@ -61,6 +61,26 @@ let savedCardsFilters = {
   sort: 'newest'
 };
 
+function normalizeFolderNames(folderNames = []) {
+  const uniqueNames = new Map();
+  folderNames.forEach((entry) => {
+    const normalized = String(entry || '').trim();
+    if (!normalized) return;
+    const reservedName = normalized.toLowerCase() === 'none' || normalized.toLowerCase() === 'all';
+    if (reservedName) return;
+    const key = normalized.toLocaleLowerCase('de-DE');
+    if (!uniqueNames.has(key)) {
+      uniqueNames.set(key, normalized);
+    }
+  });
+  return Array.from(uniqueNames.values()).sort((a, b) => a.localeCompare(b, 'de-DE', { sensitivity: 'base' }));
+}
+
+function syncFolderNamesFromAssignments() {
+  const folderNamesFromAssignments = Object.values(passFoldersById).filter((folderName) => folderName && folderName !== 'none');
+  savedFolderNames = normalizeFolderNames([...savedFolderNames, ...folderNamesFromAssignments]);
+}
+
 function updatePreviewPaneSizeOnScroll() {
   const previewPane = document.querySelector('.preview-pane');
   if (!previewPane) return;
@@ -176,6 +196,7 @@ function loadSavedCardsOrganization(userId) {
     const parsed = JSON.parse(rawValue);
     passFoldersById = parsed.passFoldersById || {};
     savedFolderNames = Array.isArray(parsed.savedFolderNames) ? parsed.savedFolderNames : [];
+    syncFolderNamesFromAssignments();
   } catch (_error) {
     passFoldersById = {};
     savedFolderNames = [];
@@ -200,6 +221,7 @@ function pruneFolderAssignments() {
       return validPassIds.has(passId) && (folderName === 'none' || savedFolderNames.includes(folderName));
     })
   );
+  syncFolderNamesFromAssignments();
 }
 
 function renderSavedCardsView() {
@@ -254,6 +276,7 @@ async function refreshStats() {
 
 function handleSavedPassFolderChange(passId, folderName) {
   passFoldersById[passId] = folderName;
+  syncFolderNamesFromAssignments();
   pruneFolderAssignments();
   persistSavedCardsOrganization();
   renderSavedCardsView();
@@ -283,6 +306,7 @@ function handleCreateFolder(folderNameInput) {
   }
 
   savedFolderNames = [...savedFolderNames, folderName].sort((a, b) => a.localeCompare(b, 'de-DE', { sensitivity: 'base' }));
+  savedFolderNames = normalizeFolderNames(savedFolderNames);
   persistSavedCardsOrganization();
   clearFolderInput();
   showToast(`Ordner „${folderName}“ erstellt.`);
