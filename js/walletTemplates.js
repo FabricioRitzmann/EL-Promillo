@@ -11,6 +11,7 @@ export const WALLET_TEMPLATE_TYPES = [
 
 export const defaultWalletCard = {
   templateType: 'loyalty',
+  previewMode: 'horizontal',
   designConfig: {
     primaryColor: '#4654B8',
     secondaryColor: '#FFFFFF',
@@ -95,9 +96,75 @@ export const defaultWalletCard = {
   }
 };
 
+export const walletGalleryTemplates = [
+  { id: 'blank', templateType: 'blank', label: 'Leeres Template', description: 'Ohne Vorgaben starten.', palette: ['#e5e7eb', '#f9fafb'], accent: '#6b7280' },
+  { id: 'loyalty-midnight', templateType: 'loyalty', label: 'Midnight Loyalty', description: 'Dunkel mit starken Akzenten.', palette: ['#2b2f77', '#6b72f7'], accent: '#fef3c7' },
+  { id: 'loyalty-sunrise', templateType: 'loyalty', label: 'Sunrise Points', description: 'Warme Treuekartenoptik.', palette: ['#7c2d12', '#fb923c'], accent: '#fffbeb' },
+  { id: 'membership-platinum', templateType: 'membership', label: 'Platinum Club', description: 'Premium-Mitgliedschaft.', palette: ['#374151', '#9ca3af'], accent: '#f3f4f6' },
+  { id: 'membership-ocean', templateType: 'membership', label: 'Ocean Member', description: 'Klar und modern.', palette: ['#0f172a', '#0284c7'], accent: '#e0f2fe' },
+  { id: 'coupon-vibrant', templateType: 'coupon', label: 'Vibrant Deal', description: 'Hoher Kontrast für Aktionen.', palette: ['#f59e0b', '#ef4444'], accent: '#111827' },
+  { id: 'coupon-clean', templateType: 'coupon', label: 'Clean Offer', description: 'Reduziert und klar.', palette: ['#e5e7eb', '#ffffff'], accent: '#111827' },
+  { id: 'event-neon', templateType: 'event_ticket', label: 'Neon Festival', description: 'Event-Look mit Bühnengefühl.', palette: ['#1e1b4b', '#7c3aed'], accent: '#fde047' },
+  { id: 'event-classic', templateType: 'event_ticket', label: 'Classic Ticket', description: 'Klassische Ticket-Anmutung.', palette: ['#0f172a', '#1d4ed8'], accent: '#dbeafe' },
+  { id: 'boarding-sky', templateType: 'boarding_pass', label: 'Sky Boarding', description: 'Flugkarte mit klaren Segmenten.', palette: ['#0c4a6e', '#38bdf8'], accent: '#f0f9ff' },
+  { id: 'boarding-terminal', templateType: 'boarding_pass', label: 'Terminal Strip', description: 'Technischer Boarding-Stil.', palette: ['#1f2937', '#4b5563'], accent: '#facc15' },
+  { id: 'gift-aurora', templateType: 'gift_card', label: 'Aurora Gift', description: 'Guthabenkarte mit Verlauf.', palette: ['#1d4ed8', '#0ea5e9'], accent: '#e0f2fe' },
+  { id: 'gift-rose', templateType: 'gift_card', label: 'Rose Gift', description: 'Emotionale Geschenkoptik.', palette: ['#9d174d', '#f472b6'], accent: '#ffe4e6' },
+  { id: 'stamp-cafe', templateType: 'stamp_card', label: 'Cafe Stamp', description: 'Kompakte Stempel-Ansicht.', palette: ['#78350f', '#d97706'], accent: '#fef3c7' },
+  { id: 'stamp-fresh', templateType: 'stamp_card', label: 'Fresh Stamp', description: 'Leicht und freundlich.', palette: ['#14532d', '#22c55e'], accent: '#dcfce7' },
+  { id: 'policy-safe', templateType: 'policy_pass', label: 'Safe Policy', description: 'Sachlicher Versicherungsstil.', palette: ['#0f766e', '#2dd4bf'], accent: '#ccfbf1' },
+  { id: 'policy-trust', templateType: 'policy_pass', label: 'Trust Policy', description: 'Seriös und kontraststark.', palette: ['#1e3a8a', '#60a5fa'], accent: '#dbeafe' }
+];
+
+export function getTemplateGalleryByType() {
+  return WALLET_TEMPLATE_TYPES.map((type) => ({
+    ...type,
+    variants: walletGalleryTemplates.filter((entry) => entry.templateType === type.id)
+  }));
+}
+
+export function getTemplateVariantById(variantId) {
+  return walletGalleryTemplates.find((entry) => entry.id === variantId) || walletGalleryTemplates[0];
+}
+
+export function getDefaultTemplatePreset(variantId) {
+  const variant = getTemplateVariantById(variantId);
+  const defaultPresets = {
+    blank: {
+      templateType: 'blank',
+      title: 'Leere Karte',
+      subtitle: 'Blank Template',
+      backgroundColor: '#1f2937',
+      foregroundColor: '#ffffff',
+      memberTier: '',
+      points: 0
+    },
+    loyalty: { subtitle: 'Loyalty Card', memberTier: 'Gold', points: 88 },
+    membership: { subtitle: 'Membership Card', memberTier: 'Premium', points: 0 },
+    coupon: { subtitle: 'Coupon', memberTier: 'Deal', points: 50 },
+    event_ticket: { subtitle: 'Event Ticket', memberTier: 'Admit One', points: 0 },
+    boarding_pass: { subtitle: 'Boarding Pass', memberTier: 'Gate A12', points: 0 },
+    gift_card: { subtitle: 'Gift Card', memberTier: 'Gift Balance', points: 0 },
+    stamp_card: { subtitle: 'Stamp Card', memberTier: 'Progress', points: 0 },
+    policy_pass: { subtitle: 'Policy Pass', memberTier: 'Aktiv', points: 0 }
+  };
+
+  const base = defaultPresets[variant.templateType] || defaultPresets.loyalty;
+  return {
+    ...base,
+    templateType: variant.templateType,
+    variantId: variant.id,
+    title: base.title || variant.label,
+    backgroundColor: variant.palette[0],
+    foregroundColor: variant.accent,
+    passBackgroundTemplate: 'custom',
+    previewMode: defaultWalletCard.previewMode
+  };
+}
+
 export function normalizeWalletTemplateType(value) {
-  const match = WALLET_TEMPLATE_TYPES.find((entry) => entry.id === value);
-  return match ? match.id : defaultWalletCard.templateType;
+  const allowed = [...WALLET_TEMPLATE_TYPES.map((entry) => entry.id), 'blank'];
+  return allowed.includes(value) ? value : defaultWalletCard.templateType;
 }
 
 export function templateSupportsField(templateType, fieldKey) {

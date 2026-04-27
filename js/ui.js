@@ -1,5 +1,11 @@
 import { backgroundTemplates, bannerColorOptions, passTemplates, streakIcons, templateIcons } from './config.js';
-import { defaultWalletCard, templateSupportsField, WALLET_TEMPLATE_TYPES } from './walletTemplates.js';
+import {
+  defaultWalletCard,
+  getDefaultTemplatePreset,
+  getTemplateGalleryByType,
+  templateSupportsField,
+  WALLET_TEMPLATE_TYPES
+} from './walletTemplates.js';
 import {
   getDefaultPasskitConfig,
   normalizePasskitConfig,
@@ -137,6 +143,8 @@ export const formElements = {
   stampCollected: document.getElementById('stamp-collected'),
   stampRewardText: document.getElementById('stamp-reward-text'),
   templateGallery: document.getElementById('template-gallery'),
+  previewModeHorizontal: document.getElementById('preview-mode-horizontal'),
+  previewModeVertical: document.getElementById('preview-mode-vertical'),
   duplicateTemplateBtn: document.getElementById('duplicate-template-btn'),
   resetLayoutBtn: document.getElementById('reset-layout-btn')
 };
@@ -159,6 +167,7 @@ const weekdays = [
 const defaultPreviewLogo =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%23ffffff'/%3E%3Ctext x='20' y='24' text-anchor='middle' font-size='12' font-family='Arial' fill='%23111111'%3EEV%3C/text%3E%3C/svg%3E";
 let currentLayoutConfig = { ...defaultWalletCard.layoutConfig };
+let currentPreviewMode = defaultWalletCard.previewMode || 'horizontal';
 
 export function getLayoutConfig() {
   return { ...currentLayoutConfig };
@@ -170,6 +179,16 @@ export function setLayoutConfig(nextLayout = {}) {
 
 export function resetLayoutConfig() {
   currentLayoutConfig = { ...defaultWalletCard.layoutConfig };
+}
+
+export function getPreviewMode() {
+  return currentPreviewMode;
+}
+
+export function setPreviewMode(mode) {
+  currentPreviewMode = mode === 'vertical' ? 'vertical' : 'horizontal';
+  if (formElements.previewModeHorizontal) formElements.previewModeHorizontal.checked = currentPreviewMode === 'horizontal';
+  if (formElements.previewModeVertical) formElements.previewModeVertical.checked = currentPreviewMode === 'vertical';
 }
 
 const stampIconDefinitions = {
@@ -330,12 +349,37 @@ export function initTemplateSelect() {
 function renderTemplateGallery() {
   if (!formElements.templateGallery) return;
   formElements.templateGallery.innerHTML = '';
-  WALLET_TEMPLATE_TYPES.forEach((template) => {
+
+  const galleryByType = getTemplateGalleryByType();
+  galleryByType.forEach((template) => {
     const card = document.createElement('article');
     card.className = 'template-gallery-card';
-    card.innerHTML = `<h4>${template.label}</h4><p>${template.description}</p><button type=\"button\" class=\"btn btn-secondary\" data-template-use=\"${template.id}\">Template verwenden</button>`;
+    const variantMarkup = (template.variants || [])
+      .map(
+        (variant) => `
+          <button type="button" class="template-variant" data-template-use="${template.id}" data-template-variant="${variant.id}">
+            <span class="template-variant-preview" style="background:linear-gradient(135deg, ${variant.palette[0]} 0%, ${variant.palette[1]} 100%);color:${variant.accent};">
+              <small>${template.label}</small>
+              <strong>${variant.label}</strong>
+            </span>
+          </button>`
+      )
+      .join('');
+    card.innerHTML = `<h4>${template.label}</h4><p>${template.description}</p><div class="template-variants">${variantMarkup}</div>`;
     formElements.templateGallery.appendChild(card);
   });
+
+  const blankPreset = getDefaultTemplatePreset('blank');
+  const blankCard = document.createElement('article');
+  blankCard.className = 'template-gallery-card template-gallery-card-blank';
+  blankCard.innerHTML = `
+    <h4>Blank Template</h4>
+    <p>Leere Vorlage ohne Struktur.</p>
+    <button type="button" class="template-variant" data-template-use="${blankPreset.templateType}" data-template-variant="blank">
+      <span class="template-variant-preview template-variant-preview-blank"><strong>Leeres Template</strong></span>
+    </button>
+  `;
+  formElements.templateGallery.prepend(blankCard);
 }
 
 export function renderTemplateDependentFields(templateType) {
@@ -693,8 +737,10 @@ export function updatePreview(payload) {
   if (!preview) return;
 
   const walletSkin = payload.walletSkin || 'apple';
+  const previewMode = payload.previewMode || currentPreviewMode || 'horizontal';
   const walletLabels = { apple: 'Apple Wallet', google: 'Google Wallet', samsung: 'Samsung Wallet' };
   preview.dataset.walletSkin = walletSkin;
+  preview.dataset.previewMode = previewMode;
   if (walletLabel) walletLabel.textContent = walletLabels[walletSkin] || walletLabels.apple;
 
   const layout = payload.layoutConfig || currentLayoutConfig || defaultWalletCard.layoutConfig;
@@ -726,7 +772,7 @@ export function updatePreview(payload) {
 
   const at = (key) => currentLayoutConfig[key] || { x: 16, y: 16 };
 
-  preview.innerHTML = `
+  const horizontalContent = `
     <div class="wallet-preview-element" data-drag-key="logo" style="left:${at('logo').x}px;top:${at('logo').y}px;">
       <img id="preview-main-icon" src="${payload.customIconUrl || defaultPreviewLogo}" alt="Logo" class="pass-logo" />
       <span class="logo-text">${companyName}</span>
@@ -745,11 +791,31 @@ export function updatePreview(payload) {
     </div>
     ${showBalance ? `<div class="wallet-preview-element" data-drag-key="balance" style="left:${at('balance').x}px;top:${at('balance').y}px;"><span class="label">GUTHABEN</span><strong>${Number(balance).toFixed(2)} ${currency}</strong></div>` : ''}
     ${showStamp ? `<div class="wallet-preview-element" data-drag-key="stampGrid" style="left:${at('stampGrid').x}px;top:${at('stampGrid').y}px;"><div class="wallet-stamp-grid">${stampDots}</div><span class="label">${payload.stampConfig?.rewardText || ''}</span></div>` : ''}
-    <div class="wallet-preview-element" data-drag-key="barcode" style="left:${at('barcode').x}px;top:${at('barcode').y}px;">
-      <img id="preview-qr" alt="QR" src="${qrUrl}" width="64" height="64" />
-      ${payload.barcodeConfig?.showText ? `<span class="label">${barcodeValue}</span>` : ''}
+  `;
+
+  const verticalContent = `
+    <div class="wallet-preview-vertical">
+      <div class="wallet-preview-vertical-top">
+        <p class="label">${companyName}</p>
+        <strong>${title}</strong>
+        <h4>${fullName}</h4>
+        <div class="wallet-preview-vertical-specs">
+          <span><small>Status</small><strong>${tier}</strong></span>
+          <span><small>Punkte</small><strong>${points}</strong></span>
+          <span><small>ID</small><strong>${customerNumber}</strong></span>
+        </div>
+      </div>
+      <div class="wallet-preview-vertical-code">
+        <img id="preview-qr" alt="QR" src="${qrUrl}" width="110" height="110" />
+        ${payload.barcodeConfig?.showText ? `<span class="label">${barcodeValue}</span>` : ''}
+      </div>
+      <div class="wallet-preview-vertical-footer">
+        <small>Gültig bis</small><strong>${validUntil}</strong>
+      </div>
     </div>
   `;
+
+  preview.innerHTML = previewMode === 'vertical' ? verticalContent : horizontalContent;
 }
 
 function toWalletSimulationEntry(rawEntry, fallbackId = null) {
@@ -958,6 +1024,7 @@ export function getPassFormData() {
     templateId: formElements.template.value,
     iconId: formElements.icon.value,
     walletSkin: formElements.walletSkin.value,
+    previewMode: getPreviewMode(),
     backgroundTemplateId: formElements.backgroundTemplate.value,
     backgroundColor: formElements.bg.value,
     foregroundColor: formElements.fg.value,
@@ -1091,6 +1158,7 @@ export function fillEditorFromSavedPass(entry) {
 
   const programConfig = entry.program_config || {};
   const walletTemplateConfig = entry.wallet_template_config || {};
+  setPreviewMode(walletTemplateConfig.previewMode || 'horizontal');
   const savedFields = walletTemplateConfig.fields || {};
   formElements.coffeeTarget.value = programConfig.stampTarget ?? 10;
   formElements.coffeeCurrent.value = programConfig.currentStamps ?? 0;
@@ -1384,8 +1452,24 @@ export function onTemplateGalleryUse(handler) {
   formElements.templateGallery.addEventListener('click', (event) => {
     const button = event.target.closest('[data-template-use]');
     if (!button) return;
-    handler(button.dataset.templateUse);
+    handler({
+      templateId: button.dataset.templateUse,
+      variantId: button.dataset.templateVariant || ''
+    });
   });
+}
+
+export function applyTemplatePresetFromGallery(variantId) {
+  const preset = getDefaultTemplatePreset(variantId);
+  formElements.template.value = preset.templateType;
+  formElements.title.value = preset.title || formElements.title.value;
+  formElements.subtitle.value = preset.subtitle || formElements.subtitle.value;
+  formElements.bg.value = preset.backgroundColor || formElements.bg.value;
+  formElements.fg.value = preset.foregroundColor || formElements.fg.value;
+  formElements.backgroundTemplate.value = preset.passBackgroundTemplate || 'custom';
+  formElements.memberTier.value = preset.memberTier || formElements.memberTier.value;
+  formElements.loyaltyPoints.value = preset.points ?? formElements.loyaltyPoints.value;
+  setPreviewMode(preset.previewMode || 'horizontal');
 }
 
 export function onSavedPassFolderChange(handler) {
