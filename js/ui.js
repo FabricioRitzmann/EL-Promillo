@@ -752,7 +752,9 @@ function renderWalletSimulationStack() {
     button.style.background = getSimulationBackground(entry);
     button.style.color = entry.foregroundColor;
     button.style.zIndex = String(simulationPasses.length - index);
-    button.classList.toggle('is-active', entry.id === selectedSimulationPassId);
+    const isActive = entry.id === selectedSimulationPassId;
+    button.classList.toggle('is-active', isActive);
+    button.classList.toggle('is-collapsed', !isActive);
     const hasStampProgram = entry.cardProgramType === 'coffee' || entry.cardProgramType === 'streak';
     const progressText = hasStampProgram ? `Stempel ${entry.currentStamps} von ${entry.stampTarget}` : '';
     button.innerHTML = `
