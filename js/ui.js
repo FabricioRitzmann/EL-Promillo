@@ -697,12 +697,15 @@ export function updatePreview(payload) {
   preview.dataset.walletSkin = walletSkin;
   if (walletLabel) walletLabel.textContent = walletLabels[walletSkin] || walletLabels.apple;
 
+  const previewMode = payload.previewMode === 'vertical' ? 'vertical' : 'horizontal';
+  preview.dataset.previewMode = previewMode;
+
   const layout = payload.layoutConfig || currentLayoutConfig || defaultWalletCard.layoutConfig;
   currentLayoutConfig = { ...defaultWalletCard.layoutConfig, ...layout };
 
-  const companyName = payload.businessName || 'Egli+Vitali AG';
-  const title = payload.subtitle || 'Wallet Card';
-  const fullName = payload.fields?.fullName || payload.title || 'Max Muster';
+  const companyName = payload.businessName || payload.fields?.companyName || 'Egli+Vitali AG';
+  const title = payload.subtitle || payload.fields?.title || 'Wallet Card';
+  const fullName = payload.fields?.fullName || payload.title || payload.fields?.eventName || 'Max Muster';
   const tier = payload.fields?.tier || 'Gold';
   const points = payload.fields?.points ?? 0;
   const balance = payload.fields?.balance ?? 0;
@@ -717,7 +720,6 @@ export function updatePreview(payload) {
     .map((_, idx) => `<span class="wallet-stamp-dot ${idx < stampCollected ? 'is-active' : ''}"></span>`)
     .join('');
 
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(barcodeValue)}`;
   const showStamp = payload.templateId === 'stamp_card';
   const showBalance = payload.templateId === 'gift_card';
 
@@ -725,6 +727,37 @@ export function updatePreview(payload) {
   preview.style.color = payload.foregroundColor || '#fff';
 
   const at = (key) => currentLayoutConfig[key] || { x: 16, y: 16 };
+
+  const codeBlock = payload.barcodeConfig?.type === 'PDF417'
+    ? '<div class="fake-pdf417"><span></span></div>'
+    : payload.barcodeConfig?.type === 'BARCODE' || payload.barcodeConfig?.type === 'Code128'
+      ? '<div class="fake-barcode"><span></span></div>'
+      : '<div class="fake-qr"><span></span></div>';
+
+  if (previewMode === 'vertical') {
+    preview.innerHTML = `
+      <div class="wallet-vertical-header">
+        <img id="preview-main-icon" src="${payload.customIconUrl || defaultPreviewLogo}" alt="Logo" class="pass-logo" />
+        <span class="logo-text">${companyName}</span>
+      </div>
+      <div class="wallet-vertical-main">
+        <span class="label">${title}</span>
+        <h2>${fullName}</h2>
+      </div>
+      <div class="wallet-vertical-fields">
+        <div><span class="label">PUNKTE</span><strong>${points}</strong></div>
+        ${showBalance ? `<div><span class="label">GUTHABEN</span><strong>${Number(balance).toFixed(2)} ${currency}</strong></div>` : ''}
+        <div><span class="label">GÜLTIG BIS</span><strong>${validUntil}</strong></div>
+        <div><span class="label">KUNDENNUMMER</span><strong>${customerNumber}</strong></div>
+      </div>
+      ${showStamp ? `<div class="wallet-stamp-grid">${stampDots}</div>` : ''}
+      <div class="wallet-code-area">
+        ${codeBlock}
+        ${payload.barcodeConfig?.showText ? `<p>${barcodeValue}</p>` : ''}
+      </div>
+    `;
+    return;
+  }
 
   preview.innerHTML = `
     <div class="wallet-preview-element" data-drag-key="logo" style="left:${at('logo').x}px;top:${at('logo').y}px;">
@@ -745,10 +778,6 @@ export function updatePreview(payload) {
     </div>
     ${showBalance ? `<div class="wallet-preview-element" data-drag-key="balance" style="left:${at('balance').x}px;top:${at('balance').y}px;"><span class="label">GUTHABEN</span><strong>${Number(balance).toFixed(2)} ${currency}</strong></div>` : ''}
     ${showStamp ? `<div class="wallet-preview-element" data-drag-key="stampGrid" style="left:${at('stampGrid').x}px;top:${at('stampGrid').y}px;"><div class="wallet-stamp-grid">${stampDots}</div><span class="label">${payload.stampConfig?.rewardText || ''}</span></div>` : ''}
-    <div class="wallet-preview-element" data-drag-key="barcode" style="left:${at('barcode').x}px;top:${at('barcode').y}px;">
-      <img id="preview-qr" alt="QR" src="${qrUrl}" width="64" height="64" />
-      ${payload.barcodeConfig?.showText ? `<span class="label">${barcodeValue}</span>` : ''}
-    </div>
   `;
 }
 

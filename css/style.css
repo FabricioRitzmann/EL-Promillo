@@ -1469,3 +1469,95 @@ select:focus {
 .wallet-stamp-dot.is-active {
   background: #fff;
 }
+
+.wallet-preview-mode-toggle {
+  display: flex;
+  gap: 8px;
+  background: #f2f2f7;
+  padding: 6px;
+  border-radius: 999px;
+  margin-bottom: 10px;
+}
+
+.wallet-preview-mode-tab {
+  border: none;
+  background: transparent;
+  padding: 9px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.wallet-preview-mode-tab.is-active {
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.wallet-preview-canvas[data-preview-mode='vertical'] {
+  width: 340px;
+  min-height: 560px;
+  padding: 22px;
+  border-radius: 26px;
+}
+
+.wallet-vertical-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+}
+
+.wallet-vertical-main {
+  margin-top: 42px;
+}
+
+.wallet-vertical-main h2 {
+  margin: 6px 0 0;
+  font-size: 32px;
+  line-height: 1.1;
+}
+
+.wallet-vertical-fields {
+  margin-top: 34px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.wallet-code-area {
+  margin-top: 36px;
+  background: #ffffff;
+  color: #111111;
+  border-radius: 20px;
+  padding: 18px;
+  text-align: center;
+}
+
+.wallet-code-area p {
+  margin: 10px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.fake-qr {
+  width: 130px;
+  height: 130px;
+  margin: 0 auto;
+  background:
+    linear-gradient(90deg, #111 10px, transparent 10px),
+    linear-gradient(#111 10px, transparent 10px);
+  background-size: 22px 22px;
+  border: 12px solid #111;
+}
+
+.fake-barcode {
+  height: 90px;
+  margin: 0 auto;
+  background: repeating-linear-gradient(90deg, #111 0, #111 3px, transparent 3px, transparent 7px);
+}
+
+.fake-pdf417 {
+  height: 95px;
+  margin: 0 auto;
+  background: repeating-linear-gradient(0deg, #111 0, #111 3px, transparent 3px, transparent 6px);
+}

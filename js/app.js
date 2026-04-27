@@ -67,6 +67,7 @@ let savedCardsFilters = {
   sort: 'newest'
 };
 let destroyDragDrop = null;
+let currentPreviewMode = 'horizontal';
 
 function codeRegistryStorageKey(userId) {
   return `passStudio.codeRegistry.${userId}`;
@@ -238,23 +239,28 @@ function buildPreviewPayload() {
     ...formData,
     customImageUrl: currentUploadedImageUrl,
     customIconUrl: currentUploadedIconUrl,
-    customBannerUrl: currentUploadedBannerUrl
+    customBannerUrl: currentUploadedBannerUrl,
+    previewMode: currentPreviewMode
   };
 }
 
 function refreshPreview() {
   updatePreview(buildPreviewPayload());
   if (destroyDragDrop) destroyDragDrop();
-  destroyDragDrop = setupWalletDragDrop({
-    container: document.getElementById('pass-preview'),
-    getLayout: () => getLayoutConfig(),
-    onLayoutChange: (nextLayout) => {
-      setLayoutConfig(nextLayout);
-      updatePreview(buildPreviewPayload());
-    },
-    snap: 2
-  });
+  destroyDragDrop = null;
+  if (currentPreviewMode === 'horizontal') {
+    destroyDragDrop = setupWalletDragDrop({
+      container: document.getElementById('pass-preview'),
+      getLayout: () => getLayoutConfig(),
+      onLayoutChange: (nextLayout) => {
+        setLayoutConfig(nextLayout);
+        updatePreview(buildPreviewPayload());
+      },
+      snap: 2
+    });
+  }
   syncPreviewWalletTabs();
+  syncPreviewModeTabs();
 }
 
 function syncPreviewWalletTabs() {
@@ -266,6 +272,14 @@ function syncPreviewWalletTabs() {
   });
 }
 
+
+function syncPreviewModeTabs() {
+  document.querySelectorAll('[data-preview-mode]').forEach((button) => {
+    const isActive = button.dataset.previewMode === currentPreviewMode;
+    button.classList.toggle('is-active', isActive);
+    button.setAttribute('aria-selected', String(isActive));
+  });
+}
 function focusEditorTab() {
   setActiveTab('editor');
   requestAnimationFrame(() => setActiveTab('editor'));
@@ -309,6 +323,7 @@ async function handleNewPass() {
   lastTemplateId = formElements.template.value;
   syncBannerFields();
   applyBannerColorPreset();
+  currentPreviewMode = 'horizontal';
   refreshPreview();
   showToast('Neue Karte gestartet.');
 }
@@ -667,6 +682,7 @@ async function handleSavePass() {
       customBannerUrl: currentUploadedBannerUrl,
       walletTemplateConfig: {
         templateType: passData.templateType,
+        previewMode: currentPreviewMode,
         designConfig: {
           primaryColor: passData.backgroundColor,
           textColor: passData.foregroundColor,
@@ -803,6 +819,7 @@ async function handleOpenSavedPass(passId) {
   if (formElements.folder) {
     formElements.folder.value = passFoldersById[selectedPass.id] || 'none';
   }
+  currentPreviewMode = selectedPass.wallet_template_config?.previewMode === 'vertical' ? 'vertical' : 'horizontal';
   setActiveTab('editor');
   refreshPreview();
   showToast('Karte im Editor geöffnet.');
@@ -1039,6 +1056,15 @@ function wireEvents() {
 
       formElements.walletSkin.value = selectedSkin;
       formElements.walletSkin.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+  });
+
+  document.querySelectorAll('[data-preview-mode]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const selectedMode = button.dataset.previewMode === 'vertical' ? 'vertical' : 'horizontal';
+      if (selectedMode === currentPreviewMode) return;
+      currentPreviewMode = selectedMode;
+      refreshPreview();
     });
   });
 }
