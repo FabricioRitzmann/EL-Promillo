@@ -602,6 +602,10 @@ export function updatePreview(payload) {
   const points = document.getElementById('preview-points');
   const customerNumber = document.getElementById('preview-customer-number');
   const validUntil = document.getElementById('preview-valid-until');
+  const statusLabel = document.getElementById('preview-label-status');
+  const pointsLabel = document.getElementById('preview-label-points');
+  const customerNumberLabel = document.getElementById('preview-label-customer-number');
+  const validUntilLabel = document.getElementById('preview-label-valid-until');
   const mainIcon = document.getElementById('preview-main-icon');
   const qrImage = document.getElementById('preview-qr');
   const qrCodeText = document.getElementById('preview-qr-code-text');
@@ -613,14 +617,40 @@ export function updatePreview(payload) {
     google: 'Google Wallet',
     samsung: 'Samsung Wallet'
   };
+  const walletFieldLabels = {
+    apple: {
+      status: 'Status',
+      points: 'Punkte',
+      customerNumber: 'Kundennummer',
+      validUntil: 'Gültig bis'
+    },
+    google: {
+      status: 'Status',
+      points: 'Punkte',
+      customerNumber: 'Kundennummer',
+      validUntil: 'Gültig bis'
+    },
+    samsung: {
+      status: 'Tier',
+      points: 'Points',
+      customerNumber: 'Member ID',
+      validUntil: 'Valid Until'
+    }
+  };
 
   preview.dataset.walletSkin = walletSkin;
   if (walletLabel) {
     walletLabel.textContent = walletLabels[walletSkin] || walletLabels.apple;
   }
+  const selectedFieldLabels = walletFieldLabels[walletSkin] || walletFieldLabels.apple;
+  if (statusLabel) statusLabel.textContent = selectedFieldLabels.status;
+  if (pointsLabel) pointsLabel.textContent = selectedFieldLabels.points;
+  if (customerNumberLabel) customerNumberLabel.textContent = selectedFieldLabels.customerNumber;
+  if (validUntilLabel) validUntilLabel.textContent = selectedFieldLabels.validUntil;
 
   company.textContent = payload.businessName || 'Egli+Vitali AG';
-  cardType.textContent = payload.subtitle || 'Kundenkarte';
+  const fallbackCardType = walletSkin === 'samsung' ? 'Membership Card' : 'Kundenkarte';
+  cardType.textContent = payload.subtitle || fallbackCardType;
   name.textContent = payload.title || 'Max Muster';
   status.textContent = payload.cardProgramType === 'streak' ? 'Streak' : payload.cardProgramType === 'coffee' ? 'Treuekarte' : 'Aktiv';
 
@@ -683,6 +713,7 @@ function toWalletSimulationEntry(rawEntry, fallbackId = null) {
     cardProgramType,
     stampTarget,
     currentStamps,
+    walletSkin: rawEntry.walletSkin || rawEntry.wallet_skin || 'apple',
     backgroundColor: rawEntry.backgroundColor || rawEntry.background_color || '#1d1d1f',
     foregroundColor: rawEntry.foregroundColor || rawEntry.foreground_color || '#ffffff',
     customImageUrl: rawEntry.customImageUrl || rawEntry.custom_image_url || '',
@@ -722,7 +753,7 @@ function renderWalletSimulationDetail(entry) {
   const isLivePreview = entry.id === 'live-preview';
 
   ui.walletSimDetail.innerHTML = `
-    <div class="wallet-sim-detail-pass" style="background:${getSimulationBackground(entry)}; color:${entry.foregroundColor};">
+    <div class="wallet-sim-detail-pass" data-wallet-skin="${entry.walletSkin}" style="background:${getSimulationBackground(entry)}; color:${entry.foregroundColor};">
       <div class="wallet-sim-detail-header">
         <p class="wallet-sim-detail-issuer">${issuer}</p>
         <span class="wallet-sim-detail-chip">${isLivePreview ? 'Live' : 'Gespeichert'}</span>
@@ -747,6 +778,7 @@ function renderWalletSimulationStack() {
     button.type = 'button';
     button.className = 'wallet-sim-mini-pass';
     button.dataset.simPassId = entry.id;
+    button.dataset.walletSkin = entry.walletSkin;
     button.style.setProperty('--stack-order', String(index));
     button.setAttribute('aria-label', `Karte ${entry.title} öffnen`);
     button.style.background = getSimulationBackground(entry);
