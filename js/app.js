@@ -68,6 +68,122 @@ let savedCardsFilters = {
 };
 let destroyDragDrop = null;
 
+function codeRegistryStorageKey(userId) {
+  return `passStudio.codeRegistry.${userId}`;
+}
+
+function loadCodeRegistry(userId) {
+  if (!userId) return [];
+  try {
+    const raw = localStorage.getItem(codeRegistryStorageKey(userId));
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed.map((entry) => String(entry).trim()).filter(Boolean) : [];
+  } catch (_error) {
+    return [];
+  }
+}
+
+function saveCodeRegistry(userId, values = []) {
+  if (!userId) return;
+  const normalized = Array.from(new Set(values.map((entry) => String(entry).trim()).filter(Boolean)));
+  localStorage.setItem(codeRegistryStorageKey(userId), JSON.stringify(normalized));
+}
+
+function getAccountCodePrefix(userId) {
+  return String(userId || '')
+    .replace(/[^a-z0-9]/gi, '')
+    .slice(0, 8)
+    .toUpperCase();
+}
+
+function createCodeValue(type, userId) {
+  const accountPrefix = getAccountCodePrefix(userId) || 'ACCOUNT';
+  const timestamp = Date.now().toString(36).toUpperCase();
+  const randomPart = crypto.randomUUID().replace(/-/g, '').slice(0, 10).toUpperCase();
+  return `${type}-${accountPrefix}-${timestamp}-${randomPart}`;
+}
+
+function collectUsedCodes(excludePassId = null) {
+  const usedCodes = new Set();
+  latestPassEntries.forEach((entry) => {
+    if (excludePassId && entry.id === excludePassId) return;
+
+    const qrContent = String(entry.qr_content || '').trim();
+    const walletBarcode = String(entry.wallet_template_config?.barcodeConfig?.value || '').trim();
+    const serial = String(entry.passkit_config?.serialNumber || '').trim();
+    const passkitMessage = String(entry.passkit_config?.barcode?.message || '').trim();
+
+    [qrContent, walletBarcode, serial, passkitMessage].forEach((value) => {
+      if (value) usedCodes.add(value);
+    });
+  });
+  return usedCodes;
+}
+
+function getUniqueCodeValue(type, userId, usedCodes) {
+  for (let attempt = 0; attempt < 50; attempt += 1) {
+    const candidate = createCodeValue(type, userId);
+    if (!usedCodes.has(candidate)) {
+      usedCodes.add(candidate);
+      return candidate;
+    }
+  }
+  const fallback = `${type}-${crypto.randomUUID()}`;
+  usedCodes.add(fallback);
+  return fallback;
+}
+
+function applyAutomaticCodes(passData) {
+  if (!currentUser?.id) return passData;
+
+  const usedCodes = collectUsedCodes(currentEditingPassId);
+  const registryCodes = loadCodeRegistry(currentUser.id);
+  registryCodes.forEach((value) => usedCodes.add(value));
+
+  const isEditing = Boolean(currentEditingPassId);
+  const currentBarcodeValue = String(passData.barcodeConfig?.value || '').trim();
+  const currentQrValue = String(passData.qrContent || '').trim();
+  const currentSerialValue = String(passData.passkitConfig?.serialNumber || '').trim();
+  const currentMessageValue = String(passData.passkitConfig?.barcode?.message || '').trim();
+  if (isEditing) {
+    [currentQrValue, currentBarcodeValue, currentSerialValue, currentMessageValue].forEach((value) => {
+      if (value) usedCodes.delete(value);
+    });
+  }
+
+  const qrContent = !isEditing || !currentQrValue || usedCodes.has(currentQrValue) ? getUniqueCodeValue('QR', currentUser.id, usedCodes) : currentQrValue;
+  const barcodeValue =
+    !isEditing || !currentBarcodeValue || usedCodes.has(currentBarcodeValue)
+      ? getUniqueCodeValue(passData.barcodeConfig?.type || 'BARCODE', currentUser.id, usedCodes)
+      : currentBarcodeValue;
+  const serialNumber = !isEditing || !currentSerialValue || usedCodes.has(currentSerialValue) ? getUniqueCodeValue('SERIAL', currentUser.id, usedCodes) : currentSerialValue;
+  const passkitMessage =
+    !isEditing || !currentMessageValue || usedCodes.has(currentMessageValue)
+      ? getUniqueCodeValue(passData.passkitConfig?.barcode?.format || 'MESSAGE', currentUser.id, usedCodes)
+      : currentMessageValue;
+
+  saveCodeRegistry(currentUser.id, [...registryCodes, qrContent, barcodeValue, serialNumber, passkitMessage]);
+
+  return {
+    ...passData,
+    qrContent,
+    barcodeConfig: {
+      ...passData.barcodeConfig,
+      value: barcodeValue
+    },
+    passkitConfig: {
+      ...passData.passkitConfig,
+      serialNumber,
+      barcode: {
+        ...passData.passkitConfig?.barcode,
+        messageEncoding: passData.passkitConfig?.barcode?.messageEncoding || 'utf-8',
+        message: passkitMessage,
+        altText: passData.barcodeConfig?.showText ? barcodeValue : ''
+      }
+    }
+  };
+}
+
 function normalizeFolderNames(folderNames = []) {
   const uniqueNames = new Map();
   folderNames.forEach((entry) => {
@@ -512,7 +628,8 @@ async function handleSavePass() {
     return;
   }
 
-  const passData = getPassFormData();
+  const generatedPassData = applyAutomaticCodes(getPassFormData());
+  const passData = generatedPassData;
   if (!passData.title || !passData.qrContent) {
     showToast('Titel und QR-Inhalt sind Pflichtfelder.', true);
     return;
@@ -574,6 +691,11 @@ async function handleSavePass() {
     showToast(`Speichern fehlgeschlagen: ${error.message}`, true);
     return;
   }
+
+  formElements.qrContent.value = passData.qrContent;
+  if (formElements.barcodeValue) formElements.barcodeValue.value = passData.barcodeConfig?.value || '';
+  if (formElements.passkitSerialNumber) formElements.passkitSerialNumber.value = passData.passkitConfig?.serialNumber || '';
+  if (formElements.passkitMessageEncoding) formElements.passkitMessageEncoding.value = passData.passkitConfig?.barcode?.messageEncoding || 'utf-8';
 
   const savedPassId = currentEditingPassId || data?.id || null;
   const selectedFolder = passData.folderName || 'none';

@@ -149,24 +149,24 @@
               <section class="config-section">
                 <h3>🧾 Template-Felder</h3>
                 <div class="design-grid">
-                  <label>Mitglied seit<input id="member-since" type="text" placeholder="01.01.2024" /></label>
-                  <label>E-Mail / ID<input id="member-email" type="text" placeholder="max@example.com" /></label>
-                  <label>Event Name<input id="event-name" type="text" /></label>
-                  <label>Event Datum<input id="event-date" type="text" /></label>
-                  <label>Event Zeit<input id="event-time" type="text" /></label>
-                  <label>Location<input id="event-location" type="text" /></label>
-                  <label>Sektion<input id="event-section" type="text" /></label>
-                  <label>Reihe<input id="event-row" type="text" /></label>
-                  <label>Sitzplatz<input id="event-seat" type="text" /></label>
-                  <label>Abflug<input id="departure" type="text" /></label>
-                  <label>Ziel<input id="destination" type="text" /></label>
-                  <label>Gate<input id="gate" type="text" /></label>
-                  <label>Flugnummer<input id="flight-number" type="text" /></label>
-                  <label>Boarding Zeit<input id="boarding-time" type="text" /></label>
-                  <label>Policy / Vertrag<input id="policy-name" type="text" /></label>
-                  <label>Deckung / Plan<input id="coverage" type="text" /></label>
-                  <label>Selbstbehalt<input id="deductible" type="text" /></label>
-                  <label>Co-Insurance<input id="co-insurance" type="text" /></label>
+                  <label>Mitglied seit<input id="member-since" type="text" placeholder="01.01.2024" value="01.01.2024" /></label>
+                  <label>E-Mail / ID<input id="member-email" type="text" placeholder="max@example.com" value="max@example.com" /></label>
+                  <label>Event Name<input id="event-name" type="text" value="Summer Festival" /></label>
+                  <label>Event Datum<input id="event-date" type="text" value="15.08.2026" /></label>
+                  <label>Event Zeit<input id="event-time" type="text" value="19:30" /></label>
+                  <label>Location<input id="event-location" type="text" value="Basel Arena" /></label>
+                  <label>Sektion<input id="event-section" type="text" value="B" /></label>
+                  <label>Reihe<input id="event-row" type="text" value="12" /></label>
+                  <label>Sitzplatz<input id="event-seat" type="text" value="34" /></label>
+                  <label>Abflug<input id="departure" type="text" value="ZRH" /></label>
+                  <label>Ziel<input id="destination" type="text" value="BER" /></label>
+                  <label>Gate<input id="gate" type="text" value="A12" /></label>
+                  <label>Flugnummer<input id="flight-number" type="text" value="LX1074" /></label>
+                  <label>Boarding Zeit<input id="boarding-time" type="text" value="08:45" /></label>
+                  <label>Policy / Vertrag<input id="policy-name" type="text" value="Premium Protect" /></label>
+                  <label>Deckung / Plan<input id="coverage" type="text" value="EU Plus" /></label>
+                  <label>Selbstbehalt<input id="deductible" type="text" value="CHF 250" /></label>
+                  <label>Co-Insurance<input id="co-insurance" type="text" value="10%" /></label>
                 </div>
               </section>
 
@@ -253,7 +253,11 @@
                 </label>
                 <label>
                   Message Encoding
-                  <input id="passkit-message-encoding" type="text" value="iso-8859-1" />
+                  <select id="passkit-message-encoding">
+                    <option value="utf-8">utf-8</option>
+                    <option value="iso-8859-1">iso-8859-1</option>
+                    <option value="windows-1252">windows-1252</option>
+                  </select>
                 </label>
               </section>
               <section class="config-section">
