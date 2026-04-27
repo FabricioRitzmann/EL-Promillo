@@ -234,26 +234,20 @@ select:focus {
   padding: 16px;
   position: sticky;
   top: 12px;
-  align-self: end;
+  align-self: start;
   max-height: calc(100vh - 24px);
   overflow: auto;
   justify-self: end;
   width: min(360px, 36vw);
-  transition: width 220ms ease, transform 220ms ease, box-shadow 220ms ease;
+  transition: top 180ms ease, bottom 180ms ease, box-shadow 220ms ease;
   box-shadow: 0 20px 34px rgba(15, 23, 42, 0.36);
   color: #e6edf7;
 }
 
-.preview-pane.is-windowed {
-  position: static;
+.preview-pane.is-horizontal-mode {
   top: auto;
-  max-height: none;
-}
-
-.preview-pane.is-expanded {
-  width: 100%;
-  transform: translateY(0);
-  box-shadow: none;
+  bottom: 12px;
+  align-self: end;
 }
 
 .wallet-preview-shell {
@@ -644,9 +638,13 @@ select:focus {
   }
 
   .preview-pane,
-  .preview-pane.is-expanded {
+  .preview-pane.is-horizontal-mode {
     width: 100%;
     box-shadow: none;
+    position: static;
+    top: auto;
+    bottom: auto;
+    max-height: none;
   }
 }
 
