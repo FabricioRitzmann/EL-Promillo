@@ -353,7 +353,7 @@ function handleCreateFolder(folderNameInput) {
 
 async function handleRegister() {
   const email = formElements.email.value.trim();
-  const password = formElements.password.value.trim();
+  const password = formElements.password.value;
 
   const { error } = await registerWithEmail(email, password);
   if (error) {
@@ -366,7 +366,7 @@ async function handleRegister() {
 
 async function handleLogin() {
   const email = formElements.email.value.trim();
-  const password = formElements.password.value.trim();
+  const password = formElements.password.value;
 
   const { data, error } = await loginWithEmail(email, password);
   if (error) {
