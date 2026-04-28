@@ -84,45 +84,12 @@
                   Beschreibung
                   <textarea id="pass-description" rows="3">Zutritt für Events und Lounge.</textarea>
                 </label>
-
                 <label>
-                  QR-Inhalt (z. B. URL oder Token)
-                  <input id="pass-qr-content" type="text" value="https://example.com/checkin/ABC123" required />
-                </label>
-
-                <label>
-                  Betrieb
-                  <input id="business-name" type="text" value="Musterbetrieb" />
-                </label>
-
-                <label>
-                  Betriebsart
-                  <select id="business-category">
-                    <option value="restaurant">Restaurant</option>
-                    <option value="bar">Bar</option>
-                    <option value="club">Club</option>
-                    <option value="cafe">Café</option>
-                    <option value="bakery">Bäckerei</option>
-                    <option value="other">Andere</option>
-                  </select>
-                </label>
-              </section>
-
-              <section class="config-section">
-                <h3>🧩 Karten-Template</h3>
-                <p class="muted small">
-                  Templates definieren den Karteninhalt (z. B. Kaffeekarte, Streakkarte, Guthabenkarte).
-                </p>
-                <label>
-                  Template
+                  Karten-Template
                   <select id="pass-template"></select>
                 </label>
-              </section>
-
-              <section class="config-section">
-                <h3>🍎 PassKit-Erweiterung (separat)</h3>
                 <p class="muted small">
-                  Diese Felder sind bewusst isoliert gespeichert, damit sie später einfach wieder entfernt/gefiltert werden können.
+                  Templates definieren den Karteninhalt (z. B. Kaffeekarte, Streakkarte, Guthabenkarte).
                 </p>
                 <label class="inline-checkbox">
                   <input id="passkit-enabled" type="checkbox" />
@@ -149,7 +116,7 @@
                   <input id="passkit-serial-number" type="text" placeholder="123456" />
                 </label>
                 <label>
-                  PassKit Beschreibung
+                  PassKit-Beschreibung
                   <input id="passkit-description" type="text" placeholder="Kundenkarte" />
                 </label>
                 <label>
@@ -184,7 +151,30 @@
                   Message Encoding
                   <input id="passkit-message-encoding" type="text" value="iso-8859-1" />
                 </label>
+
+                <label>
+                  QR-Inhalt (z. B. URL oder Token)
+                  <input id="pass-qr-content" type="text" value="https://example.com/checkin/ABC123" required />
+                </label>
+
+                <label>
+                  Betrieb
+                  <input id="business-name" type="text" value="Musterbetrieb" />
+                </label>
+
+                <label>
+                  Betriebsart
+                  <select id="business-category">
+                    <option value="restaurant">Restaurant</option>
+                    <option value="bar">Bar</option>
+                    <option value="club">Club</option>
+                    <option value="cafe">Café</option>
+                    <option value="bakery">Bäckerei</option>
+                    <option value="other">Andere</option>
+                  </select>
+                </label>
               </section>
+
               <section class="config-section">
                 <h3>🎯 Icon-Editor</h3>
                 <p class="muted small">

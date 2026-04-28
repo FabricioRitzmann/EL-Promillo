@@ -1,4 +1,4 @@
-// PassKit-Erweiterung (separat gehalten, damit sie später leicht entfernbar ist)
+// PassKit-Optionen für die integrierten Formularfelder im Basisdatenbereich.
 export const passkitPassTypes = [
   { id: 'boardingPass', name: '✈️ Boarding Pass' },
   { id: 'eventTicket', name: '🎫 Event Ticket' },
