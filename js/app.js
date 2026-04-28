@@ -53,7 +53,6 @@ let currentEditingPassId = null;
 let latestPassEntries = [];
 let latestPassStats = [];
 let lastTemplateId = '';
-let isAccountPasswordVisible = false;
 let passFoldersById = {};
 let savedFolderNames = [];
 let savedCardsFilters = {
@@ -116,24 +115,6 @@ function syncAccountPopupFields() {
   }
 }
 
-function setAccountPasswordVisibility(isVisible) {
-  isAccountPasswordVisible = isVisible;
-
-  if (ui.accountPassword) {
-    ui.accountPassword.type = isVisible ? 'text' : 'password';
-  }
-
-  if (ui.accountPasswordToggleBtn) {
-    ui.accountPasswordToggleBtn.textContent = isVisible
-      ? 'Passwort verbergen'
-      : 'Passwort anzeigen';
-  }
-}
-
-function handleAccountPasswordToggle() {
-  setAccountPasswordVisibility(!isAccountPasswordVisible);
-}
-
 function syncAccountLogoSection() {
   if (ui.accountLogoPreview) {
     if (currentAccountLogoUrl) {
@@ -154,13 +135,11 @@ function syncAccountLogoSection() {
 
 function openAccountPopup() {
   syncAccountPopupFields();
-  setAccountPasswordVisibility(false);
   syncAccountLogoSection();
   ui.accountPopup?.classList.remove('hidden');
 }
 
 function closeAccountPopup() {
-  setAccountPasswordVisibility(false);
   ui.accountPopup?.classList.add('hidden');
 }
 
@@ -880,7 +859,6 @@ function wireEvents() {
   ui.logoutBtn.addEventListener('click', handleLogout);
   ui.accountBtn?.addEventListener('click', openAccountPopup);
   ui.accountPopupCloseBtn?.addEventListener('click', closeAccountPopup);
-  ui.accountPasswordToggleBtn?.addEventListener('click', handleAccountPasswordToggle);
 
   const previewFields = [
     formElements.title,
