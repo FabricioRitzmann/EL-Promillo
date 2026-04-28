@@ -1264,10 +1264,8 @@ export function getPassFormData() {
       positionY: sanitizeNumber(formElements.bannerY.value, 4)
     },
     cardProgramType: template.programType || 'generic',
-    titleBucketLayout: getTitleBucketLayout(),
     programConfig: {
-      ...getProgramConfig(template.programType || 'generic'),
-      titleBucketLayout: getTitleBucketLayout()
+      ...getProgramConfig(template.programType || 'generic')
     },
     pushEnabled: formElements.pushEnabled.checked,
     notificationRules: getNotificationRules(),
@@ -1324,7 +1322,6 @@ export function fillEditorFromSavedPass(entry) {
   syncBannerFields();
 
   const programConfig = entry.program_config || {};
-  setTitleBucketLayout(programConfig.titleBucketLayout || entry.title_bucket_layout || defaultTitleBucketLayout);
   formElements.coffeeTarget.value = programConfig.stampTarget ?? 10;
   formElements.coffeeCurrent.value = programConfig.currentStamps ?? 0;
   formElements.coffeeReward.value = programConfig.rewardText ?? '';
