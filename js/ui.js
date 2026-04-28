@@ -17,8 +17,6 @@ export const ui = {
   accountPassword: document.getElementById('account-password'),
   accountLogoPreview: document.getElementById('account-logo-preview'),
   accountLogoStatus: document.getElementById('account-logo-status'),
-  accountLogoActions: document.getElementById('account-logo-actions'),
-  accountLogoUploadBtn: document.getElementById('account-logo-upload-btn'),
   accountLogoDeleteBtn: document.getElementById('account-logo-delete-btn'),
   accountLogoReplaceBtn: document.getElementById('account-logo-replace-btn'),
   headerCompanyLogo: document.getElementById('header-company-logo'),

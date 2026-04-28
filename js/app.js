@@ -48,7 +48,6 @@ import {
 
 let currentUser = null;
 let currentUploadedImageUrl = '';
-let currentUploadedIconUrl = '';
 let currentUploadedBannerUrl = '';
 let currentAccountLogoUrl = '';
 let currentEditingPassId = null;
@@ -118,10 +117,8 @@ function syncAccountPopupFields() {
 }
 
 function syncAccountLogoSection() {
-  const hasLogo = Boolean(currentAccountLogoUrl);
-
   if (ui.accountLogoPreview) {
-    if (hasLogo) {
+    if (currentAccountLogoUrl) {
       ui.accountLogoPreview.src = currentAccountLogoUrl;
       ui.accountLogoPreview.classList.remove('hidden');
     } else {
@@ -131,15 +128,10 @@ function syncAccountLogoSection() {
   }
 
   if (ui.accountLogoStatus) {
-    ui.accountLogoStatus.textContent = hasLogo
+    ui.accountLogoStatus.textContent = currentAccountLogoUrl
       ? 'Logo hinterlegt.'
       : 'Kein Logo hinterlegt.';
   }
-
-  ui.accountLogoUploadBtn?.classList.toggle('hidden', hasLogo);
-  ui.accountLogoActions?.classList.toggle('hidden', !hasLogo);
-  ui.accountLogoDeleteBtn?.classList.toggle('hidden', !hasLogo);
-  ui.accountLogoReplaceBtn?.classList.toggle('hidden', !hasLogo);
 }
 
 function openAccountPopup() {
@@ -185,7 +177,7 @@ function buildPreviewPayload() {
   return {
     ...formData,
     customImageUrl: currentUploadedImageUrl,
-    customIconUrl: currentUploadedIconUrl,
+    customIconUrl: currentAccountLogoUrl,
     customBannerUrl: currentUploadedBannerUrl
   };
 }
@@ -240,7 +232,6 @@ async function handleNewPass() {
 
   currentEditingPassId = null;
   currentUploadedImageUrl = '';
-  currentUploadedIconUrl = '';
   currentUploadedBannerUrl = '';
   document.getElementById('pass-form').reset();
   formElements.upload.value = '';
@@ -451,7 +442,6 @@ async function handleLogout() {
 
   currentUser = null;
   currentUploadedImageUrl = '';
-  currentUploadedIconUrl = '';
   currentUploadedBannerUrl = '';
   currentAccountLogoUrl = '';
   currentEditingPassId = null;
@@ -492,28 +482,6 @@ async function handleImageUpload(event) {
   showToast('Hintergrundbild hochgeladen.');
 }
 
-async function handleIconUpload(event) {
-  const file = event.target.files?.[0];
-  if (!file) {
-    currentUploadedIconUrl = '';
-    refreshPreview();
-    return;
-  }
-  if (!currentUser) {
-    showToast('Bitte zuerst einloggen, bevor du Bilder hochlädst.', true);
-    event.target.value = '';
-    return;
-  }
-  const { data, error } = await uploadCustomImage(file, currentUser.id);
-  if (error) {
-    showToast(`Icon-Upload fehlgeschlagen: ${error.message}`, true);
-    return;
-  }
-  currentUploadedIconUrl = data.publicUrl;
-  refreshPreview();
-  showToast('Firmenlogo hochgeladen.');
-}
-
 async function handleAccountLogoUpload(event) {
   const file = event.target.files?.[0];
   if (!file) {
@@ -535,6 +503,36 @@ async function handleAccountLogoUpload(event) {
   syncAccountLogoSection();
   event.target.value = '';
   showToast('Firmenlogo gespeichert. Du kannst es jederzeit ersetzen.');
+}
+
+async function handleDeleteAccountLogo() {
+  if (!currentUser || !currentAccountLogoUrl) {
+    return;
+  }
+
+  const storagePath = extractStoragePathFromPublicUrl(currentAccountLogoUrl);
+  if (storagePath) {
+    const { error } = await deleteCustomImageByPath(storagePath);
+    if (error) {
+      showToast(`Logo konnte nicht aus dem Speicher gelöscht werden: ${error.message}`, true);
+      return;
+    }
+  }
+
+  currentAccountLogoUrl = '';
+  persistAccountLogo(currentUser.id, '');
+  syncHeaderCompanyLogo();
+  syncAccountLogoSection();
+  formElements.accountLogoUpload.value = '';
+  showToast('Firmenlogo gelöscht.');
+}
+
+function handleReplaceAccountLogo() {
+  if (!currentUser) {
+    showToast('Bitte zuerst einloggen, bevor du Bilder hochlädst.', true);
+    return;
+  }
+  formElements.accountLogoUpload?.click();
 }
 
 async function handleDeleteAccountLogo() {
@@ -628,7 +626,7 @@ async function handleSavePass() {
       id: currentEditingPassId,
       templateStoragePath: currentEntry?.template_storage_path || '',
       customImageUrl: currentUploadedImageUrl,
-      customIconUrl: currentUploadedIconUrl,
+      customIconUrl: currentAccountLogoUrl,
       customBannerUrl: currentUploadedBannerUrl
     },
     currentUser.id
@@ -659,7 +657,6 @@ async function handleCreateNewPass() {
 
   currentEditingPassId = null;
   currentUploadedImageUrl = '';
-  currentUploadedIconUrl = '';
   currentUploadedBannerUrl = '';
   formElements.upload.value = '';
   initTemplateSelect();
@@ -728,7 +725,6 @@ async function handleOpenSavedPass(passId) {
   fillEditorFromSavedPass(selectedPass);
   currentEditingPassId = selectedPass.id;
   currentUploadedImageUrl = selectedPass.custom_image_url || '';
-  currentUploadedIconUrl = selectedPass.custom_icon_url || '';
   currentUploadedBannerUrl = selectedPass.custom_banner_url || '';
   lastTemplateId = selectedPass.template_id || formElements.template.value;
   setActiveTab('editor');
@@ -777,7 +773,7 @@ async function handleScanPass(passId) {
       backgroundColor: selectedPass.background_color,
       foregroundColor: selectedPass.foreground_color,
       customImageUrl: selectedPass.custom_image_url,
-      customIconUrl: selectedPass.custom_icon_url,
+      customIconUrl: currentAccountLogoUrl,
       customBannerUrl: selectedPass.custom_banner_url,
       banner: {
         enabled: selectedPass.banner_enabled,
@@ -913,9 +909,7 @@ function wireEvents() {
   formElements.bannerColor.addEventListener('change', applyBannerColorPreset);
 
   formElements.upload.addEventListener('change', handleImageUpload);
-  formElements.iconUpload.addEventListener('change', handleIconUpload);
   formElements.accountLogoUpload?.addEventListener('change', handleAccountLogoUpload);
-  ui.accountLogoUploadBtn?.addEventListener('click', handleReplaceAccountLogo);
   ui.accountLogoDeleteBtn?.addEventListener('click', handleDeleteAccountLogo);
   ui.accountLogoReplaceBtn?.addEventListener('click', handleReplaceAccountLogo);
   formElements.bannerUpload.addEventListener('change', handleBannerUpload);
