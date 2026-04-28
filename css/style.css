@@ -520,22 +520,9 @@ select:focus {
 }
 
 .preview-title-bucket {
-  position: relative;
-  min-height: 88px;
-}
-
-.preview-bucket-item {
-  position: absolute;
-  left: 0;
-  top: 0;
-  margin: 0;
-  cursor: grab;
-  touch-action: none;
-}
-
-.preview-bucket-item.is-dragging {
-  cursor: grabbing;
-  opacity: 0.92;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .preview-banner {
@@ -587,7 +574,6 @@ select:focus {
   padding: 0;
   display: grid;
   gap: 8px;
-  touch-action: none;
 }
 
 .title-bucket-item {
@@ -604,7 +590,6 @@ select:focus {
 
 .title-bucket-item.is-dragging {
   opacity: 0.5;
-  cursor: grabbing;
 }
 
 .title-bucket-grip {

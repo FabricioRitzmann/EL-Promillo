@@ -120,13 +120,7 @@ const titleBucketLabels = {
   description: 'Beschreibung'
 };
 const defaultTitleBucketLayout = ['subtitle', 'title', 'description'];
-const defaultTitleBucketPositions = {
-  subtitle: { x: 0, y: 0 },
-  title: { x: 0, y: 22 },
-  description: { x: 0, y: 52 }
-};
 let titleBucketLayout = [...defaultTitleBucketLayout];
-let titleBucketPositions = JSON.parse(JSON.stringify(defaultTitleBucketPositions));
 
 let pendingConfirmResolver = null;
 let selectedSimulationPassId = null;
@@ -678,133 +672,18 @@ export function getTitleBucketLayout() {
   return [...titleBucketLayout];
 }
 
-function normalizeTitleBucketPositions(positions) {
-  const normalized = JSON.parse(JSON.stringify(defaultTitleBucketPositions));
-  if (!positions || typeof positions !== 'object') {
-    return normalized;
-  }
-
-  defaultTitleBucketLayout.forEach((key) => {
-    if (!positions[key]) return;
-    normalized[key] = {
-      x: sanitizeNumber(positions[key].x, defaultTitleBucketPositions[key].x),
-      y: sanitizeNumber(positions[key].y, defaultTitleBucketPositions[key].y)
-    };
-  });
-
-  return normalized;
-}
-
-export function setTitleBucketPositions(positions) {
-  titleBucketPositions = normalizeTitleBucketPositions(positions);
-}
-
-export function getTitleBucketPositions() {
-  return JSON.parse(JSON.stringify(titleBucketPositions));
-}
-
-function clamp(value, min, max) {
-  return Math.min(Math.max(value, min), max);
-}
-
-export function initPreviewTitleBucketDrag(onChange) {
-  const bucket = document.getElementById('preview-title-bucket');
-  if (!bucket) return;
-
-  const dragState = {
-    key: null,
-    pointerId: null,
-    startX: 0,
-    startY: 0,
-    originX: 0,
-    originY: 0
-  };
-
-  const onPointerDown = (event) => {
-    const item = event.target.closest('.preview-bucket-item');
-    if (!item || !bucket.contains(item)) return;
-    const key = item.dataset.bucketKey;
-    if (!key) return;
-
-    const current = getTitleBucketPositions();
-    dragState.key = key;
-    dragState.pointerId = event.pointerId;
-    dragState.startX = event.clientX;
-    dragState.startY = event.clientY;
-    dragState.originX = current[key]?.x ?? 0;
-    dragState.originY = current[key]?.y ?? 0;
-    item.classList.add('is-dragging');
-    bucket.setPointerCapture(event.pointerId);
-    event.preventDefault();
-  };
-
-  const onPointerMove = (event) => {
-    if (!dragState.key || dragState.pointerId !== event.pointerId) return;
-    const item = bucket.querySelector(`[data-bucket-key="${dragState.key}"]`);
-    if (!item) return;
-
-    const deltaX = event.clientX - dragState.startX;
-    const deltaY = event.clientY - dragState.startY;
-    const maxX = Math.max(bucket.clientWidth - item.offsetWidth, 0);
-    const maxY = Math.max(bucket.clientHeight - item.offsetHeight, 0);
-
-    const next = getTitleBucketPositions();
-    next[dragState.key] = {
-      x: clamp(dragState.originX + deltaX, 0, maxX),
-      y: clamp(dragState.originY + deltaY, 0, maxY)
-    };
-    setTitleBucketPositions(next);
-    item.style.left = `${next[dragState.key].x}px`;
-    item.style.top = `${next[dragState.key].y}px`;
-  };
-
-  const onPointerUp = (event) => {
-    if (dragState.pointerId !== event.pointerId) return;
-    bucket.querySelector(`[data-bucket-key="${dragState.key}"]`)?.classList.remove('is-dragging');
-    dragState.key = null;
-    dragState.pointerId = null;
-    if (onChange) {
-      onChange();
-    }
-  };
-
-  bucket.addEventListener('pointerdown', onPointerDown);
-  bucket.addEventListener('pointermove', onPointerMove);
-  bucket.addEventListener('pointerup', onPointerUp);
-  bucket.addEventListener('pointercancel', onPointerUp);
-}
-
 export function initTitleBucketEditor(onChange) {
   const list = document.getElementById('title-bucket-editor');
   const resetButton = document.getElementById('title-bucket-reset-btn');
   if (!list) return;
 
   let draggedKey = null;
-  let pointerDragging = false;
-  let lastHoverKey = null;
-
-  const applyReorder = (sourceKey, targetKey) => {
-    if (!sourceKey || !targetKey || sourceKey === targetKey) return false;
-    const current = [...titleBucketLayout];
-    const sourceIndex = current.indexOf(sourceKey);
-    const targetIndex = current.indexOf(targetKey);
-    if (sourceIndex < 0 || targetIndex < 0) return false;
-
-    current.splice(sourceIndex, 1);
-    current.splice(targetIndex, 0, sourceKey);
-    setTitleBucketLayout(current);
-    if (onChange) {
-      onChange();
-    }
-    return true;
-  };
 
   list.addEventListener('dragstart', (event) => {
     const item = event.target.closest('.title-bucket-item');
     if (!item) return;
     draggedKey = item.dataset.bucketKey;
     event.dataTransfer.effectAllowed = 'move';
-    event.dataTransfer.setData('text/plain', draggedKey);
     item.classList.add('is-dragging');
   });
 
@@ -828,46 +707,20 @@ export function initTitleBucketEditor(onChange) {
     if (!targetItem) return;
 
     const targetKey = targetItem.dataset.bucketKey;
-    applyReorder(draggedKey, targetKey);
-  });
+    if (!targetKey || targetKey === draggedKey) return;
 
-  list.addEventListener('pointerdown', (event) => {
-    const item = event.target.closest('.title-bucket-item');
-    if (!item) return;
-    pointerDragging = true;
-    draggedKey = item.dataset.bucketKey;
-    lastHoverKey = item.dataset.bucketKey;
-    item.classList.add('is-dragging');
-    list.setPointerCapture(event.pointerId);
-    event.preventDefault();
-  });
+    const current = [...titleBucketLayout];
+    const sourceIndex = current.indexOf(draggedKey);
+    const targetIndex = current.indexOf(targetKey);
+    if (sourceIndex < 0 || targetIndex < 0) return;
 
-  list.addEventListener('pointermove', (event) => {
-    if (!pointerDragging || !draggedKey) return;
-    const hoveredItem = document.elementFromPoint(event.clientX, event.clientY)?.closest('.title-bucket-item');
-    if (!hoveredItem || !list.contains(hoveredItem)) return;
-    const hoverKey = hoveredItem.dataset.bucketKey;
-    if (!hoverKey || hoverKey === lastHoverKey) return;
-    if (applyReorder(draggedKey, hoverKey)) {
-      draggedKey = hoverKey;
-      lastHoverKey = hoverKey;
+    current.splice(sourceIndex, 1);
+    current.splice(targetIndex, 0, draggedKey);
+    setTitleBucketLayout(current);
+
+    if (onChange) {
+      onChange();
     }
-  });
-
-  list.addEventListener('pointerup', (event) => {
-    if (!pointerDragging) return;
-    pointerDragging = false;
-    list.releasePointerCapture(event.pointerId);
-    list.querySelectorAll('.title-bucket-item').forEach((item) => item.classList.remove('is-dragging'));
-    draggedKey = null;
-    lastHoverKey = null;
-  });
-
-  list.addEventListener('pointercancel', () => {
-    pointerDragging = false;
-    list.querySelectorAll('.title-bucket-item').forEach((item) => item.classList.remove('is-dragging'));
-    draggedKey = null;
-    lastHoverKey = null;
   });
 
   resetButton?.addEventListener('click', () => {
@@ -1077,7 +930,6 @@ export function updatePreview(payload) {
   }
   description.textContent = payload.description || '';
   const activeTitleBucketLayout = normalizeTitleBucketLayout(payload.titleBucketLayout);
-  const activeTitleBucketPositions = normalizeTitleBucketPositions(payload.titleBucketPositions);
   const previewNodes = {
     subtitle,
     title: previewTitleRow,
@@ -1087,9 +939,6 @@ export function updatePreview(payload) {
     const node = previewNodes[key];
     if (node && previewTitleBucket) {
       previewTitleBucket.appendChild(node);
-      const position = activeTitleBucketPositions[key] || defaultTitleBucketPositions[key];
-      node.style.left = `${position.x}px`;
-      node.style.top = `${position.y}px`;
     }
   });
 
@@ -1353,11 +1202,9 @@ export function getPassFormData() {
     },
     cardProgramType: template.programType || 'generic',
     titleBucketLayout: getTitleBucketLayout(),
-    titleBucketPositions: getTitleBucketPositions(),
     programConfig: {
       ...getProgramConfig(template.programType || 'generic'),
-      titleBucketLayout: getTitleBucketLayout(),
-      titleBucketPositions: getTitleBucketPositions()
+      titleBucketLayout: getTitleBucketLayout()
     },
     pushEnabled: formElements.pushEnabled.checked,
     notificationRules: getNotificationRules(),
@@ -1414,7 +1261,6 @@ export function fillEditorFromSavedPass(entry) {
 
   const programConfig = entry.program_config || {};
   setTitleBucketLayout(programConfig.titleBucketLayout || entry.title_bucket_layout || defaultTitleBucketLayout);
-  setTitleBucketPositions(programConfig.titleBucketPositions || entry.title_bucket_positions || defaultTitleBucketPositions);
   formElements.coffeeTarget.value = programConfig.stampTarget ?? 10;
   formElements.coffeeCurrent.value = programConfig.currentStamps ?? 0;
   formElements.coffeeReward.value = programConfig.rewardText ?? '';
