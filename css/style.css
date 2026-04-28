@@ -61,36 +61,38 @@ p {
 }
 
 .header-company-logo {
-  width: 108px;
-  height: 108px;
+  width: 36px;
+  height: 36px;
   object-fit: contain;
-  border-radius: 16px;
+  border-radius: 8px;
   border: 1px solid rgba(15, 23, 42, 0.16);
   background: rgba(255, 255, 255, 0.7);
-  padding: 9px;
+  padding: 3px;
 }
 
 .topbar-actions {
   display: flex;
   align-items: center;
   gap: 10px;
+  margin-left: auto;
+  padding-right: 52px;
 }
 
 .account-btn {
   width: 40px;
   height: 40px;
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  z-index: 12;
   border-radius: 999px;
-  border: none;
+  border: 1px solid var(--border);
   background: #f3f4f6;
   color: #1f2937;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-}
-
-#logout-btn {
-  white-space: nowrap;
 }
 
 .account-btn svg {
@@ -206,7 +208,6 @@ textarea,
 select,
 button {
   font: inherit;
-  border: none;
 }
 
 input,
@@ -227,29 +228,26 @@ select:focus {
 
 .btn {
   border: none;
-  border-radius: 0;
-  padding: 8px 0;
-  background: transparent;
-  color: #9ca3af;
-  border-bottom: 2px solid transparent;
+  border-radius: 999px;
+  padding: 10px 16px;
+  background: #e7ebf2;
+  color: #1f2937;
   cursor: pointer;
   font-weight: 600;
 }
 
 .btn:hover {
-  background: transparent;
-  filter: none;
-  color: #6b7280;
+  filter: brightness(0.96);
 }
 
 .btn-primary {
-  background: transparent;
-  color: #111827;
-  border-bottom-color: #111827;
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 8px 20px rgba(0, 113, 227, 0.28);
 }
 
 .btn-secondary {
-  background: transparent;
+  background: #f0f0f2;
 }
 
 .row-buttons {
@@ -260,9 +258,9 @@ select:focus {
 
 .tabbar {
   display: flex;
-  gap: 10px;
+  gap: 20px;
   padding: 0 0 4px;
-  border-bottom: none;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .tabbar.card {
@@ -276,23 +274,24 @@ select:focus {
 }
 
 .tab-btn {
-  border: none;
-  border-radius: 999px;
-  padding: 10px 16px;
-  background: #f0f0f2;
-  color: #1f2937;
+  border-radius: 0;
+  padding: 8px 0;
+  background: transparent;
+  color: #9ca3af;
+  border-bottom: 2px solid transparent;
   font-weight: 600;
 }
 
 .tab-btn:hover {
-  filter: brightness(0.96);
-  color: #1f2937;
+  background: transparent;
+  filter: none;
+  color: #6b7280;
 }
 
 .tab-btn.is-active {
-  background: var(--primary);
-  color: white;
-  box-shadow: 0 8px 20px rgba(0, 113, 227, 0.28);
+  background: transparent;
+  color: #111827;
+  border-bottom-color: #111827;
 }
 
 .section-head {
@@ -590,7 +589,7 @@ select:focus {
   width: 34px;
   height: 34px;
   border-radius: 9px;
-  border: none;
+  border: 1px solid var(--border);
   background: rgba(255, 255, 255, 0.65);
   color: #374151;
   display: inline-flex;
@@ -886,9 +885,8 @@ select:focus {
 }
 
 .btn-danger {
-  background: transparent;
+  background: #ffefef;
   color: #a51212;
-  border-bottom-color: #a51212;
 }
 
 @media (max-width: 640px) {
