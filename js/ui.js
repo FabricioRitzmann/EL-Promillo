@@ -480,8 +480,6 @@ export function renderProgramFields(programType) {
   const panel = document.getElementById(`program-${programType}`) || document.getElementById('program-generic');
   panel.classList.remove('hidden');
 
-  const streakIconWrap = document.getElementById('streak-icon-wrap');
-  streakIconWrap.classList.toggle('hidden', programType !== 'streak');
   const hasStampBackground = programType === 'coffee' || programType === 'streak';
   formElements.stampFrameSection.classList.toggle('hidden', !hasStampBackground);
 }
