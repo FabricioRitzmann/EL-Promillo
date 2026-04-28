@@ -48,10 +48,20 @@
           Passwort
           <input id="account-password" type="password" readonly />
         </label>
-        <label>
-          Firmenlogo einfügen (PNG/JPG)
-          <input id="account-logo-upload" type="file" accept="image/png,image/jpeg" />
-        </label>
+        <div class="account-logo-panel">
+          <p class="small"><strong>Firmenlogo (PNG/JPG)</strong></p>
+          <img
+            id="account-logo-preview"
+            class="account-logo-preview hidden"
+            alt="Hinterlegtes Firmenlogo im Konto"
+          />
+          <p id="account-logo-status" class="muted small">Kein Logo hinterlegt.</p>
+          <input id="account-logo-upload" class="hidden" type="file" accept="image/png,image/jpeg" />
+          <div class="row-buttons">
+            <button id="account-logo-delete-btn" class="btn btn-secondary" type="button">Datei löschen</button>
+            <button id="account-logo-replace-btn" class="btn btn-secondary" type="button">Datei ersetzen</button>
+          </div>
+        </div>
         <p class="muted small">
           Sobald das Firmenlogo im Konto-Popup hinterlegt wird, bleibt es dauerhaft gespeichert und kann später ersetzt
           werden.
