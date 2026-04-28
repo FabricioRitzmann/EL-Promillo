@@ -71,3 +71,37 @@ export function normalizePasskitConfig(config = {}) {
     }
   };
 }
+
+export function getEditorPasskitConfig(config = {}) {
+  const normalized = normalizePasskitConfig(config);
+  if (!normalized.enabled) {
+    return { enabled: false };
+  }
+
+  const location =
+    normalized.location.latitude !== null && normalized.location.longitude !== null
+      ? {
+          latitude: normalized.location.latitude,
+          longitude: normalized.location.longitude
+        }
+      : undefined;
+
+  return {
+    enabled: true,
+    passType: normalized.passType,
+    passTypeIdentifier: normalized.passTypeIdentifier,
+    teamIdentifier: normalized.teamIdentifier,
+    organizationName: normalized.organizationName,
+    serialNumber: normalized.serialNumber,
+    description: normalized.description,
+    foregroundColor: normalized.foregroundColor,
+    backgroundColor: normalized.backgroundColor,
+    labelColor: normalized.labelColor,
+    relevantDate: normalized.relevantDate,
+    location,
+    barcode: {
+      format: normalized.barcode.format,
+      messageEncoding: normalized.barcode.messageEncoding
+    }
+  };
+}

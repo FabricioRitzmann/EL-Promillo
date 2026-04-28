@@ -1,6 +1,7 @@
 import { backgroundTemplates, bannerColorOptions, passTemplates, streakIcons, templateIcons } from './config.js';
 import { WALLET_TEMPLATE_TYPES } from './walletTemplates.js';
 import {
+  getEditorPasskitConfig,
   getDefaultPasskitConfig,
   normalizePasskitConfig,
   passkitBarcodeFormats,
@@ -1027,7 +1028,7 @@ export function closeWalletSimulation() {
 
 export function getPassFormData() {
   const template = getTemplateById(formElements.template.value);
-  const passkitConfig = normalizePasskitConfig({
+  const passkitConfig = getEditorPasskitConfig({
     enabled: formElements.passkitEnabled.checked,
     passType: formElements.passkitPassType.value,
     passTypeIdentifier: formElements.passkitPassTypeIdentifier.value,
