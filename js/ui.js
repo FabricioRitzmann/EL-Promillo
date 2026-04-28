@@ -971,8 +971,9 @@ function renderWalletSimulationStack() {
   }
 
   ui.walletSimStack.innerHTML = '';
+  const unselectedPasses = simulationPasses.filter((entry) => entry.id !== selectedSimulationPassId);
 
-  simulationPasses.forEach((entry, index) => {
+  unselectedPasses.forEach((entry, index) => {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'wallet-sim-mini-pass';
@@ -980,8 +981,7 @@ function renderWalletSimulationStack() {
     button.setAttribute('aria-label', `Karte ${entry.title} öffnen`);
     button.style.background = getSimulationBackground(entry);
     button.style.color = entry.foregroundColor;
-    button.style.zIndex = String(simulationPasses.length - index);
-    button.classList.toggle('is-active', entry.id === selectedSimulationPassId);
+    button.style.zIndex = String(unselectedPasses.length - index);
     const hasStampProgram = entry.cardProgramType === 'coffee' || entry.cardProgramType === 'streak';
     const progressText = hasStampProgram ? `Stempel ${entry.currentStamps} von ${entry.stampTarget}` : '';
     button.innerHTML = `
@@ -996,6 +996,10 @@ function renderWalletSimulationStack() {
     `;
     ui.walletSimStack.appendChild(button);
   });
+
+  if (!unselectedPasses.length) {
+    ui.walletSimStack.innerHTML = '<p class="muted small">Keine weiteren Karten im Stapel.</p>';
+  }
 }
 
 export function renderWalletSimulation({ currentPass, savedPasses = [] }) {
