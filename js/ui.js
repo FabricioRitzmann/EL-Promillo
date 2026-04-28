@@ -10,6 +10,12 @@ import {
 
 export const ui = {
   authState: document.getElementById('auth-state'),
+  accountBtn: document.getElementById('account-btn'),
+  accountPopup: document.getElementById('account-popup'),
+  accountPopupCloseBtn: document.getElementById('account-popup-close-btn'),
+  accountEmail: document.getElementById('account-email'),
+  accountPassword: document.getElementById('account-password'),
+  headerCompanyLogo: document.getElementById('header-company-logo'),
   logoutBtn: document.getElementById('logout-btn'),
   tabbar: document.getElementById('main-tabbar'),
   authCard: document.getElementById('auth-card'),
@@ -44,6 +50,7 @@ export const ui = {
 export const formElements = {
   email: document.getElementById('email'),
   password: document.getElementById('password'),
+  accountLogoUpload: document.getElementById('account-logo-upload'),
   title: document.getElementById('pass-title'),
   subtitle: document.getElementById('pass-subtitle'),
   description: document.getElementById('pass-description'),

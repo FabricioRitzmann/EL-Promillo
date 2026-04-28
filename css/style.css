@@ -49,6 +49,73 @@ p {
   -webkit-backdrop-filter: blur(14px);
 }
 
+.topbar-brand {
+  position: relative;
+}
+
+.topbar-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-company-logo {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 1px solid rgba(15, 23, 42, 0.16);
+  background: rgba(255, 255, 255, 0.7);
+  padding: 3px;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.account-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: #f3f4f6;
+  color: #1f2937;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.account-btn svg {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+}
+
+.account-popup {
+  position: absolute;
+  right: 24px;
+  top: 98px;
+  width: min(360px, calc(100% - 48px));
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: var(--shadow);
+  padding: 14px;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.account-popup-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .eyebrow {
   color: var(--muted);
   font-size: 0.85rem;

@@ -60,6 +60,38 @@ let savedCardsFilters = {
   sort: 'newest'
 };
 
+function syncHeaderCompanyLogo() {
+  if (!ui.headerCompanyLogo) return;
+
+  if (currentUploadedIconUrl) {
+    ui.headerCompanyLogo.src = currentUploadedIconUrl;
+    ui.headerCompanyLogo.classList.remove('hidden');
+    return;
+  }
+
+  ui.headerCompanyLogo.src = '';
+  ui.headerCompanyLogo.classList.add('hidden');
+}
+
+function syncAccountPopupFields() {
+  if (ui.accountEmail) {
+    ui.accountEmail.value = currentUser?.email || formElements.email.value.trim();
+  }
+
+  if (ui.accountPassword) {
+    ui.accountPassword.value = formElements.password.value;
+  }
+}
+
+function openAccountPopup() {
+  syncAccountPopupFields();
+  ui.accountPopup?.classList.remove('hidden');
+}
+
+function closeAccountPopup() {
+  ui.accountPopup?.classList.add('hidden');
+}
+
 function updatePreviewPaneSizeOnScroll() {
   const previewPane = document.querySelector('.preview-pane');
   if (!previewPane) return;
@@ -100,6 +132,7 @@ function buildPreviewPayload() {
 
 function refreshPreview() {
   updatePreview(buildPreviewPayload());
+  syncHeaderCompanyLogo();
   syncPreviewWalletTabs();
 }
 
@@ -320,6 +353,7 @@ async function handleLogin() {
   currentUser = data.user;
   loadSavedCardsOrganization(currentUser.id);
   setAuthenticatedView(currentUser.email);
+  syncAccountPopupFields();
   showToast('Login erfolgreich.');
   await refreshPasses();
 }
@@ -362,6 +396,9 @@ async function handleLogout() {
   savedCardsFilters = { folder: 'all', cardType: 'all', sort: 'newest' };
   renderSavedCardsView();
   setLoggedOutView();
+  closeAccountPopup();
+  syncAccountPopupFields();
+  syncHeaderCompanyLogo();
   showToast('Du wurdest abgemeldet.');
 }
 
@@ -409,6 +446,7 @@ async function handleIconUpload(event) {
   }
   currentUploadedIconUrl = data.publicUrl;
   refreshPreview();
+  showToast('Firmenlogo hochgeladen.');
 }
 
 async function handleBannerUpload(event) {
@@ -576,6 +614,7 @@ async function handleOpenSavedPass(passId) {
   currentUploadedBannerUrl = selectedPass.custom_banner_url || '';
   lastTemplateId = selectedPass.template_id || formElements.template.value;
   setActiveTab('editor');
+  syncAccountPopupFields();
   refreshPreview();
   showToast('Karte im Editor geöffnet.');
 }
@@ -693,6 +732,8 @@ function wireEvents() {
   document.getElementById('save-pass-btn').addEventListener('click', handleSavePass);
   document.getElementById('new-pass-btn').addEventListener('click', handleCreateNewPass);
   ui.logoutBtn.addEventListener('click', handleLogout);
+  ui.accountBtn?.addEventListener('click', openAccountPopup);
+  ui.accountPopupCloseBtn?.addEventListener('click', closeAccountPopup);
 
   const previewFields = [
     formElements.title,
@@ -743,6 +784,7 @@ function wireEvents() {
 
   formElements.upload.addEventListener('change', handleImageUpload);
   formElements.iconUpload.addEventListener('change', handleIconUpload);
+  formElements.accountLogoUpload?.addEventListener('change', handleIconUpload);
   formElements.bannerUpload.addEventListener('change', handleBannerUpload);
   formElements.addRuleBtn.addEventListener('click', handleAddNotificationRule);
   ui.notificationRules.addEventListener('click', handleRuleLocationClick);
@@ -758,6 +800,17 @@ function wireEvents() {
   );
   window.addEventListener('scroll', updatePreviewPaneSizeOnScroll, { passive: true });
   window.addEventListener('resize', updatePreviewPaneSizeOnScroll);
+  document.addEventListener('click', (event) => {
+    if (!ui.accountPopup || ui.accountPopup.classList.contains('hidden')) {
+      return;
+    }
+
+    const clickedInsidePopup = ui.accountPopup.contains(event.target);
+    const clickedButton = ui.accountBtn?.contains(event.target);
+    if (!clickedInsidePopup && !clickedButton) {
+      closeAccountPopup();
+    }
+  });
   document.querySelectorAll('[data-wallet-skin-tab]').forEach((button) => {
     button.addEventListener('click', () => {
       const selectedSkin = button.dataset.walletSkinTab;
@@ -789,6 +842,8 @@ function init() {
   setActiveTab('editor');
   handleTemplateChange();
   refreshPreview();
+  syncAccountPopupFields();
+  syncHeaderCompanyLogo();
   wireEvents();
   updatePreviewPaneSizeOnScroll();
   bootstrapAuth();
