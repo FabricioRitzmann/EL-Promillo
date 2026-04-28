@@ -188,12 +188,9 @@
               <section class="config-section">
                 <h3>🎯 Icon-Editor</h3>
                 <p class="muted small">
-                  Wähle ein passendes Haupt-Icon für die Karte.
+                  Füge dein Firmenlogo ein. Der obere linke Bereich des Passes ist dafür reserviert.
                 </p>
-                <label>
-                  Karten-Icon
-                  <select id="pass-icon"></select>
-                </label>
+                <select id="pass-icon" class="hidden" aria-hidden="true" tabindex="-1"></select>
                 <div id="streak-icon-wrap" class="hidden">
                   <label>
                     Stempel/Streak Icon
@@ -201,7 +198,7 @@
                   </label>
                 </div>
                 <label>
-                  Eigenes Karten-Icon (PNG/JPG)
+                  Firmenlogo einfügen (PNG/JPG)
                   <input id="pass-icon-upload" type="file" accept="image/png,image/jpeg" />
                 </label>
               </section>
@@ -437,10 +434,12 @@
                 </div>
                 <div id="pass-preview" class="pass-preview" data-wallet-skin="apple">
                 <div class="pass-overlay">
+                  <div class="preview-logo-slot">
+                    <img id="preview-company-logo" class="preview-company-logo hidden" alt="Firmenlogo" />
+                  </div>
                   <p id="preview-banner" class="preview-banner hidden"></p>
                   <p id="preview-subtitle" class="preview-subtitle"></p>
                   <div class="preview-title-row">
-                    <img id="preview-main-icon" class="preview-main-icon hidden" alt="Karten Icon" />
                     <h4 id="preview-title"></h4>
                   </div>
                   <p id="preview-description"></p>

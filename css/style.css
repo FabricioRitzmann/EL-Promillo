@@ -323,10 +323,29 @@ select:focus {
 
 .pass-overlay {
   padding: 18px;
+  padding-top: 86px;
   display: flex;
   flex-direction: column;
   gap: 8px;
   position: relative;
+}
+
+.preview-logo-slot {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  border: 1px dashed rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.preview-company-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .preview-stamp-grid {
@@ -439,15 +458,7 @@ select:focus {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 34px;
-}
-
-.preview-main-icon {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  object-fit: cover;
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  margin-top: 0;
 }
 
 #preview-qr {
