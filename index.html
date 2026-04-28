@@ -16,10 +16,10 @@
     <div class="app-shell">
       <header class="topbar">
         <div>
-          <p class="eyebrow topbar-subtitle">PassKit Style Editor</p>
+          <p class="eyebrow">PassKit Style Editor</p>
           <h1>Pass Studio</h1>
         </div>
-        <div class="topbar-actions" id="topbar-actions">
+        <div class="topbar-actions">
           <span id="auth-state" class="auth-state"></span>
           <button id="logout-btn" class="btn btn-secondary hidden">Logout</button>
         </div>
@@ -30,7 +30,6 @@
           <button class="btn btn-secondary tab-btn is-active" data-tab="editor" type="button">Editor</button>
           <button class="btn btn-secondary tab-btn" data-tab="saved" type="button">Karten</button>
           <button class="btn btn-secondary tab-btn" data-tab="stats" type="button">Statistik</button>
-          <button class="btn btn-secondary tab-btn" data-tab="reset" type="button" id="reset-tab-btn">Passwort zurücksetzen</button>
         </nav>
 
         <section id="auth-card" class="card auth-card">
@@ -40,12 +39,6 @@
           </p>
 
           <form id="auth-form" class="stack-form">
-            <div class="auth-remember-row">
-              <label class="inline-checkbox remember-toggle" title="Bei aktiviertem Schalter bleibst du auch nach dem Schließen eingeloggt.">
-                <input type="checkbox" id="remember-me" />
-                Angemeldet bleiben
-              </label>
-            </div>
             <label>
               E-Mail
               <input type="email" id="email" placeholder="max.mustermann@example.com" required />
@@ -59,10 +52,8 @@
               <button type="button" id="login-btn" class="btn btn-primary">Login</button>
             </div>
             <div class="row-buttons">
-              <button type="button" id="otp-btn" class="btn btn-secondary">Einmalpasswort anfordern</button>
-              <button type="button" id="reset-btn" class="btn btn-secondary">Reset-Link anfordern</button>
+              <button type="button" id="reset-btn" class="btn btn-secondary">OTP / Reset anfordern</button>
             </div>
-            <p id="auth-error-message" class="auth-error-message hidden" role="alert" aria-live="polite"></p>
           </form>
         </section>
 
@@ -115,13 +106,6 @@
                     <option value="other">Andere</option>
                   </select>
                 </label>
-
-                <label>
-                  Ordner
-                  <select id="pass-folder">
-                    <option value="none">Kein Ordner</option>
-                  </select>
-                </label>
               </section>
 
               <section class="config-section">
@@ -133,70 +117,6 @@
                   Template
                   <select id="pass-template"></select>
                 </label>
-                <div id="template-gallery" class="template-gallery"></div>
-                <div class="row-buttons">
-                  <button id="duplicate-template-btn" type="button" class="btn btn-secondary">Template duplizieren</button>
-                  <button id="reset-layout-btn" type="button" class="btn btn-secondary">Layout zurücksetzen</button>
-                </div>
-              </section>
-
-              <section class="config-section">
-                <h3>🏷️ Hauptinformationen</h3>
-                <div class="design-grid">
-                  <label>Vollständiger Name<input id="full-name" type="text" value="Max Muster" /></label>
-                  <label>Kundennummer / Mitgliedsnummer<input id="customer-number" type="text" value="EV-000123" /></label>
-                  <label>Status / Tier<input id="member-tier" type="text" value="Gold" /></label>
-                  <label>Punkte<input id="loyalty-points" type="number" min="0" value="88" /></label>
-                  <label>Guthaben<input id="balance-value" type="number" min="0" step="0.01" value="88.00" /></label>
-                  <label>Währung
-                    <select id="balance-currency"><option>CHF</option><option>EUR</option><option>USD</option></select>
-                  </label>
-                  <label>Gültig bis<input id="valid-until" type="text" value="31.12.2026" /></label>
-                </div>
-              </section>
-
-              <section class="config-section">
-                <h3>🧾 Template-Felder</h3>
-                <div class="design-grid">
-                  <label>Mitglied seit<input id="member-since" type="text" placeholder="01.01.2024" value="01.01.2024" /></label>
-                  <label>E-Mail / ID<input id="member-email" type="text" placeholder="max@example.com" value="max@example.com" /></label>
-                  <label>Event Name<input id="event-name" type="text" value="Summer Festival" /></label>
-                  <label>Event Datum<input id="event-date" type="text" value="15.08.2026" /></label>
-                  <label>Event Zeit<input id="event-time" type="text" value="19:30" /></label>
-                  <label>Location<input id="event-location" type="text" value="Basel Arena" /></label>
-                  <label>Sektion<input id="event-section" type="text" value="B" /></label>
-                  <label>Reihe<input id="event-row" type="text" value="12" /></label>
-                  <label>Sitzplatz<input id="event-seat" type="text" value="34" /></label>
-                  <label>Abflug<input id="departure" type="text" value="ZRH" /></label>
-                  <label>Ziel<input id="destination" type="text" value="BER" /></label>
-                  <label>Gate<input id="gate" type="text" value="A12" /></label>
-                  <label>Flugnummer<input id="flight-number" type="text" value="LX1074" /></label>
-                  <label>Boarding Zeit<input id="boarding-time" type="text" value="08:45" /></label>
-                  <label>Policy / Vertrag<input id="policy-name" type="text" value="Premium Protect" /></label>
-                  <label>Deckung / Plan<input id="coverage" type="text" value="EU Plus" /></label>
-                  <label>Selbstbehalt<input id="deductible" type="text" value="CHF 250" /></label>
-                  <label>Co-Insurance<input id="co-insurance" type="text" value="10%" /></label>
-                </div>
-              </section>
-
-              <section class="config-section">
-                <h3>🔳 Barcode / QR</h3>
-                <div class="design-grid">
-                  <label>Barcode-Typ
-                    <select id="barcode-type"><option value="QR">QR</option><option value="PDF417">PDF417</option><option value="Code128">Code128</option></select>
-                  </label>
-                  <label>Barcode-Wert<input id="barcode-value" type="text" value="EV-000123" /></label>
-                  <label class="inline-checkbox"><input id="barcode-show-text" type="checkbox" checked /> Klartext anzeigen</label>
-                </div>
-              </section>
-
-              <section class="config-section">
-                <h3>📌 Stempelkarte</h3>
-                <div class="design-grid">
-                  <label>Gesamtstempel<input id="stamp-total" type="number" min="1" value="10" /></label>
-                  <label>Gesammelte Stempel<input id="stamp-collected" type="number" min="0" value="3" /></label>
-                  <label>Belohnungstext<input id="stamp-reward-text" type="text" value="Belohnung nach 10 Stempeln" /></label>
-                </div>
               </section>
 
               <section class="config-section">
@@ -262,11 +182,7 @@
                 </label>
                 <label>
                   Message Encoding
-                  <select id="passkit-message-encoding">
-                    <option value="utf-8">utf-8</option>
-                    <option value="iso-8859-1">iso-8859-1</option>
-                    <option value="windows-1252">windows-1252</option>
-                  </select>
+                  <input id="passkit-message-encoding" type="text" value="iso-8859-1" />
                 </label>
               </section>
               <section class="config-section">
@@ -514,20 +430,24 @@
                   <span class="wallet-brand">Wallet Vorschau</span>
                   <span id="preview-wallet-label" class="wallet-provider-label">Apple Wallet</span>
                 </div>
-                <div class="wallet-preview-mode-toggle" role="radiogroup" aria-label="Vorschau Modus">
-                  <label><input id="preview-mode-horizontal" type="radio" name="preview-mode" checked /> Kreditkartenformat</label>
-                  <label><input id="preview-mode-vertical" type="radio" name="preview-mode" /> Wallet Hochformat</label>
-                </div>
                 <div class="wallet-preview-tabbar" role="tablist" aria-label="Wallet Vorschau Typ">
                   <button type="button" class="wallet-preview-tab is-active" data-wallet-skin-tab="apple">Apple</button>
                   <button type="button" class="wallet-preview-tab" data-wallet-skin-tab="google">Google</button>
                   <button type="button" class="wallet-preview-tab" data-wallet-skin-tab="samsung">Samsung</button>
                 </div>
-                <div class="wallet-preview-mode-toggle" role="tablist" aria-label="Vorschau Format">
-                  <button type="button" class="wallet-preview-mode-tab is-active" data-preview-mode="horizontal">Kreditkartenformat</button>
-                  <button type="button" class="wallet-preview-mode-tab" data-preview-mode="vertical">Wallet hochkant</button>
+                <div id="pass-preview" class="pass-preview" data-wallet-skin="apple">
+                <div class="pass-overlay">
+                  <p id="preview-banner" class="preview-banner hidden"></p>
+                  <p id="preview-subtitle" class="preview-subtitle"></p>
+                  <div class="preview-title-row">
+                    <img id="preview-main-icon" class="preview-main-icon hidden" alt="Karten Icon" />
+                    <h4 id="preview-title"></h4>
+                  </div>
+                  <p id="preview-description"></p>
+                  <div id="preview-stamp-grid" class="preview-stamp-grid hidden"></div>
+                  <img id="preview-qr" alt="QR Code Vorschau" />
                 </div>
-                <div id="pass-preview" class="pass-preview wallet-pass wallet-preview-canvas" data-wallet-skin="apple" data-preview-mode="horizontal"></div>
+              </div>
               </div>
               <p class="muted small">
                 Hinweis: Für echte .pkpass-Dateien kann im nächsten Schritt ein Server-Endpunkt eingebunden werden.
@@ -543,7 +463,6 @@
           <h2>Gespeicherte Karten</h2>
           <div class="saved-toolbar">
             <div class="saved-toolbar-actions" aria-label="Ordner und Filter Aktionen">
-              <button id="export-excel-btn" type="button" class="btn btn-secondary">Excel Export</button>
               <button id="saved-filter-toggle-btn" type="button" class="saved-icon-btn" aria-label="Filter anzeigen">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M4 6h16M7 12h10M10 18h4" />
@@ -593,24 +512,6 @@
           <h2>Statistik</h2>
           <ul id="stats-list" class="saved-list"></ul>
         </section>
-
-        <section id="reset-card" class="card auth-card hidden">
-          <h2>Passwort zurücksetzen</h2>
-          <p class="muted">Diese Seite ist für Einmal-Links gedacht. Das Passwort wird beim Tippen als Sternchen (*) maskiert.</p>
-          <form id="reset-password-form" class="stack-form">
-            <label>
-              Neues Passwort
-              <input type="password" id="new-password" placeholder="********" autocomplete="new-password" required />
-            </label>
-            <label>
-              Neues Passwort wiederholen
-              <input type="password" id="confirm-new-password" placeholder="********" autocomplete="new-password" required />
-            </label>
-            <div class="row-buttons">
-              <button type="submit" id="save-new-password-btn" class="btn btn-primary">Neues Passwort speichern</button>
-            </div>
-          </form>
-        </section>
       </main>
     </div>
 
@@ -636,16 +537,14 @@
           </div>
           <button id="wallet-sim-close-btn" type="button" class="btn btn-secondary">Schließen</button>
         </div>
-        <p class="wallet-sim-caption">Wallet Simulation (Apple, Google, Samsung): horizontaler Fokus + Kreditkarten-Stapel</p>
+        <p class="wallet-sim-caption">Apple Wallet Simulation (Pass-Detail + Kartenstapel)</p>
 
         <div class="wallet-sim-device">
           <div class="wallet-sim-notch"></div>
           <div class="wallet-sim-screen">
-            <p class="wallet-sim-screen-title">Wallet Vorschau</p>
-            <div class="wallet-sim-layout">
-              <div id="wallet-sim-stack" class="wallet-sim-stack"></div>
-              <div id="wallet-sim-detail" class="wallet-sim-detail"></div>
-            </div>
+            <p class="wallet-sim-screen-title">Heute</p>
+            <div id="wallet-sim-stack" class="wallet-sim-stack"></div>
+            <div id="wallet-sim-detail" class="wallet-sim-detail"></div>
           </div>
         </div>
       </div>
