@@ -376,8 +376,10 @@ async function handleLogin() {
 
   currentUser = data.user;
   loadSavedCardsOrganization(currentUser.id);
+  loadAccountLogo(currentUser.id);
   setAuthenticatedView(currentUser.email);
   syncAccountPopupFields();
+  syncHeaderCompanyLogo();
   showToast('Login erfolgreich.');
   await refreshPasses();
 }
@@ -745,11 +747,14 @@ async function bootstrapAuth() {
     loadSavedCardsOrganization(currentUser.id);
     loadAccountLogo(currentUser.id);
     setAuthenticatedView(currentUser.email);
+    syncHeaderCompanyLogo();
     setActiveTab('editor');
     await refreshPasses();
     await refreshStats();
   } else {
+    currentAccountLogoUrl = '';
     setLoggedOutView();
+    syncHeaderCompanyLogo();
     renderSavedCardsView();
   }
 
@@ -759,6 +764,7 @@ async function bootstrapAuth() {
       loadSavedCardsOrganization(currentUser.id);
       loadAccountLogo(currentUser.id);
       setAuthenticatedView(currentUser.email);
+      syncHeaderCompanyLogo();
       setActiveTab('editor');
       refreshPasses();
       refreshStats();
@@ -768,6 +774,7 @@ async function bootstrapAuth() {
       savedFolderNames = [];
       savedCardsFilters = { folder: 'all', cardType: 'all', sort: 'newest' };
       setLoggedOutView();
+      syncHeaderCompanyLogo();
       renderSavedCardsView();
     }
   });

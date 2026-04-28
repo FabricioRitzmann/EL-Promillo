@@ -678,31 +678,12 @@ export function initTitleBucketEditor(onChange) {
   if (!list) return;
 
   let draggedKey = null;
-  let pointerDragging = false;
-  let lastHoverKey = null;
-
-  const applyReorder = (sourceKey, targetKey) => {
-    if (!sourceKey || !targetKey || sourceKey === targetKey) return false;
-    const current = [...titleBucketLayout];
-    const sourceIndex = current.indexOf(sourceKey);
-    const targetIndex = current.indexOf(targetKey);
-    if (sourceIndex < 0 || targetIndex < 0) return false;
-
-    current.splice(sourceIndex, 1);
-    current.splice(targetIndex, 0, sourceKey);
-    setTitleBucketLayout(current);
-    if (onChange) {
-      onChange();
-    }
-    return true;
-  };
 
   list.addEventListener('dragstart', (event) => {
     const item = event.target.closest('.title-bucket-item');
     if (!item) return;
     draggedKey = item.dataset.bucketKey;
     event.dataTransfer.effectAllowed = 'move';
-    event.dataTransfer.setData('text/plain', draggedKey);
     item.classList.add('is-dragging');
   });
 
@@ -726,46 +707,20 @@ export function initTitleBucketEditor(onChange) {
     if (!targetItem) return;
 
     const targetKey = targetItem.dataset.bucketKey;
-    applyReorder(draggedKey, targetKey);
-  });
+    if (!targetKey || targetKey === draggedKey) return;
 
-  list.addEventListener('pointerdown', (event) => {
-    const item = event.target.closest('.title-bucket-item');
-    if (!item) return;
-    pointerDragging = true;
-    draggedKey = item.dataset.bucketKey;
-    lastHoverKey = item.dataset.bucketKey;
-    item.classList.add('is-dragging');
-    list.setPointerCapture(event.pointerId);
-    event.preventDefault();
-  });
+    const current = [...titleBucketLayout];
+    const sourceIndex = current.indexOf(draggedKey);
+    const targetIndex = current.indexOf(targetKey);
+    if (sourceIndex < 0 || targetIndex < 0) return;
 
-  list.addEventListener('pointermove', (event) => {
-    if (!pointerDragging || !draggedKey) return;
-    const hoveredItem = document.elementFromPoint(event.clientX, event.clientY)?.closest('.title-bucket-item');
-    if (!hoveredItem || !list.contains(hoveredItem)) return;
-    const hoverKey = hoveredItem.dataset.bucketKey;
-    if (!hoverKey || hoverKey === lastHoverKey) return;
-    if (applyReorder(draggedKey, hoverKey)) {
-      draggedKey = hoverKey;
-      lastHoverKey = hoverKey;
+    current.splice(sourceIndex, 1);
+    current.splice(targetIndex, 0, draggedKey);
+    setTitleBucketLayout(current);
+
+    if (onChange) {
+      onChange();
     }
-  });
-
-  list.addEventListener('pointerup', (event) => {
-    if (!pointerDragging) return;
-    pointerDragging = false;
-    list.releasePointerCapture(event.pointerId);
-    list.querySelectorAll('.title-bucket-item').forEach((item) => item.classList.remove('is-dragging'));
-    draggedKey = null;
-    lastHoverKey = null;
-  });
-
-  list.addEventListener('pointercancel', () => {
-    pointerDragging = false;
-    list.querySelectorAll('.title-bucket-item').forEach((item) => item.classList.remove('is-dragging'));
-    draggedKey = null;
-    lastHoverKey = null;
   });
 
   resetButton?.addEventListener('click', () => {

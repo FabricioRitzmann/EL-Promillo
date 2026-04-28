@@ -574,7 +574,6 @@ select:focus {
   padding: 0;
   display: grid;
   gap: 8px;
-  touch-action: none;
 }
 
 .title-bucket-item {
@@ -591,7 +590,6 @@ select:focus {
 
 .title-bucket-item.is-dragging {
   opacity: 0.5;
-  cursor: grabbing;
 }
 
 .title-bucket-grip {
