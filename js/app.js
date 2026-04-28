@@ -1,5 +1,6 @@
 import {
   addCompletionStat,
+  deleteCustomImageByPath,
   listPasses,
   listPassStats,
   loginWithEmail,
@@ -75,6 +76,15 @@ function syncHeaderCompanyLogo() {
   ui.headerCompanyLogo.classList.add('hidden');
 }
 
+function extractStoragePathFromPublicUrl(publicUrl) {
+  if (!publicUrl) return '';
+  const marker = '/pass-backgrounds/';
+  const markerIndex = publicUrl.indexOf(marker);
+  if (markerIndex === -1) return '';
+  const rawPath = publicUrl.slice(markerIndex + marker.length).split('?')[0];
+  return decodeURIComponent(rawPath || '');
+}
+
 function storageKeyForAccountLogo(userId) {
   return `passStudio.accountLogo.${userId}`;
 }
@@ -107,8 +117,27 @@ function syncAccountPopupFields() {
   }
 }
 
+function syncAccountLogoSection() {
+  if (ui.accountLogoPreview) {
+    if (currentAccountLogoUrl) {
+      ui.accountLogoPreview.src = currentAccountLogoUrl;
+      ui.accountLogoPreview.classList.remove('hidden');
+    } else {
+      ui.accountLogoPreview.src = '';
+      ui.accountLogoPreview.classList.add('hidden');
+    }
+  }
+
+  if (ui.accountLogoStatus) {
+    ui.accountLogoStatus.textContent = currentAccountLogoUrl
+      ? 'Logo hinterlegt.'
+      : 'Kein Logo hinterlegt.';
+  }
+}
+
 function openAccountPopup() {
   syncAccountPopupFields();
+  syncAccountLogoSection();
   ui.accountPopup?.classList.remove('hidden');
 }
 
@@ -380,6 +409,7 @@ async function handleLogin() {
   setAuthenticatedView(currentUser.email);
   syncAccountPopupFields();
   syncHeaderCompanyLogo();
+  syncAccountLogoSection();
   showToast('Login erfolgreich.');
   await refreshPasses();
 }
@@ -426,6 +456,7 @@ async function handleLogout() {
   closeAccountPopup();
   syncAccountPopupFields();
   syncHeaderCompanyLogo();
+  syncAccountLogoSection();
   showToast('Du wurdest abgemeldet.');
 }
 
@@ -494,7 +525,39 @@ async function handleAccountLogoUpload(event) {
   currentAccountLogoUrl = data.publicUrl;
   persistAccountLogo(currentUser.id, currentAccountLogoUrl);
   syncHeaderCompanyLogo();
+  syncAccountLogoSection();
+  event.target.value = '';
   showToast('Firmenlogo gespeichert. Du kannst es jederzeit ersetzen.');
+}
+
+async function handleDeleteAccountLogo() {
+  if (!currentUser || !currentAccountLogoUrl) {
+    return;
+  }
+
+  const storagePath = extractStoragePathFromPublicUrl(currentAccountLogoUrl);
+  if (storagePath) {
+    const { error } = await deleteCustomImageByPath(storagePath);
+    if (error) {
+      showToast(`Logo konnte nicht aus dem Speicher gelöscht werden: ${error.message}`, true);
+      return;
+    }
+  }
+
+  currentAccountLogoUrl = '';
+  persistAccountLogo(currentUser.id, '');
+  syncHeaderCompanyLogo();
+  syncAccountLogoSection();
+  formElements.accountLogoUpload.value = '';
+  showToast('Firmenlogo gelöscht.');
+}
+
+function handleReplaceAccountLogo() {
+  if (!currentUser) {
+    showToast('Bitte zuerst einloggen, bevor du Bilder hochlädst.', true);
+    return;
+  }
+  formElements.accountLogoUpload?.click();
 }
 
 async function handleBannerUpload(event) {
@@ -748,6 +811,7 @@ async function bootstrapAuth() {
     loadAccountLogo(currentUser.id);
     setAuthenticatedView(currentUser.email);
     syncHeaderCompanyLogo();
+    syncAccountLogoSection();
     setActiveTab('editor');
     await refreshPasses();
     await refreshStats();
@@ -755,6 +819,7 @@ async function bootstrapAuth() {
     currentAccountLogoUrl = '';
     setLoggedOutView();
     syncHeaderCompanyLogo();
+    syncAccountLogoSection();
     renderSavedCardsView();
   }
 
@@ -765,6 +830,7 @@ async function bootstrapAuth() {
       loadAccountLogo(currentUser.id);
       setAuthenticatedView(currentUser.email);
       syncHeaderCompanyLogo();
+      syncAccountLogoSection();
       setActiveTab('editor');
       refreshPasses();
       refreshStats();
@@ -775,6 +841,7 @@ async function bootstrapAuth() {
       savedCardsFilters = { folder: 'all', cardType: 'all', sort: 'newest' };
       setLoggedOutView();
       syncHeaderCompanyLogo();
+      syncAccountLogoSection();
       renderSavedCardsView();
     }
   });
@@ -841,6 +908,8 @@ function wireEvents() {
   formElements.upload.addEventListener('change', handleImageUpload);
   formElements.iconUpload.addEventListener('change', handleIconUpload);
   formElements.accountLogoUpload?.addEventListener('change', handleAccountLogoUpload);
+  ui.accountLogoDeleteBtn?.addEventListener('click', handleDeleteAccountLogo);
+  ui.accountLogoReplaceBtn?.addEventListener('click', handleReplaceAccountLogo);
   formElements.bannerUpload.addEventListener('change', handleBannerUpload);
   formElements.addRuleBtn.addEventListener('click', handleAddNotificationRule);
   ui.notificationRules.addEventListener('click', handleRuleLocationClick);
@@ -901,6 +970,7 @@ function init() {
   refreshPreview();
   syncAccountPopupFields();
   syncHeaderCompanyLogo();
+  syncAccountLogoSection();
   wireEvents();
   updatePreviewPaneSizeOnScroll();
   bootstrapAuth();
