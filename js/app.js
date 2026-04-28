@@ -566,6 +566,15 @@ function getFriendlyAuthErrorMessage(errorMessage) {
   return errorMessage || 'Unbekannter Auth-Fehler';
 }
 
+function setAuthErrorMessage(message = '') {
+  const authErrorMessage = document.getElementById('auth-error-message');
+  if (!authErrorMessage) return;
+
+  const normalized = String(message || '').trim();
+  authErrorMessage.textContent = normalized;
+  authErrorMessage.classList.toggle('hidden', !normalized);
+}
+
 async function handleRegister() {
   if (authBootstrapPromise) {
     await authBootstrapPromise;
@@ -576,10 +585,13 @@ async function handleRegister() {
 
   const { error } = await registerWithEmail(email, password);
   if (error) {
-    showToast(`Registrierung fehlgeschlagen: ${getFriendlyAuthErrorMessage(error.message)}`, true);
+    const friendlyMessage = `Registrierung fehlgeschlagen: ${getFriendlyAuthErrorMessage(error.message)}`;
+    setAuthErrorMessage(friendlyMessage);
+    showToast(friendlyMessage, true);
     return;
   }
 
+  setAuthErrorMessage('');
   showToast('Registrierung erfolgreich gestartet. Falls aktiviert, bestätige jetzt die E-Mail und logge dich danach ein.');
 }
 
@@ -599,7 +611,9 @@ async function handleLogin() {
 
   const { data, error } = await loginWithEmail(email, password);
   if (error) {
-    showToast(getFriendlyAuthErrorMessage(error.message), true);
+    const friendlyMessage = getFriendlyAuthErrorMessage(error.message);
+    setAuthErrorMessage(friendlyMessage);
+    showToast(friendlyMessage, true);
     return;
   }
 
@@ -611,6 +625,7 @@ async function handleLogin() {
     } = await supabaseClient.auth.getUser();
 
     if (userError || !user) {
+      setAuthErrorMessage('Login konnte nicht bestätigt werden. Bitte versuche es erneut.');
       showToast('Login konnte nicht bestätigt werden. Bitte versuche es erneut.', true);
       return;
     }
@@ -629,6 +644,7 @@ async function handleLogin() {
   setActiveSessionMarker();
   loadSavedCardsOrganization(currentUser.id);
   setAuthenticatedView(currentUser.email);
+  setAuthErrorMessage('');
   showToast('Login erfolgreich.');
   await refreshPasses();
 }
@@ -639,34 +655,46 @@ async function handleAuthSubmit(event) {
 }
 
 async function handleResetOtp() {
+  setAuthErrorMessage('');
   const email = formElements.email.value.trim();
   if (!email) {
-    showToast('Bitte zuerst eine E-Mail eingeben.', true);
+    const message = 'Bitte zuerst eine E-Mail eingeben.';
+    setAuthErrorMessage(message);
+    showToast(message, true);
     return;
   }
 
   const { error } = await requestPasswordOtp(email);
   if (error) {
-    showToast(`OTP konnte nicht angefordert werden: ${error.message}`, true);
+    const message = `OTP konnte nicht angefordert werden: ${getFriendlyAuthErrorMessage(error.message)}`;
+    setAuthErrorMessage(message);
+    showToast(message, true);
     return;
   }
 
+  setAuthErrorMessage('');
   showToast('Einmalpasswort wurde per E-Mail verschickt.');
 }
 
 async function handleResetLinkRequest() {
+  setAuthErrorMessage('');
   const email = formElements.email.value.trim();
   if (!email) {
-    showToast('Bitte zuerst eine E-Mail eingeben.', true);
+    const message = 'Bitte zuerst eine E-Mail eingeben.';
+    setAuthErrorMessage(message);
+    showToast(message, true);
     return;
   }
 
   const { error } = await requestPasswordResetLink(email, buildRecoveryRedirectUrl());
   if (error) {
-    showToast(`Reset-Link konnte nicht angefordert werden: ${error.message}`, true);
+    const message = `Reset-Link konnte nicht angefordert werden: ${getFriendlyAuthErrorMessage(error.message)}`;
+    setAuthErrorMessage(message);
+    showToast(message, true);
     return;
   }
 
+  setAuthErrorMessage('');
   showToast('Reset-Link wurde per E-Mail verschickt.');
 }
 
