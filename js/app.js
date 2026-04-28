@@ -1116,13 +1116,16 @@ async function bootstrapAuth() {
   });
 }
 
+function wireAuthEvents() {
+  document.getElementById('auth-form')?.addEventListener('submit', handleAuthSubmit);
+  document.getElementById('register-btn')?.addEventListener('click', handleRegister);
+  document.getElementById('login-btn')?.addEventListener('click', handleLogin);
+  document.getElementById('otp-btn')?.addEventListener('click', handleResetOtp);
+  document.getElementById('reset-btn')?.addEventListener('click', handleResetLinkRequest);
+  document.getElementById('reset-password-form')?.addEventListener('submit', handleSaveNewPassword);
+}
+
 function wireEvents() {
-  document.getElementById('auth-form').addEventListener('submit', handleAuthSubmit);
-  document.getElementById('register-btn').addEventListener('click', handleRegister);
-  document.getElementById('login-btn').addEventListener('click', handleLogin);
-  document.getElementById('otp-btn').addEventListener('click', handleResetOtp);
-  document.getElementById('reset-btn').addEventListener('click', handleResetLinkRequest);
-  document.getElementById('reset-password-form').addEventListener('submit', handleSaveNewPassword);
   document.getElementById('save-pass-btn').addEventListener('click', handleSavePass);
   document.getElementById('new-pass-btn').addEventListener('click', handleCreateNewPass);
   ui.logoutBtn.addEventListener('click', handleLogout);
@@ -1263,30 +1266,39 @@ function wireEvents() {
 
 function init() {
   document.body.classList.add('logged-out');
+  wireAuthEvents();
+
   if (formElements.rememberMe) {
     formElements.rememberMe.checked = isRememberSessionEnabled();
   }
-  initTemplateSelect();
-  initSectionDropdowns();
-  resetNotificationRules();
-  addNotificationRule({
-    name: 'Beispiel Reminder',
-    triggerType: 'time',
-    message: 'Denk an deine Karte!',
-    sendAt: ''
-  });
 
-  lastTemplateId = formElements.template.value;
-  syncBannerFields();
-  applyBannerColorPreset();
-  setResetTabVisibility(Boolean(appConfig.showResetTab));
-  setActiveTab('editor');
-  handleTemplateChange();
-  setPreviewMode(getPreviewMode());
-  currentPreviewMode = getPreviewMode();
-  refreshPreview();
-  wireEvents();
-  updatePreviewPanePlacement();
+  try {
+    initTemplateSelect();
+    initSectionDropdowns();
+    resetNotificationRules();
+    addNotificationRule({
+      name: 'Beispiel Reminder',
+      triggerType: 'time',
+      message: 'Denk an deine Karte!',
+      sendAt: ''
+    });
+
+    lastTemplateId = formElements.template.value;
+    syncBannerFields();
+    applyBannerColorPreset();
+    setResetTabVisibility(Boolean(appConfig.showResetTab));
+    setActiveTab('editor');
+    handleTemplateChange();
+    setPreviewMode(getPreviewMode());
+    currentPreviewMode = getPreviewMode();
+    refreshPreview();
+    wireEvents();
+    updatePreviewPanePlacement();
+  } catch (error) {
+    console.error('Fehler beim Initialisieren der Editor-Ansicht:', error);
+    showToast('Ein Teil der Oberfläche konnte nicht geladen werden. Login bleibt verfügbar.', true);
+  }
+
   authBootstrapPromise = bootstrapAuth().finally(() => {
     authBootstrapPromise = null;
   });
