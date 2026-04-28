@@ -226,6 +226,17 @@ select:focus {
   flex-wrap: wrap;
 }
 
+.auth-error-message {
+  margin: 2px 0 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(224, 36, 36, 0.35);
+  background: rgba(224, 36, 36, 0.08);
+  color: #9b1c1c;
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+
 .tabbar {
   display: flex;
   gap: 10px;
