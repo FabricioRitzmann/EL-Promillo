@@ -48,6 +48,7 @@ let currentUser = null;
 let currentUploadedImageUrl = '';
 let currentUploadedIconUrl = '';
 let currentUploadedBannerUrl = '';
+let currentAccountLogoUrl = '';
 let currentEditingPassId = null;
 let latestPassEntries = [];
 let latestPassStats = [];
@@ -63,14 +64,36 @@ let savedCardsFilters = {
 function syncHeaderCompanyLogo() {
   if (!ui.headerCompanyLogo) return;
 
-  if (currentUploadedIconUrl) {
-    ui.headerCompanyLogo.src = currentUploadedIconUrl;
+  if (currentAccountLogoUrl) {
+    ui.headerCompanyLogo.src = currentAccountLogoUrl;
     ui.headerCompanyLogo.classList.remove('hidden');
     return;
   }
 
   ui.headerCompanyLogo.src = '';
   ui.headerCompanyLogo.classList.add('hidden');
+}
+
+function storageKeyForAccountLogo(userId) {
+  return `passStudio.accountLogo.${userId}`;
+}
+
+function loadAccountLogo(userId) {
+  if (!userId) {
+    currentAccountLogoUrl = '';
+    return;
+  }
+
+  currentAccountLogoUrl = localStorage.getItem(storageKeyForAccountLogo(userId)) || '';
+}
+
+function persistAccountLogo(userId, logoUrl) {
+  if (!userId) return;
+  if (!logoUrl) {
+    localStorage.removeItem(storageKeyForAccountLogo(userId));
+    return;
+  }
+  localStorage.setItem(storageKeyForAccountLogo(userId), logoUrl);
 }
 
 function syncAccountPopupFields() {
@@ -352,8 +375,10 @@ async function handleLogin() {
 
   currentUser = data.user;
   loadSavedCardsOrganization(currentUser.id);
+  loadAccountLogo(currentUser.id);
   setAuthenticatedView(currentUser.email);
   syncAccountPopupFields();
+  syncHeaderCompanyLogo();
   showToast('Login erfolgreich.');
   await refreshPasses();
 }
@@ -390,6 +415,7 @@ async function handleLogout() {
   currentUploadedImageUrl = '';
   currentUploadedIconUrl = '';
   currentUploadedBannerUrl = '';
+  currentAccountLogoUrl = '';
   currentEditingPassId = null;
   passFoldersById = {};
   savedFolderNames = [];
@@ -447,6 +473,27 @@ async function handleIconUpload(event) {
   currentUploadedIconUrl = data.publicUrl;
   refreshPreview();
   showToast('Firmenlogo hochgeladen.');
+}
+
+async function handleAccountLogoUpload(event) {
+  const file = event.target.files?.[0];
+  if (!file) {
+    return;
+  }
+  if (!currentUser) {
+    showToast('Bitte zuerst einloggen, bevor du Bilder hochlädst.', true);
+    event.target.value = '';
+    return;
+  }
+  const { data, error } = await uploadCustomImage(file, currentUser.id);
+  if (error) {
+    showToast(`Logo-Upload fehlgeschlagen: ${error.message}`, true);
+    return;
+  }
+  currentAccountLogoUrl = data.publicUrl;
+  persistAccountLogo(currentUser.id, currentAccountLogoUrl);
+  syncHeaderCompanyLogo();
+  showToast('Firmenlogo gespeichert. Du kannst es jederzeit ersetzen.');
 }
 
 async function handleBannerUpload(event) {
@@ -697,12 +744,16 @@ async function bootstrapAuth() {
   currentUser = session?.user ?? null;
   if (currentUser) {
     loadSavedCardsOrganization(currentUser.id);
+    loadAccountLogo(currentUser.id);
     setAuthenticatedView(currentUser.email);
+    syncHeaderCompanyLogo();
     setActiveTab('editor');
     await refreshPasses();
     await refreshStats();
   } else {
+    currentAccountLogoUrl = '';
     setLoggedOutView();
+    syncHeaderCompanyLogo();
     renderSavedCardsView();
   }
 
@@ -710,15 +761,19 @@ async function bootstrapAuth() {
     currentUser = sessionData?.user ?? null;
     if (currentUser) {
       loadSavedCardsOrganization(currentUser.id);
+      loadAccountLogo(currentUser.id);
       setAuthenticatedView(currentUser.email);
+      syncHeaderCompanyLogo();
       setActiveTab('editor');
       refreshPasses();
       refreshStats();
     } else {
+      currentAccountLogoUrl = '';
       passFoldersById = {};
       savedFolderNames = [];
       savedCardsFilters = { folder: 'all', cardType: 'all', sort: 'newest' };
       setLoggedOutView();
+      syncHeaderCompanyLogo();
       renderSavedCardsView();
     }
   });
@@ -784,7 +839,7 @@ function wireEvents() {
 
   formElements.upload.addEventListener('change', handleImageUpload);
   formElements.iconUpload.addEventListener('change', handleIconUpload);
-  formElements.accountLogoUpload?.addEventListener('change', handleIconUpload);
+  formElements.accountLogoUpload?.addEventListener('change', handleAccountLogoUpload);
   formElements.bannerUpload.addEventListener('change', handleBannerUpload);
   formElements.addRuleBtn.addEventListener('click', handleAddNotificationRule);
   ui.notificationRules.addEventListener('click', handleRuleLocationClick);
