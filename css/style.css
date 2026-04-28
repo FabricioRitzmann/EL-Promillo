@@ -85,20 +85,39 @@ p {
   top: 12px;
   right: 14px;
   z-index: 12;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: #f3f4f6;
-  color: #1f2937;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: #6b7280;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
 }
 
+.account-btn:hover {
+  color: #111827;
+}
+
 .account-btn svg {
   width: 22px;
   height: 22px;
   fill: currentColor;
+}
+
+.topbar-actions #logout-btn {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: #9ca3af;
+  padding: 8px 0;
+  box-shadow: none;
+}
+
+.topbar-actions #logout-btn:hover {
+  background: transparent;
+  filter: none;
+  color: #111827;
 }
 
 .account-popup {
@@ -302,8 +321,31 @@ select:focus {
 
 .editor-actions .btn {
   font-size: 0.82rem;
-  padding: 6px 12px;
-  font-weight: 500;
+  padding: 8px 0;
+  font-weight: 600;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: #9ca3af;
+  border-bottom: 2px solid transparent;
+  box-shadow: none;
+}
+
+.editor-actions .btn:hover {
+  background: transparent;
+  filter: none;
+  color: #6b7280;
+}
+
+.editor-actions .btn:focus-visible {
+  outline: 2px solid rgba(0, 113, 227, 0.25);
+  outline-offset: 4px;
+}
+
+.editor-actions .btn-primary,
+.editor-actions .btn-secondary {
+  background: transparent;
+  color: #111827;
 }
 
 .preview-pane {
@@ -628,24 +670,24 @@ select:focus {
 .saved-icon-btn {
   width: 34px;
   height: 34px;
-  border-radius: 9px;
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.65);
-  color: #374151;
+  border-radius: 0;
+  border: none;
+  background: transparent;
+  color: #6b7280;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease;
 }
 
 .saved-icon-btn:hover {
-  background: rgba(255, 255, 255, 0.92);
+  background: transparent;
   color: #111827;
 }
 
 .saved-icon-btn.is-active {
-  background: rgba(17, 24, 39, 0.08);
+  background: transparent;
   color: #111827;
 }
 
