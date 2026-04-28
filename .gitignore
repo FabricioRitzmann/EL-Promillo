@@ -1,0 +1,3 @@
+# Lokale Backup-Artefakte
+backups/*.tar.gz
+backups/*.tar.gz.sha256
