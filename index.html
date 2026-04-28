@@ -15,15 +15,45 @@
   <body>
     <div class="app-shell">
       <header class="topbar">
-        <div>
+        <div class="topbar-brand">
           <p class="eyebrow">PassKit Style Editor</p>
-          <h1>Pass Studio</h1>
+          <div class="topbar-title-row">
+            <h1>Pass Studio</h1>
+            <img id="header-company-logo" class="header-company-logo hidden" alt="Firmenlogo im Header" />
+          </div>
         </div>
         <div class="topbar-actions">
           <span id="auth-state" class="auth-state"></span>
+          <button id="account-btn" class="account-btn" type="button" aria-label="Konto öffnen">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5Z"
+              />
+            </svg>
+          </button>
           <button id="logout-btn" class="btn btn-secondary hidden">Logout</button>
         </div>
       </header>
+
+      <div id="account-popup" class="account-popup hidden">
+        <div class="account-popup-head">
+          <h3>Konto</h3>
+          <button id="account-popup-close-btn" class="btn btn-secondary" type="button">Schließen</button>
+        </div>
+        <label>
+          E-Mail
+          <input id="account-email" type="email" readonly />
+        </label>
+        <label>
+          Passwort
+          <input id="account-password" type="password" readonly />
+        </label>
+        <label>
+          Firmenlogo einfügen (PNG/JPG)
+          <input id="account-logo-upload" type="file" accept="image/png,image/jpeg" />
+        </label>
+        <p class="muted small">Das Logo erscheint rechts neben „Pass Studio“ im Headbanner.</p>
+      </div>
 
       <main class="layout-grid">
         <nav class="tabbar card hidden" id="main-tabbar">
