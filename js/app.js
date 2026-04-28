@@ -1,6 +1,5 @@
 import {
   addCompletionStat,
-  deleteCustomImageByPath,
   listPasses,
   listPassStats,
   loginWithEmail,
@@ -22,6 +21,7 @@ import {
   getTemplateById,
   initTemplateSelect,
   initSectionDropdowns,
+  initTitleBucketEditor,
   initTemplateGallery,
   clearFolderInput,
   onCreateFolder,
@@ -47,6 +47,7 @@ import {
 
 let currentUser = null;
 let currentUploadedImageUrl = '';
+let currentUploadedIconUrl = '';
 let currentUploadedBannerUrl = '';
 let currentAccountLogoUrl = '';
 let currentEditingPassId = null;
@@ -72,15 +73,6 @@ function syncHeaderCompanyLogo() {
 
   ui.headerCompanyLogo.src = '';
   ui.headerCompanyLogo.classList.add('hidden');
-}
-
-function extractStoragePathFromPublicUrl(publicUrl) {
-  if (!publicUrl) return '';
-  const marker = '/pass-backgrounds/';
-  const markerIndex = publicUrl.indexOf(marker);
-  if (markerIndex === -1) return '';
-  const rawPath = publicUrl.slice(markerIndex + marker.length).split('?')[0];
-  return decodeURIComponent(rawPath || '');
 }
 
 function storageKeyForAccountLogo(userId) {
@@ -115,27 +107,8 @@ function syncAccountPopupFields() {
   }
 }
 
-function syncAccountLogoSection() {
-  if (ui.accountLogoPreview) {
-    if (currentAccountLogoUrl) {
-      ui.accountLogoPreview.src = currentAccountLogoUrl;
-      ui.accountLogoPreview.classList.remove('hidden');
-    } else {
-      ui.accountLogoPreview.src = '';
-      ui.accountLogoPreview.classList.add('hidden');
-    }
-  }
-
-  if (ui.accountLogoStatus) {
-    ui.accountLogoStatus.textContent = currentAccountLogoUrl
-      ? 'Logo hinterlegt.'
-      : 'Kein Logo hinterlegt.';
-  }
-}
-
 function openAccountPopup() {
   syncAccountPopupFields();
-  syncAccountLogoSection();
   ui.accountPopup?.classList.remove('hidden');
 }
 
@@ -176,7 +149,7 @@ function buildPreviewPayload() {
   return {
     ...formData,
     customImageUrl: currentUploadedImageUrl,
-    customIconUrl: currentAccountLogoUrl,
+    customIconUrl: currentUploadedIconUrl,
     customBannerUrl: currentUploadedBannerUrl
   };
 }
@@ -231,6 +204,7 @@ async function handleNewPass() {
 
   currentEditingPassId = null;
   currentUploadedImageUrl = '';
+  currentUploadedIconUrl = '';
   currentUploadedBannerUrl = '';
   document.getElementById('pass-form').reset();
   formElements.upload.value = '';
@@ -406,7 +380,6 @@ async function handleLogin() {
   setAuthenticatedView(currentUser.email);
   syncAccountPopupFields();
   syncHeaderCompanyLogo();
-  syncAccountLogoSection();
   showToast('Login erfolgreich.');
   await refreshPasses();
 }
@@ -441,6 +414,7 @@ async function handleLogout() {
 
   currentUser = null;
   currentUploadedImageUrl = '';
+  currentUploadedIconUrl = '';
   currentUploadedBannerUrl = '';
   currentAccountLogoUrl = '';
   currentEditingPassId = null;
@@ -452,7 +426,6 @@ async function handleLogout() {
   closeAccountPopup();
   syncAccountPopupFields();
   syncHeaderCompanyLogo();
-  syncAccountLogoSection();
   showToast('Du wurdest abgemeldet.');
 }
 
@@ -481,6 +454,28 @@ async function handleImageUpload(event) {
   showToast('Hintergrundbild hochgeladen.');
 }
 
+async function handleIconUpload(event) {
+  const file = event.target.files?.[0];
+  if (!file) {
+    currentUploadedIconUrl = '';
+    refreshPreview();
+    return;
+  }
+  if (!currentUser) {
+    showToast('Bitte zuerst einloggen, bevor du Bilder hochlädst.', true);
+    event.target.value = '';
+    return;
+  }
+  const { data, error } = await uploadCustomImage(file, currentUser.id);
+  if (error) {
+    showToast(`Icon-Upload fehlgeschlagen: ${error.message}`, true);
+    return;
+  }
+  currentUploadedIconUrl = data.publicUrl;
+  refreshPreview();
+  showToast('Firmenlogo hochgeladen.');
+}
+
 async function handleAccountLogoUpload(event) {
   const file = event.target.files?.[0];
   if (!file) {
@@ -499,69 +494,7 @@ async function handleAccountLogoUpload(event) {
   currentAccountLogoUrl = data.publicUrl;
   persistAccountLogo(currentUser.id, currentAccountLogoUrl);
   syncHeaderCompanyLogo();
-  syncAccountLogoSection();
-  event.target.value = '';
   showToast('Firmenlogo gespeichert. Du kannst es jederzeit ersetzen.');
-}
-
-async function handleDeleteAccountLogo() {
-  if (!currentUser || !currentAccountLogoUrl) {
-    return;
-  }
-
-  const storagePath = extractStoragePathFromPublicUrl(currentAccountLogoUrl);
-  if (storagePath) {
-    const { error } = await deleteCustomImageByPath(storagePath);
-    if (error) {
-      showToast(`Logo konnte nicht aus dem Speicher gelöscht werden: ${error.message}`, true);
-      return;
-    }
-  }
-
-  currentAccountLogoUrl = '';
-  persistAccountLogo(currentUser.id, '');
-  syncHeaderCompanyLogo();
-  syncAccountLogoSection();
-  formElements.accountLogoUpload.value = '';
-  showToast('Firmenlogo gelöscht.');
-}
-
-function handleReplaceAccountLogo() {
-  if (!currentUser) {
-    showToast('Bitte zuerst einloggen, bevor du Bilder hochlädst.', true);
-    return;
-  }
-  formElements.accountLogoUpload?.click();
-}
-
-async function handleDeleteAccountLogo() {
-  if (!currentUser || !currentAccountLogoUrl) {
-    return;
-  }
-
-  const storagePath = extractStoragePathFromPublicUrl(currentAccountLogoUrl);
-  if (storagePath) {
-    const { error } = await deleteCustomImageByPath(storagePath);
-    if (error) {
-      showToast(`Logo konnte nicht aus dem Speicher gelöscht werden: ${error.message}`, true);
-      return;
-    }
-  }
-
-  currentAccountLogoUrl = '';
-  persistAccountLogo(currentUser.id, '');
-  syncHeaderCompanyLogo();
-  syncAccountLogoSection();
-  formElements.accountLogoUpload.value = '';
-  showToast('Firmenlogo gelöscht.');
-}
-
-function handleReplaceAccountLogo() {
-  if (!currentUser) {
-    showToast('Bitte zuerst einloggen, bevor du Bilder hochlädst.', true);
-    return;
-  }
-  formElements.accountLogoUpload?.click();
 }
 
 async function handleBannerUpload(event) {
@@ -625,7 +558,7 @@ async function handleSavePass() {
       id: currentEditingPassId,
       templateStoragePath: currentEntry?.template_storage_path || '',
       customImageUrl: currentUploadedImageUrl,
-      customIconUrl: currentAccountLogoUrl,
+      customIconUrl: currentUploadedIconUrl,
       customBannerUrl: currentUploadedBannerUrl
     },
     currentUser.id
@@ -656,6 +589,7 @@ async function handleCreateNewPass() {
 
   currentEditingPassId = null;
   currentUploadedImageUrl = '';
+  currentUploadedIconUrl = '';
   currentUploadedBannerUrl = '';
   formElements.upload.value = '';
   initTemplateSelect();
@@ -724,6 +658,7 @@ async function handleOpenSavedPass(passId) {
   fillEditorFromSavedPass(selectedPass);
   currentEditingPassId = selectedPass.id;
   currentUploadedImageUrl = selectedPass.custom_image_url || '';
+  currentUploadedIconUrl = selectedPass.custom_icon_url || '';
   currentUploadedBannerUrl = selectedPass.custom_banner_url || '';
   lastTemplateId = selectedPass.template_id || formElements.template.value;
   setActiveTab('editor');
@@ -772,7 +707,7 @@ async function handleScanPass(passId) {
       backgroundColor: selectedPass.background_color,
       foregroundColor: selectedPass.foreground_color,
       customImageUrl: selectedPass.custom_image_url,
-      customIconUrl: currentAccountLogoUrl,
+      customIconUrl: selectedPass.custom_icon_url,
       customBannerUrl: selectedPass.custom_banner_url,
       banner: {
         enabled: selectedPass.banner_enabled,
@@ -813,7 +748,6 @@ async function bootstrapAuth() {
     loadAccountLogo(currentUser.id);
     setAuthenticatedView(currentUser.email);
     syncHeaderCompanyLogo();
-    syncAccountLogoSection();
     setActiveTab('editor');
     await refreshPasses();
     await refreshStats();
@@ -821,7 +755,6 @@ async function bootstrapAuth() {
     currentAccountLogoUrl = '';
     setLoggedOutView();
     syncHeaderCompanyLogo();
-    syncAccountLogoSection();
     renderSavedCardsView();
   }
 
@@ -832,7 +765,6 @@ async function bootstrapAuth() {
       loadAccountLogo(currentUser.id);
       setAuthenticatedView(currentUser.email);
       syncHeaderCompanyLogo();
-      syncAccountLogoSection();
       setActiveTab('editor');
       refreshPasses();
       refreshStats();
@@ -843,7 +775,6 @@ async function bootstrapAuth() {
       savedCardsFilters = { folder: 'all', cardType: 'all', sort: 'newest' };
       setLoggedOutView();
       syncHeaderCompanyLogo();
-      syncAccountLogoSection();
       renderSavedCardsView();
     }
   });
@@ -908,9 +839,8 @@ function wireEvents() {
   formElements.bannerColor.addEventListener('change', applyBannerColorPreset);
 
   formElements.upload.addEventListener('change', handleImageUpload);
+  formElements.iconUpload.addEventListener('change', handleIconUpload);
   formElements.accountLogoUpload?.addEventListener('change', handleAccountLogoUpload);
-  ui.accountLogoDeleteBtn?.addEventListener('click', handleDeleteAccountLogo);
-  ui.accountLogoReplaceBtn?.addEventListener('click', handleReplaceAccountLogo);
   formElements.bannerUpload.addEventListener('change', handleBannerUpload);
   formElements.addRuleBtn.addEventListener('click', handleAddNotificationRule);
   ui.notificationRules.addEventListener('click', handleRuleLocationClick);
@@ -954,6 +884,7 @@ function init() {
   initTemplateSelect();
   initTemplateGallery(handleTemplateGalleryApply);
   initSectionDropdowns();
+  initTitleBucketEditor(refreshPreview);
   resetNotificationRules();
   addNotificationRule({
     name: 'Beispiel Reminder',
@@ -970,7 +901,6 @@ function init() {
   refreshPreview();
   syncAccountPopupFields();
   syncHeaderCompanyLogo();
-  syncAccountLogoSection();
   wireEvents();
   updatePreviewPaneSizeOnScroll();
   bootstrapAuth();
