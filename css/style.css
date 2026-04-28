@@ -71,20 +71,14 @@ p {
 }
 
 .topbar-actions {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 56px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .account-btn {
   width: 40px;
   height: 40px;
-  position: absolute;
-  top: 12px;
-  right: 14px;
-  z-index: 12;
   border-radius: 999px;
   border: none;
   background: #f3f4f6;
@@ -96,10 +90,7 @@ p {
 }
 
 #logout-btn {
-  position: absolute;
-  right: 14px;
-  bottom: 12px;
-  z-index: 12;
+  white-space: nowrap;
 }
 
 .account-btn svg {
