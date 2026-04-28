@@ -21,6 +21,7 @@ import {
   getTemplateById,
   initTemplateSelect,
   initSectionDropdowns,
+  initTemplateGallery,
   clearFolderInput,
   onCreateFolder,
   onSavedCardFiltersChange,
@@ -123,6 +124,14 @@ async function handleTemplateChange() {
   renderProgramFields(template.programType || 'generic');
   lastTemplateId = template.id;
   refreshPreview();
+}
+
+function handleTemplateGalleryApply(templateId) {
+  const template = getTemplateById(templateId);
+  renderProgramFields(template.programType || 'generic');
+  lastTemplateId = template.id;
+  refreshPreview();
+  showToast(`Layout „${template.name}“ wurde angewendet.`);
 }
 
 async function handleNewPass() {
@@ -764,6 +773,7 @@ function wireEvents() {
 
 function init() {
   initTemplateSelect();
+  initTemplateGallery(handleTemplateGalleryApply);
   initSectionDropdowns();
   resetNotificationRules();
   addNotificationRule({
