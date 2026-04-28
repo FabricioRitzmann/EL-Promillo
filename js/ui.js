@@ -1,12 +1,5 @@
 import { backgroundTemplates, bannerColorOptions, passTemplates, streakIcons, templateIcons } from './config.js';
 import {
-  defaultWalletCard,
-  getDefaultTemplatePreset,
-  getTemplateGalleryByType,
-  templateSupportsField,
-  WALLET_TEMPLATE_TYPES
-} from './walletTemplates.js';
-import {
   getDefaultPasskitConfig,
   normalizePasskitConfig,
   passkitBarcodeFormats,
@@ -21,8 +14,6 @@ export const ui = {
   editorCard: document.getElementById('editor-card'),
   savedCard: document.getElementById('saved-card'),
   statsCard: document.getElementById('stats-card'),
-  resetCard: document.getElementById('reset-card'),
-  resetTabBtn: document.getElementById('reset-tab-btn'),
   toast: document.getElementById('toast'),
   passList: document.getElementById('saved-pass-list'),
   statsList: document.getElementById('stats-list'),
@@ -51,14 +42,12 @@ export const ui = {
 export const formElements = {
   email: document.getElementById('email'),
   password: document.getElementById('password'),
-  rememberMe: document.getElementById('remember-me'),
   title: document.getElementById('pass-title'),
   subtitle: document.getElementById('pass-subtitle'),
   description: document.getElementById('pass-description'),
   qrContent: document.getElementById('pass-qr-content'),
   businessName: document.getElementById('business-name'),
   businessCategory: document.getElementById('business-category'),
-  folder: document.getElementById('pass-folder'),
   template: document.getElementById('pass-template'),
   icon: document.getElementById('pass-icon'),
   iconUpload: document.getElementById('pass-icon-upload'),
@@ -113,43 +102,7 @@ export const formElements = {
   passkitLatitude: document.getElementById('passkit-latitude'),
   passkitLongitude: document.getElementById('passkit-longitude'),
   passkitBarcodeFormat: document.getElementById('passkit-barcode-format'),
-  passkitMessageEncoding: document.getElementById('passkit-message-encoding'),
-  fullName: document.getElementById('full-name'),
-  customerNumber: document.getElementById('customer-number'),
-  memberTier: document.getElementById('member-tier'),
-  loyaltyPoints: document.getElementById('loyalty-points'),
-  balanceValue: document.getElementById('balance-value'),
-  balanceCurrency: document.getElementById('balance-currency'),
-  validUntil: document.getElementById('valid-until'),
-  memberSince: document.getElementById('member-since'),
-  memberEmail: document.getElementById('member-email'),
-  eventName: document.getElementById('event-name'),
-  eventDate: document.getElementById('event-date'),
-  eventTime: document.getElementById('event-time'),
-  eventLocation: document.getElementById('event-location'),
-  eventSection: document.getElementById('event-section'),
-  eventRow: document.getElementById('event-row'),
-  eventSeat: document.getElementById('event-seat'),
-  departure: document.getElementById('departure'),
-  destination: document.getElementById('destination'),
-  gate: document.getElementById('gate'),
-  flightNumber: document.getElementById('flight-number'),
-  boardingTime: document.getElementById('boarding-time'),
-  policyName: document.getElementById('policy-name'),
-  coverage: document.getElementById('coverage'),
-  deductible: document.getElementById('deductible'),
-  coInsurance: document.getElementById('co-insurance'),
-  barcodeType: document.getElementById('barcode-type'),
-  barcodeValue: document.getElementById('barcode-value'),
-  barcodeShowText: document.getElementById('barcode-show-text'),
-  stampTotal: document.getElementById('stamp-total'),
-  stampCollected: document.getElementById('stamp-collected'),
-  stampRewardText: document.getElementById('stamp-reward-text'),
-  templateGallery: document.getElementById('template-gallery'),
-  previewModeHorizontal: document.getElementById('preview-mode-horizontal'),
-  previewModeVertical: document.getElementById('preview-mode-vertical'),
-  duplicateTemplateBtn: document.getElementById('duplicate-template-btn'),
-  resetLayoutBtn: document.getElementById('reset-layout-btn')
+  passkitMessageEncoding: document.getElementById('passkit-message-encoding')
 };
 
 let pendingConfirmResolver = null;
@@ -166,33 +119,6 @@ const weekdays = [
   { value: 'saturday', label: 'Samstag' },
   { value: 'sunday', label: 'Sonntag' }
 ];
-
-const defaultPreviewLogo =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%23ffffff'/%3E%3Ctext x='20' y='24' text-anchor='middle' font-size='12' font-family='Arial' fill='%23111111'%3EEV%3C/text%3E%3C/svg%3E";
-let currentLayoutConfig = { ...defaultWalletCard.layoutConfig };
-let currentPreviewMode = defaultWalletCard.previewMode || 'horizontal';
-
-export function getLayoutConfig() {
-  return { ...currentLayoutConfig };
-}
-
-export function setLayoutConfig(nextLayout = {}) {
-  currentLayoutConfig = { ...currentLayoutConfig, ...nextLayout };
-}
-
-export function resetLayoutConfig() {
-  currentLayoutConfig = { ...defaultWalletCard.layoutConfig };
-}
-
-export function getPreviewMode() {
-  return currentPreviewMode;
-}
-
-export function setPreviewMode(mode) {
-  currentPreviewMode = mode === 'vertical' ? 'vertical' : 'horizontal';
-  if (formElements.previewModeHorizontal) formElements.previewModeHorizontal.checked = currentPreviewMode === 'horizontal';
-  if (formElements.previewModeVertical) formElements.previewModeVertical.checked = currentPreviewMode === 'vertical';
-}
 
 const stampIconDefinitions = {
   'coffee-cup': { name: 'coffee', path: 'M17 8h1a4 4 0 1 1 0 8h-1M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z M6 2v2M10 2v2M14 2v2' },
@@ -309,7 +235,6 @@ export function initTemplateSelect() {
     option.textContent = template.name;
     formElements.template.appendChild(option);
   }
-  renderTemplateGallery();
 
   formElements.template.value = passTemplates[0].id;
   setSelectOptions(formElements.icon, templateIcons);
@@ -349,72 +274,6 @@ export function initTemplateSelect() {
   }
 }
 
-function renderTemplateGallery() {
-  if (!formElements.templateGallery) return;
-  formElements.templateGallery.innerHTML = '';
-
-  const galleryByType = getTemplateGalleryByType();
-  galleryByType.forEach((template) => {
-    const card = document.createElement('article');
-    card.className = 'template-gallery-card';
-    const variantMarkup = (template.variants || [])
-      .map(
-        (variant) => `
-          <button type="button" class="template-variant" data-template-use="${template.id}" data-template-variant="${variant.id}">
-            <span class="template-variant-preview" style="background:linear-gradient(135deg, ${variant.palette[0]} 0%, ${variant.palette[1]} 100%);color:${variant.accent};">
-              <small>${template.label}</small>
-              <strong>${variant.label}</strong>
-            </span>
-          </button>`
-      )
-      .join('');
-    card.innerHTML = `<h4>${template.label}</h4><p>${template.description}</p><div class="template-variants">${variantMarkup}</div>`;
-    formElements.templateGallery.appendChild(card);
-  });
-
-  const blankPreset = getDefaultTemplatePreset('blank');
-  const blankCard = document.createElement('article');
-  blankCard.className = 'template-gallery-card template-gallery-card-blank';
-  blankCard.innerHTML = `
-    <h4>Blank Template</h4>
-    <p>Leere Vorlage ohne Struktur.</p>
-    <button type="button" class="template-variant" data-template-use="${blankPreset.templateType}" data-template-variant="blank">
-      <span class="template-variant-preview template-variant-preview-blank"><strong>Leeres Template</strong></span>
-    </button>
-  `;
-  formElements.templateGallery.prepend(blankCard);
-}
-
-export function renderTemplateDependentFields(templateType) {
-  const groups = [
-    ['member-since', 'memberSince'],
-    ['member-email', 'email'],
-    ['event-name', 'eventName'],
-    ['event-date', 'eventDate'],
-    ['event-time', 'eventTime'],
-    ['event-location', 'eventLocation'],
-    ['event-section', 'section'],
-    ['event-row', 'row'],
-    ['event-seat', 'seat'],
-    ['departure', 'departure'],
-    ['destination', 'destination'],
-    ['gate', 'gate'],
-    ['flight-number', 'flightNumber'],
-    ['boarding-time', 'boardingTime'],
-    ['policy-name', 'policyName'],
-    ['coverage', 'coverage'],
-    ['deductible', 'deductible'],
-    ['co-insurance', 'coInsurance']
-  ];
-  groups.forEach(([id, key]) => {
-    const input = document.getElementById(id);
-    const label = input?.closest('label');
-    if (label) {
-      label.classList.toggle('hidden', !templateSupportsField(templateType, key));
-    }
-  });
-}
-
 export function getTemplateById(id) {
   return passTemplates.find((template) => template.id === id) || passTemplates[0];
 }
@@ -426,9 +285,8 @@ export function renderProgramFields(programType) {
 
   const streakIconWrap = document.getElementById('streak-icon-wrap');
   streakIconWrap.classList.toggle('hidden', programType !== 'streak');
-  const hasStampBackground = programType === 'coffee' || programType === 'streak' || programType === 'stamp_card';
+  const hasStampBackground = programType === 'coffee' || programType === 'streak';
   formElements.stampFrameSection.classList.toggle('hidden', !hasStampBackground);
-  renderTemplateDependentFields(programType);
 }
 
 export function initSectionDropdowns() {
@@ -506,7 +364,7 @@ export function applyTemplateDefaults(template) {
 
   formElements.icon.value = template.defaults.iconId || templateIcons[0].id;
 
-  if (template.programType === 'coffee' || template.programType === 'stamp_card') {
+  if (template.programType === 'coffee') {
     formElements.coffeeTarget.value = template.defaults.stampTarget;
     formElements.coffeeCurrent.value = template.defaults.currentStamps;
     formElements.coffeeReward.value = template.defaults.rewardText;
@@ -522,14 +380,11 @@ export function applyTemplateDefaults(template) {
     formElements.streakShape.value = template.defaults.streakShape || 'circle';
   }
 
-  if (template.programType === 'credit' || template.programType === 'gift_card') {
+  if (template.programType === 'credit') {
     formElements.creditBalance.value = template.defaults.balance;
     formElements.creditCurrency.value = template.defaults.currency;
     formElements.creditThreshold.value = template.defaults.lowBalanceThreshold;
   }
-
-  formElements.memberTier.value = formElements.memberTier.value || 'Gold';
-  formElements.validUntil.value = formElements.validUntil.value || '31.12.2026';
 }
 
 export function getProgramConfig(programType) {
@@ -736,91 +591,107 @@ export function getNotificationRules() {
 
 export function updatePreview(payload) {
   const preview = document.getElementById('pass-preview');
+  const subtitle = document.getElementById('preview-subtitle');
+  const title = document.getElementById('preview-title');
+  const mainIcon = document.getElementById('preview-main-icon');
+  const description = document.getElementById('preview-description');
+  const qrImage = document.getElementById('preview-qr');
+  const banner = document.getElementById('preview-banner');
+  const stampGrid = document.getElementById('preview-stamp-grid');
   const walletLabel = document.getElementById('preview-wallet-label');
-  if (!preview) return;
 
   const walletSkin = payload.walletSkin || 'apple';
-  const previewMode = payload.previewMode || currentPreviewMode || 'horizontal';
-  const walletLabels = { apple: 'Apple Wallet', google: 'Google Wallet', samsung: 'Samsung Wallet' };
+  const walletLabels = {
+    apple: 'Apple Wallet',
+    google: 'Google Wallet',
+    samsung: 'Samsung Wallet'
+  };
+
   preview.dataset.walletSkin = walletSkin;
-  preview.dataset.previewMode = previewMode;
-  if (walletLabel) walletLabel.textContent = walletLabels[walletSkin] || walletLabels.apple;
+  if (walletLabel) {
+    walletLabel.textContent = walletLabels[walletSkin] || walletLabels.apple;
+  }
 
-  const previewMode = payload.previewMode === 'vertical' ? 'vertical' : 'horizontal';
-  preview.dataset.previewMode = previewMode;
+  subtitle.textContent = payload.subtitle || 'Standard';
+  title.textContent = `${getIconSymbol(payload.iconId)} ${payload.title || 'Neue Karte'}`;
+  if (payload.customIconUrl) {
+    mainIcon.classList.add('hidden');
+    mainIcon.src = '';
+  } else {
+    mainIcon.classList.add('hidden');
+    mainIcon.src = '';
+  }
+  description.textContent = payload.description || '';
 
-  const layout = payload.layoutConfig || currentLayoutConfig || defaultWalletCard.layoutConfig;
-  currentLayoutConfig = { ...defaultWalletCard.layoutConfig, ...layout };
+  const selectedBgTemplate = backgroundTemplates.find((entry) => entry.id === payload.backgroundTemplateId);
 
-  const companyName = payload.businessName || payload.fields?.companyName || 'Egli+Vitali AG';
-  const title = payload.subtitle || payload.fields?.title || 'Wallet Card';
-  const fullName = payload.fields?.fullName || payload.title || payload.fields?.eventName || 'Max Muster';
-  const tier = payload.fields?.tier || 'Gold';
-  const points = payload.fields?.points ?? 0;
-  const balance = payload.fields?.balance ?? 0;
-  const currency = payload.fields?.currency || 'CHF';
-  const customerNumber = payload.fields?.customerNumber || payload.qrContent || 'EV-000123';
-  const validUntil = payload.fields?.validUntil || '31.12.2026';
-  const barcodeValue = payload.barcodeConfig?.value || payload.qrContent || customerNumber;
+  if (payload.customImageUrl) {
+    preview.style.backgroundImage = `url(${payload.customImageUrl})`;
+    preview.style.backgroundSize = 'cover';
+    preview.style.backgroundPosition = 'center';
+  } else if (selectedBgTemplate) {
+    preview.style.backgroundImage = selectedBgTemplate.gradient;
+    preview.style.backgroundSize = 'cover';
+    preview.style.backgroundPosition = 'center';
+  } else {
+    preview.style.backgroundImage = 'none';
+    preview.style.backgroundColor = payload.backgroundColor;
+  }
 
-  const stampTotal = Number(payload.stampConfig?.totalStamps || 10);
-  const stampCollected = Number(payload.stampConfig?.collectedStamps || 0);
-  const stampDots = Array.from({ length: Math.max(1, Math.min(stampTotal, 10)) })
-    .map((_, idx) => `<span class="wallet-stamp-dot ${idx < stampCollected ? 'is-active' : ''}"></span>`)
-    .join('');
+  preview.style.color = payload.foregroundColor;
 
-  const showStamp = payload.templateId === 'stamp_card';
-  const showBalance = payload.templateId === 'gift_card';
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(
+    payload.qrContent || 'https://example.com'
+  )}`;
+  qrImage.src = qrUrl;
 
-  preview.style.background = payload.customImageUrl ? `url(${payload.customImageUrl}) center/cover` : payload.backgroundColor || '#4654B8';
-  preview.style.color = payload.foregroundColor || '#fff';
+  if (payload.banner?.enabled && payload.banner?.text) {
+    banner.classList.remove('hidden');
+    banner.textContent = payload.banner.text;
+    banner.style.backgroundColor = payload.banner.backgroundColor;
+    banner.style.color = payload.banner.textColor;
+    banner.style.left = `${payload.banner.positionX ?? 4}%`;
+    banner.style.top = `${payload.banner.positionY ?? 4}%`;
+    banner.style.width = `${payload.banner.width ?? 60}%`;
+    banner.style.height = `${payload.banner.height ?? 42}px`;
+    banner.style.backgroundImage = payload.customBannerUrl ? `url(${payload.customBannerUrl})` : 'none';
+    banner.style.backgroundSize = 'cover';
+    banner.dataset.shape = payload.banner.shape || 'pill';
+  } else {
+    banner.classList.add('hidden');
+    banner.textContent = '';
+  }
 
-  const at = (key) => currentLayoutConfig[key] || { x: 16, y: 16 };
+  stampGrid.innerHTML = '';
+  stampGrid.classList.add('hidden');
 
-  const horizontalContent = `
-    <div class="wallet-preview-element" data-drag-key="logo" style="left:${at('logo').x}px;top:${at('logo').y}px;">
-      <img id="preview-main-icon" src="${payload.customIconUrl || defaultPreviewLogo}" alt="Logo" class="pass-logo" />
-      <span class="logo-text">${companyName}</span>
-    </div>
-    <div class="wallet-preview-element" data-drag-key="title" style="left:${at('title').x}px;top:${at('title').y}px;">
-      <span class="label">${title}</span><strong>${fullName}</strong>
-    </div>
-    <div class="wallet-preview-element" data-drag-key="mainValue" style="left:${at('mainValue').x}px;top:${at('mainValue').y}px;">
-      <span class="label">STATUS</span><strong>${tier}</strong>
-    </div>
-    <div class="wallet-preview-element" data-drag-key="points" style="left:${at('points').x}px;top:${at('points').y}px;">
-      <span class="label">PUNKTE</span><strong>${points}</strong>
-    </div>
-    <div class="wallet-preview-element" data-drag-key="secondaryValue" style="left:${at('secondaryValue').x}px;top:${at('secondaryValue').y}px;">
-      <span class="label">KUNDENNUMMER</span><strong>${customerNumber}</strong><br/><span class="label">GÜLTIG BIS ${validUntil}</span>
-    </div>
-    ${showBalance ? `<div class="wallet-preview-element" data-drag-key="balance" style="left:${at('balance').x}px;top:${at('balance').y}px;"><span class="label">GUTHABEN</span><strong>${Number(balance).toFixed(2)} ${currency}</strong></div>` : ''}
-    ${showStamp ? `<div class="wallet-preview-element" data-drag-key="stampGrid" style="left:${at('stampGrid').x}px;top:${at('stampGrid').y}px;"><div class="wallet-stamp-grid">${stampDots}</div><span class="label">${payload.stampConfig?.rewardText || ''}</span></div>` : ''}
-  `;
+  const isCoffee = payload.cardProgramType === 'coffee';
+  const isStreak = payload.cardProgramType === 'streak';
+  if (isCoffee || isStreak) {
+    const targetRaw = isCoffee ? payload.programConfig?.stampTarget : payload.programConfig?.targetDays;
+    const progressRaw = payload.programConfig?.currentStamps;
+    const selectedShape = isCoffee ? payload.programConfig?.stampShape : payload.programConfig?.streakShape;
+    const slotIconId = isCoffee ? payload.iconId : payload.programConfig?.streakIconId;
+    const slotIconSymbol = getIconSymbol(slotIconId);
+    const target = clampNumber(sanitizeNumber(targetRaw, 1), 1, 60);
+    const progress = clampNumber(sanitizeNumber(progressRaw, 0), 0, target);
 
-  const verticalContent = `
-    <div class="wallet-preview-vertical">
-      <div class="wallet-preview-vertical-top">
-        <p class="label">${companyName}</p>
-        <strong>${title}</strong>
-        <h4>${fullName}</h4>
-        <div class="wallet-preview-vertical-specs">
-          <span><small>Status</small><strong>${tier}</strong></span>
-          <span><small>Punkte</small><strong>${points}</strong></span>
-          <span><small>ID</small><strong>${customerNumber}</strong></span>
-        </div>
-      </div>
-      <div class="wallet-preview-vertical-code">
-        <img id="preview-qr" alt="QR" src="${qrUrl}" width="110" height="110" />
-        ${payload.barcodeConfig?.showText ? `<span class="label">${barcodeValue}</span>` : ''}
-      </div>
-      <div class="wallet-preview-vertical-footer">
-        <small>Gültig bis</small><strong>${validUntil}</strong>
-      </div>
-    </div>
-  `;
-
-  preview.innerHTML = previewMode === 'vertical' ? verticalContent : horizontalContent;
+    stampGrid.classList.remove('hidden');
+    for (let index = 0; index < target; index += 1) {
+      const slot = document.createElement('span');
+      const isFilled = index < progress;
+      slot.className = 'stamp-slot';
+      slot.dataset.shape = selectedShape || 'circle';
+      slot.classList.toggle('stamp-slot-filled', isFilled);
+      slot.style.width = `${payload.programConfig?.stampSize ?? 42}px`;
+      slot.style.height = `${payload.programConfig?.stampSize ?? 42}px`;
+      slot.style.borderColor = payload.programConfig?.stampBorderColor || 'rgba(255,255,255,0.6)';
+      slot.style.borderWidth = `${payload.programConfig?.stampBorderWidth ?? 2}px`;
+      slot.style.transform = `translate(${payload.programConfig?.stampOffsetX ?? 0}px, ${payload.programConfig?.stampOffsetY ?? 0}px)`;
+      slot.appendChild(createStampIcon(slotIconId || slotIconSymbol, isFilled, payload.customIconUrl));
+      stampGrid.appendChild(slot);
+    }
+  }
 }
 
 function toWalletSimulationEntry(rawEntry, fallbackId = null) {
@@ -845,7 +716,6 @@ function toWalletSimulationEntry(rawEntry, fallbackId = null) {
     cardProgramType,
     stampTarget,
     currentStamps,
-    walletSkin: rawEntry.walletSkin || rawEntry.wallet_skin || 'apple',
     backgroundColor: rawEntry.backgroundColor || rawEntry.background_color || '#1d1d1f',
     foregroundColor: rawEntry.foregroundColor || rawEntry.foreground_color || '#ffffff',
     customImageUrl: rawEntry.customImageUrl || rawEntry.custom_image_url || '',
@@ -866,25 +736,6 @@ function getSimulationBackground(entry) {
   return entry.backgroundColor;
 }
 
-function getWalletProviderMeta(walletSkin) {
-  const providerBySkin = {
-    apple: {
-      name: 'Apple Wallet',
-      spec: 'PassKit • Horizontal Pass'
-    },
-    google: {
-      name: 'Google Wallet',
-      spec: 'Google Wallet API • Horizontal Card'
-    },
-    samsung: {
-      name: 'Samsung Wallet',
-      spec: 'Samsung Wallet • Horizontal Card'
-    }
-  };
-
-  return providerBySkin[walletSkin] || providerBySkin.apple;
-}
-
 function renderWalletSimulationDetail(entry) {
   if (!ui.walletSimDetail) {
     return;
@@ -901,22 +752,16 @@ function renderWalletSimulationDetail(entry) {
         <p class="wallet-sim-detail-stamp-progress">${progressText}</p>
       </div>`
     : '';
-  const isLivePreview = entry.id === 'live-preview';
-  const providerMeta = getWalletProviderMeta(entry.walletSkin);
 
   ui.walletSimDetail.innerHTML = `
-    <div class="wallet-sim-detail-pass" data-wallet-skin="${entry.walletSkin}" style="background:${getSimulationBackground(entry)}; color:${entry.foregroundColor};">
+    <div class="wallet-sim-detail-pass" style="background:${getSimulationBackground(entry)}; color:${entry.foregroundColor};">
       <div class="wallet-sim-detail-header">
-        <div>
-          <p class="wallet-sim-detail-issuer">${issuer}</p>
-          <p class="wallet-sim-detail-provider">${providerMeta.name}</p>
-        </div>
-        <span class="wallet-sim-detail-chip">${isLivePreview ? 'Live' : 'Gespeichert'}</span>
+        <p class="wallet-sim-detail-issuer">${issuer}</p>
+        <span class="wallet-sim-detail-chip">Pass</span>
       </div>
       <p class="wallet-sim-detail-subtitle">${entry.subtitle}</p>
       <h4 class="wallet-sim-detail-title">${getIconSymbol(entry.iconId)} ${entry.title}</h4>
       ${stampPreview}
-      <p class="wallet-sim-detail-spec">${providerMeta.spec}</p>
       <img class="wallet-sim-detail-qr" src="${qrUrl}" alt="QR Code von ${entry.title}" />
     </div>
   `;
@@ -929,33 +774,24 @@ function renderWalletSimulationStack() {
 
   ui.walletSimStack.innerHTML = '';
 
-  const unselectedPasses = simulationPasses.filter((entry) => entry.id !== selectedSimulationPassId);
-  if (!unselectedPasses.length) {
-    ui.walletSimStack.innerHTML = '<p class="wallet-sim-empty-hint">Keine weiteren Karten im Stapel.</p>';
-    return;
-  }
-
-  unselectedPasses.forEach((entry, index) => {
+  simulationPasses.forEach((entry, index) => {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'wallet-sim-mini-pass';
     button.dataset.simPassId = entry.id;
-    button.dataset.walletSkin = entry.walletSkin;
-    button.style.setProperty('--stack-order', String(index));
     button.setAttribute('aria-label', `Karte ${entry.title} öffnen`);
     button.style.background = getSimulationBackground(entry);
     button.style.color = entry.foregroundColor;
-    button.style.zIndex = String(unselectedPasses.length - index);
+    button.style.zIndex = String(simulationPasses.length - index);
+    button.classList.toggle('is-active', entry.id === selectedSimulationPassId);
     const hasStampProgram = entry.cardProgramType === 'coffee' || entry.cardProgramType === 'streak';
     const progressText = hasStampProgram ? `Stempel ${entry.currentStamps} von ${entry.stampTarget}` : '';
-    const providerMeta = getWalletProviderMeta(entry.walletSkin);
     button.innerHTML = `
       <div class="wallet-sim-mini-leading">
         <span class="wallet-sim-mini-icon">${getIconSymbol(entry.iconId)}</span>
         <div class="wallet-sim-mini-copy">
           <p class="wallet-sim-mini-subtitle">${entry.subtitle}</p>
           <p class="wallet-sim-mini-title">${entry.title}</p>
-          <p class="wallet-sim-mini-provider">${providerMeta.name}</p>
         </div>
       </div>
       ${hasStampProgram ? `<p class="wallet-sim-mini-progress">${progressText}</p>` : ''}
@@ -1012,9 +848,7 @@ export function getPassFormData() {
     },
     barcode: {
       format: formElements.passkitBarcodeFormat.value,
-      messageEncoding: formElements.passkitMessageEncoding.value,
-      message: formElements.barcodeValue?.value.trim() || formElements.qrContent.value.trim(),
-      altText: formElements.barcodeShowText?.checked ? formElements.barcodeValue?.value.trim() || '' : ''
+      messageEncoding: formElements.passkitMessageEncoding.value
     }
   });
 
@@ -1025,11 +859,9 @@ export function getPassFormData() {
     qrContent: formElements.qrContent.value.trim(),
     businessName: formElements.businessName.value.trim(),
     businessCategory: formElements.businessCategory.value,
-    folderName: formElements.folder.value || 'none',
     templateId: formElements.template.value,
     iconId: formElements.icon.value,
     walletSkin: formElements.walletSkin.value,
-    previewMode: getPreviewMode(),
     backgroundTemplateId: formElements.backgroundTemplate.value,
     backgroundColor: formElements.bg.value,
     foregroundColor: formElements.fg.value,
@@ -1047,73 +879,13 @@ export function getPassFormData() {
     },
     cardProgramType: template.programType || 'generic',
     programConfig: getProgramConfig(template.programType || 'generic'),
-    templateType: template.id,
-    fields: {
-      companyName: formElements.businessName.value.trim(),
-      title: formElements.subtitle.value.trim(),
-      fullName: formElements.fullName?.value.trim() || '',
-      customerNumber: formElements.customerNumber?.value.trim() || '',
-      memberSince: formElements.memberSince?.value.trim() || '',
-      validUntil: formElements.validUntil?.value.trim() || '',
-      tier: formElements.memberTier?.value.trim() || '',
-      points: sanitizeNumber(formElements.loyaltyPoints?.value, 0),
-      balance: sanitizeNumber(formElements.balanceValue?.value, 0),
-      currency: formElements.balanceCurrency?.value || 'CHF',
-      email: formElements.memberEmail?.value.trim() || '',
-      eventName: formElements.eventName?.value.trim() || '',
-      eventDate: formElements.eventDate?.value.trim() || '',
-      eventTime: formElements.eventTime?.value.trim() || '',
-      eventLocation: formElements.eventLocation?.value.trim() || '',
-      section: formElements.eventSection?.value.trim() || '',
-      row: formElements.eventRow?.value.trim() || '',
-      seat: formElements.eventSeat?.value.trim() || '',
-      departure: formElements.departure?.value.trim() || '',
-      destination: formElements.destination?.value.trim() || '',
-      gate: formElements.gate?.value.trim() || '',
-      flightNumber: formElements.flightNumber?.value.trim() || '',
-      boardingTime: formElements.boardingTime?.value.trim() || '',
-      policyName: formElements.policyName?.value.trim() || '',
-      coverage: formElements.coverage?.value.trim() || '',
-      deductible: formElements.deductible?.value.trim() || '',
-      coInsurance: formElements.coInsurance?.value.trim() || ''
-    },
-    barcodeConfig: {
-      type: formElements.barcodeType?.value || 'QR',
-      value: formElements.barcodeValue?.value.trim() || formElements.qrContent.value.trim(),
-      showText: Boolean(formElements.barcodeShowText?.checked)
-    },
-    stampConfig: {
-      totalStamps: sanitizeNumber(formElements.stampTotal?.value, 10),
-      collectedStamps: sanitizeNumber(formElements.stampCollected?.value, 0),
-      rewardText: formElements.stampRewardText?.value.trim() || ''
-    },
-    layoutConfig: getLayoutConfig(),
     pushEnabled: formElements.pushEnabled.checked,
     notificationRules: getNotificationRules(),
     passkitConfig
   };
 }
 
-export function renderEditorFolderOptions(folderNames = [], selectedFolder = 'none') {
-  if (!formElements.folder) return;
-  const availableFolders = ['none', ...folderNames];
-  const labels = {
-    none: 'Kein Ordner'
-  };
-
-  formElements.folder.innerHTML = '';
-  for (const folderName of availableFolders) {
-    const option = document.createElement('option');
-    option.value = folderName;
-    option.textContent = labels[folderName] || folderName;
-    formElements.folder.appendChild(option);
-  }
-
-  formElements.folder.value = availableFolders.includes(selectedFolder) ? selectedFolder : 'none';
-}
-
 export function setAuthenticatedView(email) {
-  document.body.classList.remove('logged-out');
   ui.authState.textContent = email;
   animateCardOut(ui.authCard);
   ui.tabbar.classList.remove('hidden');
@@ -1121,11 +893,9 @@ export function setAuthenticatedView(email) {
   animateCardIn(ui.editorCard);
   animateCardIn(ui.savedCard);
   animateCardIn(ui.statsCard);
-  animateCardIn(ui.resetCard);
 }
 
 export function setLoggedOutView() {
-  document.body.classList.add('logged-out');
   ui.authState.textContent = '';
   animateCardIn(ui.authCard);
   ui.tabbar.classList.add('hidden');
@@ -1133,12 +903,6 @@ export function setLoggedOutView() {
   animateCardOut(ui.editorCard);
   animateCardOut(ui.savedCard);
   animateCardOut(ui.statsCard);
-  animateCardOut(ui.resetCard);
-}
-
-export function setResetTabVisibility(isVisible) {
-  if (!ui.resetTabBtn) return;
-  ui.resetTabBtn.classList.toggle('hidden', !isVisible);
 }
 
 export function fillEditorFromSavedPass(entry) {
@@ -1169,9 +933,6 @@ export function fillEditorFromSavedPass(entry) {
   syncBannerFields();
 
   const programConfig = entry.program_config || {};
-  const walletTemplateConfig = entry.wallet_template_config || {};
-  setPreviewMode(walletTemplateConfig.previewMode || 'horizontal');
-  const savedFields = walletTemplateConfig.fields || {};
   formElements.coffeeTarget.value = programConfig.stampTarget ?? 10;
   formElements.coffeeCurrent.value = programConfig.currentStamps ?? 0;
   formElements.coffeeReward.value = programConfig.rewardText ?? '';
@@ -1190,38 +951,6 @@ export function fillEditorFromSavedPass(entry) {
   formElements.creditBalance.value = programConfig.balance ?? 0;
   formElements.creditCurrency.value = programConfig.currency ?? 'EUR';
   formElements.creditThreshold.value = programConfig.lowBalanceThreshold ?? 5;
-  if (formElements.fullName) formElements.fullName.value = savedFields.fullName || '';
-  if (formElements.customerNumber) formElements.customerNumber.value = savedFields.customerNumber || entry.qr_content || '';
-  if (formElements.memberTier) formElements.memberTier.value = savedFields.tier || 'Gold';
-  if (formElements.loyaltyPoints) formElements.loyaltyPoints.value = savedFields.points ?? 0;
-  if (formElements.balanceValue) formElements.balanceValue.value = savedFields.balance ?? 0;
-  if (formElements.balanceCurrency) formElements.balanceCurrency.value = savedFields.currency || 'CHF';
-  if (formElements.validUntil) formElements.validUntil.value = savedFields.validUntil || '';
-  if (formElements.memberSince) formElements.memberSince.value = savedFields.memberSince || '';
-  if (formElements.memberEmail) formElements.memberEmail.value = savedFields.email || '';
-  if (formElements.eventName) formElements.eventName.value = savedFields.eventName || '';
-  if (formElements.eventDate) formElements.eventDate.value = savedFields.eventDate || '';
-  if (formElements.eventTime) formElements.eventTime.value = savedFields.eventTime || '';
-  if (formElements.eventLocation) formElements.eventLocation.value = savedFields.eventLocation || '';
-  if (formElements.eventSection) formElements.eventSection.value = savedFields.section || '';
-  if (formElements.eventRow) formElements.eventRow.value = savedFields.row || '';
-  if (formElements.eventSeat) formElements.eventSeat.value = savedFields.seat || '';
-  if (formElements.departure) formElements.departure.value = savedFields.departure || '';
-  if (formElements.destination) formElements.destination.value = savedFields.destination || '';
-  if (formElements.gate) formElements.gate.value = savedFields.gate || '';
-  if (formElements.flightNumber) formElements.flightNumber.value = savedFields.flightNumber || '';
-  if (formElements.boardingTime) formElements.boardingTime.value = savedFields.boardingTime || '';
-  if (formElements.policyName) formElements.policyName.value = savedFields.policyName || '';
-  if (formElements.coverage) formElements.coverage.value = savedFields.coverage || '';
-  if (formElements.deductible) formElements.deductible.value = savedFields.deductible || '';
-  if (formElements.coInsurance) formElements.coInsurance.value = savedFields.coInsurance || '';
-  if (formElements.barcodeType) formElements.barcodeType.value = walletTemplateConfig.barcodeConfig?.type || 'QR';
-  if (formElements.barcodeValue) formElements.barcodeValue.value = walletTemplateConfig.barcodeConfig?.value || entry.qr_content || '';
-  if (formElements.barcodeShowText) formElements.barcodeShowText.checked = walletTemplateConfig.barcodeConfig?.showText ?? true;
-  if (formElements.stampTotal) formElements.stampTotal.value = walletTemplateConfig.stampConfig?.totalStamps ?? 10;
-  if (formElements.stampCollected) formElements.stampCollected.value = walletTemplateConfig.stampConfig?.collectedStamps ?? 0;
-  if (formElements.stampRewardText) formElements.stampRewardText.value = walletTemplateConfig.stampConfig?.rewardText ?? '';
-  currentLayoutConfig = { ...defaultWalletCard.layoutConfig, ...(walletTemplateConfig.layoutConfig || {}) };
 
   formElements.passkitEnabled.checked = Boolean(passkitConfig.enabled);
   formElements.passkitPassType.value = passkitConfig.passType;
@@ -1459,31 +1188,6 @@ export function onSavedPassScan(handler) {
   });
 }
 
-export function onTemplateGalleryUse(handler) {
-  if (!formElements.templateGallery) return;
-  formElements.templateGallery.addEventListener('click', (event) => {
-    const button = event.target.closest('[data-template-use]');
-    if (!button) return;
-    handler({
-      templateId: button.dataset.templateUse,
-      variantId: button.dataset.templateVariant || ''
-    });
-  });
-}
-
-export function applyTemplatePresetFromGallery(variantId) {
-  const preset = getDefaultTemplatePreset(variantId);
-  formElements.template.value = preset.templateType;
-  formElements.title.value = preset.title || formElements.title.value;
-  formElements.subtitle.value = preset.subtitle || formElements.subtitle.value;
-  formElements.bg.value = preset.backgroundColor || formElements.bg.value;
-  formElements.fg.value = preset.foregroundColor || formElements.fg.value;
-  formElements.backgroundTemplate.value = preset.passBackgroundTemplate || 'custom';
-  formElements.memberTier.value = preset.memberTier || formElements.memberTier.value;
-  formElements.loyaltyPoints.value = preset.points ?? formElements.loyaltyPoints.value;
-  setPreviewMode(preset.previewMode || 'horizontal');
-}
-
 export function onSavedPassFolderChange(handler) {
   ui.passList.addEventListener('change', (event) => {
     const select = event.target.closest('.saved-pass-folder-select');
@@ -1548,7 +1252,6 @@ export function setActiveTab(tabName) {
   ui.editorCard.classList.toggle('hidden', tabName !== 'editor');
   ui.savedCard.classList.toggle('hidden', tabName !== 'saved');
   ui.statsCard.classList.toggle('hidden', tabName !== 'stats');
-  ui.resetCard.classList.toggle('hidden', tabName !== 'reset');
 }
 
 export function resetNotificationRules() {

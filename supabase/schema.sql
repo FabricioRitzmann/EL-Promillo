@@ -16,7 +16,7 @@ create table if not exists public.wallet_passes (
   business_name text,
   business_category text not null default 'restaurant',
   template_storage_path text,
-  template_id text not null default 'loyalty',
+  template_id text not null default 'vip-membership',
   icon_id text not null default 'gift',
   background_template_id text not null default 'custom',
   background_color text not null default '#1d1d1f',
@@ -40,7 +40,6 @@ create table if not exists public.wallet_passes (
   notification_rules jsonb not null default '[]'::jsonb,
   passkit_enabled boolean not null default false,
   passkit_config jsonb not null default '{}'::jsonb,
-  wallet_template_config jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -58,7 +57,6 @@ alter table public.wallet_passes
   add column if not exists notification_rules jsonb not null default '[]'::jsonb,
   add column if not exists passkit_enabled boolean not null default false,
   add column if not exists passkit_config jsonb not null default '{}'::jsonb,
-  add column if not exists wallet_template_config jsonb not null default '{}'::jsonb,
   add column if not exists banner_enabled boolean not null default false,
   add column if not exists banner_text text,
   add column if not exists banner_preset text,

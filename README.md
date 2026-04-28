@@ -1,4 +1,4 @@
-# WallPass (PassKit-inspiriert)
+# Pass Studio (PassKit-inspiriert)
 
 Eine moderne Web-App mit:
 
@@ -95,22 +95,3 @@ Das SQL enthält jetzt zusätzlich ein Datenmodell für den echten Betriebseinsa
 - `business_scan_stats_anonymized` (View): liefert lesbare Statistiken pro Betrieb/Karte mit anonymisierten Kundenzahlen (`customer_reference_hash`).
 
 So können Betriebe nachvollziehen, wie oft Karten genutzt werden, ohne personenbezogene Endkundendaten im Klartext auszulesen.
-
-## Backup erstellen
-
-Statt Backup-Dateien ins Repository zu committen, nutze das Script für ein lokales Offline-Backup:
-
-```bash
-./scripts/create-backup.sh
-```
-
-Optional kannst du ein eigenes Datum übergeben (UTC-Format `YYYY-MM-DD`):
-
-```bash
-./scripts/create-backup.sh 2026-04-28
-```
-
-Das Script erzeugt in `backups/`:
-
-- `EL-Promillo-backup-<datum>.tar.gz`
-- `EL-Promillo-backup-<datum>.tar.gz.sha256`
