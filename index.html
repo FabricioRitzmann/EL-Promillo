@@ -48,6 +48,7 @@
           Passwort
           <input id="account-password" type="password" readonly />
         </label>
+        <button id="account-password-toggle-btn" class="btn btn-secondary" type="button">Passwort anzeigen</button>
         <div class="account-logo-panel">
           <p class="small"><strong>Firmenlogo (PNG/JPG)</strong></p>
           <img
@@ -220,6 +221,24 @@
 
               <select id="pass-icon" class="hidden" aria-hidden="true" tabindex="-1"></select>
               <select id="streak-icon" class="hidden" aria-hidden="true" tabindex="-1"></select>
+
+              <section id="title-bucket-section" class="config-section is-static-section">
+                <h3>🧩 Titel-Bucket Layout</h3>
+                <p class="muted small">
+                  Bearbeite den Titel-Bucket direkt per Drag & Drop im Widget-Stil. Du kannst Elemente hinzufügen, löschen und neu anordnen.
+                </p>
+                <ul id="title-bucket-editor" class="title-bucket-editor"></ul>
+                <div class="title-bucket-toolbar">
+                  <label>
+                    Widget hinzufügen
+                    <select id="title-bucket-add-select"></select>
+                  </label>
+                  <button id="title-bucket-add-btn" type="button" class="btn btn-secondary">Widget hinzufügen</button>
+                </div>
+                <button id="title-bucket-reset-btn" type="button" class="btn btn-secondary">Reihenfolge zurücksetzen</button>
+              </section>
+
+              
 
               <section class="config-section">
                 <h3>Kartenspezifische Einstellungen</h3>
@@ -443,16 +462,16 @@
                 </div>
                 <div id="pass-preview" class="pass-preview" data-wallet-skin="apple">
                 <div class="pass-overlay">
-                  <div class="preview-logo-slot">
-                    <img id="preview-company-logo" class="preview-company-logo hidden" alt="Firmenlogo" />
-                  </div>
                   <p id="preview-banner" class="preview-banner hidden"></p>
                   <div id="preview-title-bucket" class="preview-title-bucket">
-                    <p id="preview-subtitle" class="preview-subtitle"></p>
-                    <div id="preview-title-row" class="preview-title-row">
-                      <h4 id="preview-title"></h4>
+                    <div id="preview-logo-slot" class="preview-logo-slot">
+                      <img id="preview-company-logo" class="preview-company-logo hidden" alt="Firmenlogo" />
                     </div>
+                    <p id="preview-subtitle" class="preview-subtitle"></p>
+                    <h4 id="preview-title"></h4>
+                    <p id="preview-email" class="preview-email"></p>
                     <p id="preview-description"></p>
+                    <button id="preview-logout-btn" class="preview-logout-btn" type="button">Logout</button>
                   </div>
                   <div id="preview-stamp-grid" class="preview-stamp-grid hidden"></div>
                   <img id="preview-qr" alt="QR Code Vorschau" />
