@@ -86,7 +86,7 @@ p {
   right: 14px;
   z-index: 12;
   border-radius: 999px;
-  border: 1px solid var(--border);
+  border: none;
   background: #f3f4f6;
   color: #1f2937;
   display: inline-flex;
@@ -208,6 +208,7 @@ textarea,
 select,
 button {
   font: inherit;
+  border: none;
 }
 
 input,
@@ -228,26 +229,29 @@ select:focus {
 
 .btn {
   border: none;
-  border-radius: 999px;
-  padding: 10px 16px;
-  background: #e7ebf2;
-  color: #1f2937;
+  border-radius: 0;
+  padding: 8px 0;
+  background: transparent;
+  color: #9ca3af;
+  border-bottom: 2px solid transparent;
   cursor: pointer;
   font-weight: 600;
 }
 
 .btn:hover {
-  filter: brightness(0.96);
+  background: transparent;
+  filter: none;
+  color: #6b7280;
 }
 
 .btn-primary {
-  background: var(--primary);
-  color: white;
-  box-shadow: 0 8px 20px rgba(0, 113, 227, 0.28);
+  background: transparent;
+  color: #111827;
+  border-bottom-color: #111827;
 }
 
 .btn-secondary {
-  background: #f0f0f2;
+  background: transparent;
 }
 
 .row-buttons {
@@ -589,7 +593,7 @@ select:focus {
   width: 34px;
   height: 34px;
   border-radius: 9px;
-  border: 1px solid var(--border);
+  border: none;
   background: rgba(255, 255, 255, 0.65);
   color: #374151;
   display: inline-flex;
@@ -885,8 +889,9 @@ select:focus {
 }
 
 .btn-danger {
-  background: #ffefef;
+  background: transparent;
   color: #a51212;
+  border-bottom-color: #a51212;
 }
 
 @media (max-width: 640px) {
