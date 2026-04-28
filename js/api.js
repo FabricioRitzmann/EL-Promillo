@@ -268,26 +268,6 @@ export async function uploadCustomImage(file, userId) {
   return { data: { path: objectPath, publicUrl: data.publicUrl }, error: null };
 }
 
-export async function deleteCustomImageByPath(objectPath) {
-  if (!isConfigured) return notConfiguredError();
-  if (!objectPath) {
-    return {
-      data: null,
-      error: {
-        message: 'Kein Speicherpfad übergeben.'
-      }
-    };
-  }
-
-  try {
-    return await supabaseClient.storage
-      .from('pass-backgrounds')
-      .remove([objectPath]);
-  } catch (error) {
-    return networkError(error);
-  }
-}
-
 
 export async function issuePassToWallet({ passId, businessUserId, endUserId, walletProvider = 'apple_wallet' }) {
   if (!isConfigured) return notConfiguredError();

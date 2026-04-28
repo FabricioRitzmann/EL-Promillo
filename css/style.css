@@ -85,39 +85,20 @@ p {
   top: 12px;
   right: 14px;
   z-index: 12;
-  border: none;
-  border-radius: 0;
-  background: transparent;
-  color: #6b7280;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #f3f4f6;
+  color: #1f2937;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
 }
 
-.account-btn:hover {
-  color: #111827;
-}
-
 .account-btn svg {
   width: 22px;
   height: 22px;
   fill: currentColor;
-}
-
-.topbar-actions #logout-btn {
-  border: none;
-  border-radius: 0;
-  background: transparent;
-  color: #9ca3af;
-  padding: 8px 0;
-  box-shadow: none;
-}
-
-.topbar-actions #logout-btn:hover {
-  background: transparent;
-  filter: none;
-  color: #111827;
 }
 
 .account-popup {
@@ -140,22 +121,6 @@ p {
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
-
-.account-logo-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.account-logo-preview {
-  width: 100%;
-  max-height: 90px;
-  object-fit: contain;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: #fff;
-  padding: 8px;
 }
 
 .eyebrow {
@@ -337,31 +302,8 @@ select:focus {
 
 .editor-actions .btn {
   font-size: 0.82rem;
-  padding: 8px 0;
-  font-weight: 600;
-  border: none;
-  border-radius: 0;
-  background: transparent;
-  color: #9ca3af;
-  border-bottom: 2px solid transparent;
-  box-shadow: none;
-}
-
-.editor-actions .btn:hover {
-  background: transparent;
-  filter: none;
-  color: #6b7280;
-}
-
-.editor-actions .btn:focus-visible {
-  outline: 2px solid rgba(0, 113, 227, 0.25);
-  outline-offset: 4px;
-}
-
-.editor-actions .btn-primary,
-.editor-actions .btn-secondary {
-  background: transparent;
-  color: #111827;
+  padding: 6px 12px;
+  font-weight: 500;
 }
 
 .preview-pane {
@@ -482,6 +424,7 @@ select:focus {
 
 .pass-overlay {
   padding: 18px;
+  padding-top: 86px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -489,7 +432,9 @@ select:focus {
 }
 
 .preview-logo-slot {
-  position: relative;
+  position: absolute;
+  top: 16px;
+  left: 16px;
   display: inline-flex;
   width: auto;
   height: auto;
@@ -582,16 +527,7 @@ select:focus {
 .preview-title-bucket {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-}
-
-.preview-title-bucket > * {
-  width: fit-content;
-  max-width: 100%;
-  padding: 6px 10px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(2px);
+  gap: 4px;
 }
 
 .preview-banner {
@@ -637,22 +573,6 @@ select:focus {
   margin-top: 0;
 }
 
-.preview-email {
-  margin: 0;
-  font-size: 0.78rem;
-  opacity: 0.95;
-}
-
-.preview-logout-btn {
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  background: rgba(17, 24, 39, 0.3);
-  color: #fff;
-  border-radius: 999px;
-  padding: 5px 12px;
-  font-size: 0.75rem;
-  cursor: default;
-}
-
 .title-bucket-editor {
   list-style: none;
   margin: 8px 0 10px;
@@ -666,10 +586,9 @@ select:focus {
   align-items: center;
   gap: 10px;
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: 10px;
   padding: 10px 12px;
-  background: linear-gradient(155deg, rgba(255, 255, 255, 0.95), rgba(245, 247, 255, 0.9));
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.86);
   cursor: grab;
   user-select: none;
 }
@@ -681,30 +600,6 @@ select:focus {
 .title-bucket-grip {
   color: #6b7280;
   letter-spacing: -0.08em;
-}
-
-.title-bucket-delete {
-  margin-left: auto;
-  width: 28px;
-  height: 28px;
-  border-radius: 999px;
-  border: 1px solid #d1d5db;
-  background: #fff;
-  color: #4b5563;
-  cursor: pointer;
-}
-
-.title-bucket-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: flex-end;
-  margin-bottom: 10px;
-}
-
-.title-bucket-toolbar label {
-  min-width: 220px;
-  flex: 1;
 }
 
 #preview-qr {
@@ -733,24 +628,24 @@ select:focus {
 .saved-icon-btn {
   width: 34px;
   height: 34px;
-  border-radius: 0;
-  border: none;
-  background: transparent;
-  color: #6b7280;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.65);
+  color: #374151;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .saved-icon-btn:hover {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.92);
   color: #111827;
 }
 
 .saved-icon-btn.is-active {
-  background: transparent;
+  background: rgba(17, 24, 39, 0.08);
   color: #111827;
 }
 

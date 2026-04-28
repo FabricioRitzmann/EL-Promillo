@@ -15,10 +15,6 @@ export const ui = {
   accountPopupCloseBtn: document.getElementById('account-popup-close-btn'),
   accountEmail: document.getElementById('account-email'),
   accountPassword: document.getElementById('account-password'),
-  accountLogoPreview: document.getElementById('account-logo-preview'),
-  accountLogoStatus: document.getElementById('account-logo-status'),
-  accountLogoDeleteBtn: document.getElementById('account-logo-delete-btn'),
-  accountLogoReplaceBtn: document.getElementById('account-logo-replace-btn'),
   headerCompanyLogo: document.getElementById('header-company-logo'),
   logoutBtn: document.getElementById('logout-btn'),
   tabbar: document.getElementById('main-tabbar'),
@@ -119,14 +115,11 @@ export const formElements = {
 };
 
 const titleBucketLabels = {
-  logo: 'Logo',
-  email: 'E-Mail',
-  logout: 'Logout Button',
   subtitle: 'Untertitel',
   title: 'Titel',
   description: 'Beschreibung'
 };
-const defaultTitleBucketLayout = ['logo', 'title', 'subtitle', 'email', 'logout'];
+const defaultTitleBucketLayout = ['subtitle', 'title', 'description'];
 let titleBucketLayout = [...defaultTitleBucketLayout];
 
 let pendingConfirmResolver = null;
@@ -510,10 +503,6 @@ export function renderProgramFields(programType) {
 export function initSectionDropdowns() {
   const sections = document.querySelectorAll('.config-section');
   sections.forEach((section, index) => {
-    if (section.id === 'title-bucket-section') {
-      return;
-    }
-
     if (section.dataset.dropdownReady === 'true') {
       return;
     }
@@ -651,15 +640,13 @@ export function getProgramConfig(programType) {
 }
 
 function normalizeTitleBucketLayout(layout) {
-  const allowedKeys = Object.keys(titleBucketLabels);
-  const incoming = Array.isArray(layout) ? layout.filter((entry) => allowedKeys.includes(entry)) : [];
+  const incoming = Array.isArray(layout) ? layout.filter((entry) => defaultTitleBucketLayout.includes(entry)) : [];
   const missingEntries = defaultTitleBucketLayout.filter((entry) => !incoming.includes(entry));
   return [...incoming, ...missingEntries];
 }
 
 function renderTitleBucketEditor() {
   const list = document.getElementById('title-bucket-editor');
-  const addSelect = document.getElementById('title-bucket-add-select');
   if (!list) return;
 
   list.innerHTML = '';
@@ -671,30 +658,9 @@ function renderTitleBucketEditor() {
     item.innerHTML = `
       <span class="title-bucket-grip" aria-hidden="true">⋮⋮</span>
       <span>${titleBucketLabels[key] || key}</span>
-      <button type="button" class="title-bucket-delete" data-remove-bucket-key="${key}" aria-label="${titleBucketLabels[key] || key} entfernen">✕</button>
     `;
     list.appendChild(item);
   });
-
-  if (!addSelect) return;
-  const remainingKeys = Object.keys(titleBucketLabels).filter((key) => !titleBucketLayout.includes(key));
-  addSelect.innerHTML = '';
-  if (!remainingKeys.length) {
-    const option = document.createElement('option');
-    option.value = '';
-    option.textContent = 'Alle Widgets bereits enthalten';
-    addSelect.appendChild(option);
-    addSelect.disabled = true;
-    return;
-  }
-
-  remainingKeys.forEach((key) => {
-    const option = document.createElement('option');
-    option.value = key;
-    option.textContent = titleBucketLabels[key] || key;
-    addSelect.appendChild(option);
-  });
-  addSelect.disabled = false;
 }
 
 export function setTitleBucketLayout(layout) {
@@ -709,8 +675,6 @@ export function getTitleBucketLayout() {
 export function initTitleBucketEditor(onChange) {
   const list = document.getElementById('title-bucket-editor');
   const resetButton = document.getElementById('title-bucket-reset-btn');
-  const addButton = document.getElementById('title-bucket-add-btn');
-  const addSelect = document.getElementById('title-bucket-add-select');
   if (!list) return;
 
   let draggedKey = null;
@@ -754,26 +718,6 @@ export function initTitleBucketEditor(onChange) {
     current.splice(targetIndex, 0, draggedKey);
     setTitleBucketLayout(current);
 
-    if (onChange) {
-      onChange();
-    }
-  });
-
-  list.addEventListener('click', (event) => {
-    const removeButton = event.target.closest('[data-remove-bucket-key]');
-    if (!removeButton) return;
-    const keyToRemove = removeButton.dataset.removeBucketKey;
-    if (!keyToRemove) return;
-    setTitleBucketLayout(titleBucketLayout.filter((key) => key !== keyToRemove));
-    if (onChange) {
-      onChange();
-    }
-  });
-
-  addButton?.addEventListener('click', () => {
-    const selectedKey = addSelect?.value;
-    if (!selectedKey || titleBucketLayout.includes(selectedKey)) return;
-    setTitleBucketLayout([...titleBucketLayout, selectedKey]);
     if (onChange) {
       onChange();
     }
@@ -955,11 +899,9 @@ export function updatePreview(payload) {
   const subtitle = document.getElementById('preview-subtitle');
   const title = document.getElementById('preview-title');
   const companyLogo = document.getElementById('preview-company-logo');
-  const logoSlot = document.getElementById('preview-logo-slot');
   const description = document.getElementById('preview-description');
-  const email = document.getElementById('preview-email');
-  const logoutButton = document.getElementById('preview-logout-btn');
   const previewTitleBucket = document.getElementById('preview-title-bucket');
+  const previewTitleRow = document.getElementById('preview-title-row');
   const qrImage = document.getElementById('preview-qr');
   const banner = document.getElementById('preview-banner');
   const stampGrid = document.getElementById('preview-stamp-grid');
@@ -979,7 +921,6 @@ export function updatePreview(payload) {
 
   subtitle.textContent = payload.subtitle || 'Standard';
   title.textContent = payload.title || 'Neue Karte';
-  email.textContent = payload.contactEmail || 'beispiel@firma.de';
   if (payload.customIconUrl) {
     companyLogo.classList.remove('hidden');
     companyLogo.src = payload.customIconUrl;
@@ -990,12 +931,9 @@ export function updatePreview(payload) {
   description.textContent = payload.description || '';
   const activeTitleBucketLayout = normalizeTitleBucketLayout(payload.titleBucketLayout);
   const previewNodes = {
-    logo: logoSlot,
     subtitle,
-    title,
-    description,
-    email,
-    logout: logoutButton
+    title: previewTitleRow,
+    description
   };
   activeTitleBucketLayout.forEach((key) => {
     const node = previewNodes[key];
@@ -1263,13 +1201,14 @@ export function getPassFormData() {
       positionY: sanitizeNumber(formElements.bannerY.value, 4)
     },
     cardProgramType: template.programType || 'generic',
+    titleBucketLayout: getTitleBucketLayout(),
     programConfig: {
-      ...getProgramConfig(template.programType || 'generic')
+      ...getProgramConfig(template.programType || 'generic'),
+      titleBucketLayout: getTitleBucketLayout()
     },
     pushEnabled: formElements.pushEnabled.checked,
     notificationRules: getNotificationRules(),
-    passkitConfig,
-    contactEmail: ui.accountEmail.value || formElements.email.value.trim()
+    passkitConfig
   };
 }
 
@@ -1321,6 +1260,7 @@ export function fillEditorFromSavedPass(entry) {
   syncBannerFields();
 
   const programConfig = entry.program_config || {};
+  setTitleBucketLayout(programConfig.titleBucketLayout || entry.title_bucket_layout || defaultTitleBucketLayout);
   formElements.coffeeTarget.value = programConfig.stampTarget ?? 10;
   formElements.coffeeCurrent.value = programConfig.currentStamps ?? 0;
   formElements.coffeeReward.value = programConfig.rewardText ?? '';

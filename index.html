@@ -48,20 +48,10 @@
           Passwort
           <input id="account-password" type="password" readonly />
         </label>
-        <div class="account-logo-panel">
-          <p class="small"><strong>Firmenlogo (PNG/JPG)</strong></p>
-          <img
-            id="account-logo-preview"
-            class="account-logo-preview hidden"
-            alt="Hinterlegtes Firmenlogo im Konto"
-          />
-          <p id="account-logo-status" class="muted small">Kein Logo hinterlegt.</p>
-          <input id="account-logo-upload" class="hidden" type="file" accept="image/png,image/jpeg" />
-          <div class="row-buttons">
-            <button id="account-logo-delete-btn" class="btn btn-secondary" type="button">Datei löschen</button>
-            <button id="account-logo-replace-btn" class="btn btn-secondary" type="button">Datei ersetzen</button>
-          </div>
-        </div>
+        <label>
+          Firmenlogo einfügen (PNG/JPG)
+          <input id="account-logo-upload" type="file" accept="image/png,image/jpeg" />
+        </label>
         <p class="muted small">
           Sobald das Firmenlogo im Konto-Popup hinterlegt wird, bleibt es dauerhaft gespeichert und kann später ersetzt
           werden.
@@ -218,22 +208,25 @@
                 </label>
               </section>
 
-              <select id="pass-icon" class="hidden" aria-hidden="true" tabindex="-1"></select>
-              <select id="streak-icon" class="hidden" aria-hidden="true" tabindex="-1"></select>
+              <section class="config-section">
+                <h3>Firmenlogo</h3>
+                <p class="muted small">
+                  Füge dein Firmenlogo ein. Der obere linke Bereich des Passes ist dafür reserviert.
+                </p>
+                <select id="pass-icon" class="hidden" aria-hidden="true" tabindex="-1"></select>
+                <select id="streak-icon" class="hidden" aria-hidden="true" tabindex="-1"></select>
+                <label>
+                  Firmenlogo einfügen (PNG/JPG)
+                  <input id="pass-icon-upload" type="file" accept="image/png,image/jpeg" />
+                </label>
+              </section>
 
-              <section id="title-bucket-section" class="config-section is-static-section">
+              <section class="config-section">
                 <h3>🧩 Titel-Bucket Layout</h3>
                 <p class="muted small">
-                  Bearbeite den Titel-Bucket direkt per Drag & Drop im Widget-Stil. Du kannst Elemente hinzufügen, löschen und neu anordnen.
+                  Ziehe die Elemente per Drag & Drop in die gewünschte Reihenfolge. Das Layout wird beim Speichern mitgespeichert.
                 </p>
                 <ul id="title-bucket-editor" class="title-bucket-editor"></ul>
-                <div class="title-bucket-toolbar">
-                  <label>
-                    Widget hinzufügen
-                    <select id="title-bucket-add-select"></select>
-                  </label>
-                  <button id="title-bucket-add-btn" type="button" class="btn btn-secondary">Widget hinzufügen</button>
-                </div>
                 <button id="title-bucket-reset-btn" type="button" class="btn btn-secondary">Reihenfolge zurücksetzen</button>
               </section>
 
@@ -461,16 +454,16 @@
                 </div>
                 <div id="pass-preview" class="pass-preview" data-wallet-skin="apple">
                 <div class="pass-overlay">
+                  <div class="preview-logo-slot">
+                    <img id="preview-company-logo" class="preview-company-logo hidden" alt="Firmenlogo" />
+                  </div>
                   <p id="preview-banner" class="preview-banner hidden"></p>
                   <div id="preview-title-bucket" class="preview-title-bucket">
-                    <div id="preview-logo-slot" class="preview-logo-slot">
-                      <img id="preview-company-logo" class="preview-company-logo hidden" alt="Firmenlogo" />
-                    </div>
                     <p id="preview-subtitle" class="preview-subtitle"></p>
-                    <h4 id="preview-title"></h4>
-                    <p id="preview-email" class="preview-email"></p>
+                    <div id="preview-title-row" class="preview-title-row">
+                      <h4 id="preview-title"></h4>
+                    </div>
                     <p id="preview-description"></p>
-                    <button id="preview-logout-btn" class="preview-logout-btn" type="button">Logout</button>
                   </div>
                   <div id="preview-stamp-grid" class="preview-stamp-grid hidden"></div>
                   <img id="preview-qr" alt="QR Code Vorschau" />
