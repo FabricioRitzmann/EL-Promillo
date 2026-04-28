@@ -9,7 +9,6 @@ import {
 } from './passkit.js';
 
 export const ui = {
-  authState: document.getElementById('auth-state'),
   accountBtn: document.getElementById('account-btn'),
   accountPopup: document.getElementById('account-popup'),
   accountPopupCloseBtn: document.getElementById('account-popup-close-btn'),
@@ -1092,8 +1091,7 @@ export function getPassFormData() {
   };
 }
 
-export function setAuthenticatedView(email) {
-  ui.authState.textContent = email;
+export function setAuthenticatedView(_email) {
   animateCardOut(ui.authCard);
   ui.tabbar.classList.remove('hidden');
   ui.logoutBtn.classList.remove('hidden');
@@ -1103,7 +1101,6 @@ export function setAuthenticatedView(email) {
 }
 
 export function setLoggedOutView() {
-  ui.authState.textContent = '';
   animateCardIn(ui.authCard);
   ui.tabbar.classList.add('hidden');
   ui.logoutBtn.classList.add('hidden');
