@@ -221,6 +221,15 @@
                 </label>
               </section>
 
+              <section class="config-section">
+                <h3>🧩 Titel-Bucket Layout</h3>
+                <p class="muted small">
+                  Ziehe die Elemente per Drag & Drop in die gewünschte Reihenfolge. Das Layout wird beim Speichern mitgespeichert.
+                </p>
+                <ul id="title-bucket-editor" class="title-bucket-editor"></ul>
+                <button id="title-bucket-reset-btn" type="button" class="btn btn-secondary">Reihenfolge zurücksetzen</button>
+              </section>
+
               
 
               <section class="config-section">
@@ -449,11 +458,13 @@
                     <img id="preview-company-logo" class="preview-company-logo hidden" alt="Firmenlogo" />
                   </div>
                   <p id="preview-banner" class="preview-banner hidden"></p>
-                  <p id="preview-subtitle" class="preview-subtitle"></p>
-                  <div class="preview-title-row">
-                    <h4 id="preview-title"></h4>
+                  <div id="preview-title-bucket" class="preview-title-bucket">
+                    <p id="preview-subtitle" class="preview-subtitle"></p>
+                    <div id="preview-title-row" class="preview-title-row">
+                      <h4 id="preview-title"></h4>
+                    </div>
+                    <p id="preview-description"></p>
                   </div>
-                  <p id="preview-description"></p>
                   <div id="preview-stamp-grid" class="preview-stamp-grid hidden"></div>
                   <img id="preview-qr" alt="QR Code Vorschau" />
                 </div>
