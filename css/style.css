@@ -251,13 +251,40 @@ select:focus {
 
 .tabbar {
   display: flex;
-  gap: 10px;
-  padding: 12px;
+  gap: 20px;
+  padding: 0 0 4px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tabbar.card {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-radius: 0;
+  padding: 0 0 4px;
+}
+
+.tab-btn {
+  border-radius: 0;
+  padding: 8px 0;
+  background: transparent;
+  color: #9ca3af;
+  border-bottom: 2px solid transparent;
+  font-weight: 600;
+}
+
+.tab-btn:hover {
+  background: transparent;
+  filter: none;
+  color: #6b7280;
 }
 
 .tab-btn.is-active {
-  background: #111827;
-  color: #fff;
+  background: transparent;
+  color: #111827;
+  border-bottom-color: #111827;
 }
 
 .section-head {
