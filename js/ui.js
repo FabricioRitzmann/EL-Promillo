@@ -118,14 +118,6 @@ export const formElements = {
   passkitMessageEncoding: document.getElementById('passkit-message-encoding')
 };
 
-const titleBucketLabels = {
-  subtitle: 'Untertitel',
-  title: 'Titel',
-  description: 'Beschreibung'
-};
-const defaultTitleBucketLayout = ['subtitle', 'title', 'description'];
-let titleBucketLayout = [...defaultTitleBucketLayout];
-
 let pendingConfirmResolver = null;
 let selectedSimulationPassId = null;
 let simulationPasses = [];
@@ -643,100 +635,6 @@ export function getProgramConfig(programType) {
   return {};
 }
 
-function normalizeTitleBucketLayout(layout) {
-  const incoming = Array.isArray(layout) ? layout.filter((entry) => defaultTitleBucketLayout.includes(entry)) : [];
-  const missingEntries = defaultTitleBucketLayout.filter((entry) => !incoming.includes(entry));
-  return [...incoming, ...missingEntries];
-}
-
-function renderTitleBucketEditor() {
-  const list = document.getElementById('title-bucket-editor');
-  if (!list) return;
-
-  list.innerHTML = '';
-  titleBucketLayout.forEach((key) => {
-    const item = document.createElement('li');
-    item.className = 'title-bucket-item';
-    item.draggable = true;
-    item.dataset.bucketKey = key;
-    item.innerHTML = `
-      <span class="title-bucket-grip" aria-hidden="true">⋮⋮</span>
-      <span>${titleBucketLabels[key] || key}</span>
-    `;
-    list.appendChild(item);
-  });
-}
-
-export function setTitleBucketLayout(layout) {
-  titleBucketLayout = normalizeTitleBucketLayout(layout);
-  renderTitleBucketEditor();
-}
-
-export function getTitleBucketLayout() {
-  return [...titleBucketLayout];
-}
-
-export function initTitleBucketEditor(onChange) {
-  const list = document.getElementById('title-bucket-editor');
-  const resetButton = document.getElementById('title-bucket-reset-btn');
-  if (!list) return;
-
-  let draggedKey = null;
-
-  list.addEventListener('dragstart', (event) => {
-    const item = event.target.closest('.title-bucket-item');
-    if (!item) return;
-    draggedKey = item.dataset.bucketKey;
-    event.dataTransfer.effectAllowed = 'move';
-    item.classList.add('is-dragging');
-  });
-
-  list.addEventListener('dragend', (event) => {
-    const item = event.target.closest('.title-bucket-item');
-    if (item) {
-      item.classList.remove('is-dragging');
-    }
-    draggedKey = null;
-  });
-
-  list.addEventListener('dragover', (event) => {
-    event.preventDefault();
-    event.dataTransfer.dropEffect = 'move';
-  });
-
-  list.addEventListener('drop', (event) => {
-    event.preventDefault();
-    if (!draggedKey) return;
-    const targetItem = event.target.closest('.title-bucket-item');
-    if (!targetItem) return;
-
-    const targetKey = targetItem.dataset.bucketKey;
-    if (!targetKey || targetKey === draggedKey) return;
-
-    const current = [...titleBucketLayout];
-    const sourceIndex = current.indexOf(draggedKey);
-    const targetIndex = current.indexOf(targetKey);
-    if (sourceIndex < 0 || targetIndex < 0) return;
-
-    current.splice(sourceIndex, 1);
-    current.splice(targetIndex, 0, draggedKey);
-    setTitleBucketLayout(current);
-
-    if (onChange) {
-      onChange();
-    }
-  });
-
-  resetButton?.addEventListener('click', () => {
-    setTitleBucketLayout(defaultTitleBucketLayout);
-    if (onChange) {
-      onChange();
-    }
-  });
-
-  renderTitleBucketEditor();
-}
-
 export function addNotificationRule(rule = {}) {
   const scheduleType = rule.scheduleType || 'exact';
   const recurringDay = rule.recurringDay || 'monday';
@@ -904,7 +802,6 @@ export function updatePreview(payload) {
   const title = document.getElementById('preview-title');
   const companyLogo = document.getElementById('preview-company-logo');
   const description = document.getElementById('preview-description');
-  const previewTitleBucket = document.getElementById('preview-title-bucket');
   const previewTitleRow = document.getElementById('preview-title-row');
   const qrImage = document.getElementById('preview-qr');
   const banner = document.getElementById('preview-banner');
@@ -933,18 +830,9 @@ export function updatePreview(payload) {
     companyLogo.src = '';
   }
   description.textContent = payload.description || '';
-  const activeTitleBucketLayout = normalizeTitleBucketLayout(payload.titleBucketLayout);
-  const previewNodes = {
-    subtitle,
-    title: previewTitleRow,
-    description
-  };
-  activeTitleBucketLayout.forEach((key) => {
-    const node = previewNodes[key];
-    if (node && previewTitleBucket) {
-      previewTitleBucket.appendChild(node);
-    }
-  });
+  if (previewTitleRow) {
+    previewTitleRow.appendChild(title);
+  }
 
   const selectedBgTemplate = backgroundTemplates.find((entry) => entry.id === payload.backgroundTemplateId);
 
@@ -1205,10 +1093,8 @@ export function getPassFormData() {
       positionY: sanitizeNumber(formElements.bannerY.value, 4)
     },
     cardProgramType: template.programType || 'generic',
-    titleBucketLayout: getTitleBucketLayout(),
     programConfig: {
-      ...getProgramConfig(template.programType || 'generic'),
-      titleBucketLayout: getTitleBucketLayout()
+      ...getProgramConfig(template.programType || 'generic')
     },
     pushEnabled: formElements.pushEnabled.checked,
     notificationRules: getNotificationRules(),
@@ -1264,7 +1150,6 @@ export function fillEditorFromSavedPass(entry) {
   syncBannerFields();
 
   const programConfig = entry.program_config || {};
-  setTitleBucketLayout(programConfig.titleBucketLayout || entry.title_bucket_layout || defaultTitleBucketLayout);
   formElements.coffeeTarget.value = programConfig.stampTarget ?? 10;
   formElements.coffeeCurrent.value = programConfig.currentStamps ?? 0;
   formElements.coffeeReward.value = programConfig.rewardText ?? '';

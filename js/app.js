@@ -22,7 +22,6 @@ import {
   getTemplateById,
   initTemplateSelect,
   initSectionDropdowns,
-  initTitleBucketEditor,
   initTemplateGallery,
   clearFolderInput,
   onCreateFolder,
@@ -925,7 +924,6 @@ function init() {
   initTemplateSelect();
   initTemplateGallery(handleTemplateGalleryApply);
   initSectionDropdowns();
-  initTitleBucketEditor(refreshPreview);
   resetNotificationRules();
   addNotificationRule({
     name: 'Beispiel Reminder',
