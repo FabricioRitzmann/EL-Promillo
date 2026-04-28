@@ -84,52 +84,12 @@
                   Beschreibung
                   <textarea id="pass-description" rows="3">Zutritt für Events und Lounge.</textarea>
                 </label>
-
                 <label>
-                  QR-Inhalt (z. B. URL oder Token)
-                  <input id="pass-qr-content" type="text" value="https://example.com/checkin/ABC123" required />
-                </label>
-
-                <label>
-                  Betrieb
-                  <input id="business-name" type="text" value="Musterbetrieb" />
-                </label>
-
-                <label>
-                  Betriebsart
-                  <select id="business-category">
-                    <option value="restaurant">Restaurant</option>
-                    <option value="bar">Bar</option>
-                    <option value="club">Club</option>
-                    <option value="cafe">Café</option>
-                    <option value="bakery">Bäckerei</option>
-                    <option value="other">Andere</option>
-                  </select>
-                </label>
-              </section>
-
-              <section class="config-section">
-                <h3>🧩 Karten-Template</h3>
-                <p class="muted small">
-                  Templates definieren den Karteninhalt (z. B. Kaffeekarte, Streakkarte, Guthabenkarte).
-                </p>
-                <label>
-                  Template
+                  Karten-Template
                   <select id="pass-template"></select>
                 </label>
-                <div class="wallet-template-gallery-block">
-                  <p class="muted small">
-                    Vorlagen-Galerie: Jede Kartenart erhält ein eigenes, am Referenzbild orientiertes Layout. Mit
-                    „Layout anwenden“ werden Farben, Icons und die Live-Vorschau direkt angepasst.
-                  </p>
-                  <div id="wallet-template-gallery" class="wallet-template-gallery" aria-live="polite"></div>
-                </div>
-              </section>
-
-              <section class="config-section">
-                <h3>🍎 PassKit-Erweiterung (separat)</h3>
                 <p class="muted small">
-                  Diese Felder sind bewusst isoliert gespeichert, damit sie später einfach wieder entfernt/gefiltert werden können.
+                  Templates definieren den Karteninhalt (z. B. Kaffeekarte, Streakkarte, Guthabenkarte).
                 </p>
                 <label class="inline-checkbox">
                   <input id="passkit-enabled" type="checkbox" />
@@ -156,7 +116,7 @@
                   <input id="passkit-serial-number" type="text" placeholder="123456" />
                 </label>
                 <label>
-                  PassKit Beschreibung
+                  PassKit-Beschreibung
                   <input id="passkit-description" type="text" placeholder="Kundenkarte" />
                 </label>
                 <label>
@@ -191,16 +151,36 @@
                   Message Encoding
                   <input id="passkit-message-encoding" type="text" value="iso-8859-1" />
                 </label>
+
+                <label>
+                  QR-Inhalt (z. B. URL oder Token)
+                  <input id="pass-qr-content" type="text" value="https://example.com/checkin/ABC123" required />
+                </label>
+
+                <label>
+                  Betrieb
+                  <input id="business-name" type="text" value="Musterbetrieb" />
+                </label>
+
+                <label>
+                  Betriebsart
+                  <select id="business-category">
+                    <option value="restaurant">Restaurant</option>
+                    <option value="bar">Bar</option>
+                    <option value="club">Club</option>
+                    <option value="cafe">Café</option>
+                    <option value="bakery">Bäckerei</option>
+                    <option value="other">Andere</option>
+                  </select>
+                </label>
               </section>
+
               <section class="config-section">
                 <h3>🎯 Icon-Editor</h3>
                 <p class="muted small">
-                  Wähle ein passendes Haupt-Icon für die Karte.
+                  Füge dein Firmenlogo ein. Der obere linke Bereich des Passes ist dafür reserviert.
                 </p>
-                <label>
-                  Karten-Icon
-                  <select id="pass-icon"></select>
-                </label>
+                <select id="pass-icon" class="hidden" aria-hidden="true" tabindex="-1"></select>
                 <div id="streak-icon-wrap" class="hidden">
                   <label>
                     Stempel/Streak Icon
@@ -208,7 +188,7 @@
                   </label>
                 </div>
                 <label>
-                  Eigenes Karten-Icon (PNG/JPG)
+                  Firmenlogo einfügen (PNG/JPG)
                   <input id="pass-icon-upload" type="file" accept="image/png,image/jpeg" />
                 </label>
               </section>
@@ -444,10 +424,12 @@
                 </div>
                 <div id="pass-preview" class="pass-preview" data-wallet-skin="apple">
                 <div class="pass-overlay">
+                  <div class="preview-logo-slot">
+                    <img id="preview-company-logo" class="preview-company-logo hidden" alt="Firmenlogo" />
+                  </div>
                   <p id="preview-banner" class="preview-banner hidden"></p>
                   <p id="preview-subtitle" class="preview-subtitle"></p>
                   <div class="preview-title-row">
-                    <img id="preview-main-icon" class="preview-main-icon hidden" alt="Karten Icon" />
                     <h4 id="preview-title"></h4>
                   </div>
                   <p id="preview-description"></p>

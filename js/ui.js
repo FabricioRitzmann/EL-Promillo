@@ -790,7 +790,7 @@ export function updatePreview(payload) {
   const preview = document.getElementById('pass-preview');
   const subtitle = document.getElementById('preview-subtitle');
   const title = document.getElementById('preview-title');
-  const mainIcon = document.getElementById('preview-main-icon');
+  const companyLogo = document.getElementById('preview-company-logo');
   const description = document.getElementById('preview-description');
   const qrImage = document.getElementById('preview-qr');
   const banner = document.getElementById('preview-banner');
@@ -810,13 +810,13 @@ export function updatePreview(payload) {
   }
 
   subtitle.textContent = payload.subtitle || 'Standard';
-  title.textContent = `${getIconSymbol(payload.iconId)} ${payload.title || 'Neue Karte'}`;
+  title.textContent = payload.title || 'Neue Karte';
   if (payload.customIconUrl) {
-    mainIcon.classList.add('hidden');
-    mainIcon.src = '';
+    companyLogo.classList.remove('hidden');
+    companyLogo.src = payload.customIconUrl;
   } else {
-    mainIcon.classList.add('hidden');
-    mainIcon.src = '';
+    companyLogo.classList.add('hidden');
+    companyLogo.src = '';
   }
   description.textContent = payload.description || '';
 

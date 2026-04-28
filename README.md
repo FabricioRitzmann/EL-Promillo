@@ -75,15 +75,15 @@ Die App zeigt dafür jetzt eine klarere Fehlermeldung an.
 Diese Version erstellt und verwaltet die Pass-Daten und QR-Codes im Frontend.
 Für echte `.pkpass`-Dateien brauchst du zusätzlich einen Server-Endpunkt, der Apple-Zertifikate nutzt und PassKit-Dateien signiert.
 
-## PassKit-Erweiterung (separat gespeichert)
+## PassKit-Felder im Basisdaten-Editor
 
-Die App enthält jetzt einen eigenen Bereich **„PassKit-Erweiterung (separat)”** im Editor.
-Alle PassKit-spezifischen Daten werden bewusst getrennt gespeichert in:
+Die PassKit-Felder sind im Editor direkt in den Bereich **„📝 Basisdaten”** integriert.
+Gespeichert werden die PassKit-Daten weiterhin in separaten Datenbankfeldern:
 
 - `wallet_passes.passkit_enabled` (Boolean)
 - `wallet_passes.passkit_config` (JSONB)
 
-Dadurch kann man die Erweiterung später schnell filtern, migrieren oder wieder entfernen, ohne die restliche Kartenlogik umzubauen.
+Dadurch bleiben Anzeige und Pflege im Formular kompakt, während die Datenhaltung in Supabase klar getrennt und wartbar bleibt.
 
 ## Wallet-Tracking für Endnutzer
 
