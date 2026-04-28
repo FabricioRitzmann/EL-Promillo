@@ -1,4 +1,5 @@
 import { backgroundTemplates, bannerColorOptions, passTemplates, streakIcons, templateIcons } from './config.js';
+import { WALLET_TEMPLATE_TYPES } from './walletTemplates.js';
 import {
   getDefaultPasskitConfig,
   normalizePasskitConfig,
@@ -133,6 +134,113 @@ const stampIconDefinitions = {
   gift: { name: 'gift', path: 'M20 7H4v13h16ZM2 7h20v4H2Zm10 0v13M12 7H8a2 2 0 1 1 0-4c2 0 4 4 4 4Zm0 0h4a2 2 0 1 0 0-4c-2 0-4 4-4 4Z' },
   running: { name: 'running', path: 'M13 5a2 2 0 1 1 0 4 2 2 0 0 1 0-4Zm-1 6 3 2 2 4M11 11l-2 3H6m5-3 4-2 3 1' },
   flame: { name: 'flame', path: 'M12 2c3 3 4 5 4 8a4 4 0 0 1-8 0c0-2 1-4 4-8Zm0 7c2 2 3 3 3 5a3 3 0 1 1-6 0c0-1 1-3 3-5Z' }
+};
+
+const visualTemplatePresetsByType = {
+  loyalty: {
+    chipLabel: 'Loyalty Card / Treuekarte',
+    passTemplateId: 'coffee-stamp',
+    title: 'Treuekarte',
+    subtitle: 'Punkte sammeln',
+    description: 'Treuekarte mit Punkten und Tier-Status.',
+    iconId: 'coffee-cup',
+    backgroundTemplateId: 'night-lounge',
+    backgroundColor: '#4654B8',
+    foregroundColor: '#ffffff',
+    banner: { enabled: true, text: 'Gold Status', backgroundColor: '#ffd166', textColor: '#3d2500' },
+    cards: ['#4f5fbf', '#8b5e3c', '#66b9ff', '#1f2937', '#9ca3af', '#155e75', '#1e3a8a', '#312e81']
+  },
+  membership: {
+    chipLabel: 'Membership Card',
+    passTemplateId: 'vip-membership',
+    title: 'Membership Card',
+    subtitle: 'Premium Access',
+    description: 'Mitgliedskarte mit Laufzeit und Status.',
+    iconId: 'gift',
+    backgroundTemplateId: 'night-lounge',
+    backgroundColor: '#2f3432',
+    foregroundColor: '#ffffff',
+    banner: { enabled: true, text: 'Premium', backgroundColor: '#85c441', textColor: '#0f172a' },
+    cards: ['#2f3432', '#6b7280', '#2563eb', '#fbbf24', '#8b5cf6', '#0891b2', '#4f46e5', '#7c3aed']
+  },
+  coupon: {
+    chipLabel: 'Coupon / Gutschein',
+    passTemplateId: 'coupon-card',
+    title: 'Coupon',
+    subtitle: 'Special Deal',
+    description: 'Gutschein mit Ablaufdatum und Bedingungen.',
+    iconId: 'gift',
+    backgroundTemplateId: 'warm-cafe',
+    backgroundColor: '#fbbf24',
+    foregroundColor: '#1f2937',
+    banner: { enabled: true, text: '50% OFF', backgroundColor: '#d71920', textColor: '#ffffff' },
+    cards: ['#facc15', '#ffffff', '#a16207', '#166534', '#f97316', '#dc2626', '#0ea5e9', '#14b8a6']
+  },
+  event_ticket: {
+    chipLabel: 'Event Ticket / Ticket',
+    passTemplateId: 'vip-membership',
+    title: 'Rock Festival',
+    subtitle: 'Event Ticket',
+    description: 'Ticket mit Eventdaten und Sitzplatz.',
+    iconId: 'hockey',
+    backgroundTemplateId: 'event-ticket',
+    backgroundColor: '#13234a',
+    foregroundColor: '#ffffff',
+    banner: { enabled: true, text: 'Admit One', backgroundColor: '#f05a28', textColor: '#ffffff' },
+    cards: ['#1e1b4b', '#0f172a', '#3f3f46', '#1e3a8a', '#166534', '#78350f', '#7c2d12', '#0369a1']
+  },
+  boarding_pass: {
+    chipLabel: 'Boarding Pass',
+    passTemplateId: 'vip-membership',
+    title: 'Boarding Pass',
+    subtitle: 'Route & Gate',
+    description: 'Boarding Pass mit Route und Gate.',
+    iconId: 'running',
+    backgroundTemplateId: 'event-ticket',
+    backgroundColor: '#1e3a8a',
+    foregroundColor: '#ffffff',
+    banner: { enabled: true, text: 'Gate A12', backgroundColor: '#f8fafc', textColor: '#0f172a' },
+    cards: ['#0b3d91', '#e2e8f0', '#fb923c', '#fef3c7', '#93c5fd', '#1d4ed8', '#1e40af', '#1f2937']
+  },
+  gift_card: {
+    chipLabel: 'Gift Card',
+    passTemplateId: 'recharge-credit',
+    title: 'Gift Card',
+    subtitle: 'Balance Card',
+    description: 'Geschenkkarte mit Guthaben und Währung.',
+    iconId: 'gift',
+    backgroundTemplateId: 'neon-bar',
+    backgroundColor: '#1d4ed8',
+    foregroundColor: '#ffffff',
+    banner: { enabled: true, text: 'CHF 50', backgroundColor: '#ffffff', textColor: '#1e3a8a' },
+    cards: ['#1f2937', '#b91c1c', '#1d4ed8', '#0f766e', '#f5f5f4', '#ec4899', '#06b6d4', '#7c3aed']
+  },
+  stamp_card: {
+    chipLabel: 'Stamp Card',
+    passTemplateId: 'stamp-card',
+    title: 'Stempelkarte',
+    subtitle: 'Fortschritt',
+    description: 'Stempelkarte mit Fortschrittsanzeige.',
+    iconId: 'coffee-cup',
+    backgroundTemplateId: 'craft-bronze',
+    backgroundColor: '#78350f',
+    foregroundColor: '#ffffff',
+    banner: { enabled: true, text: '7 / 10', backgroundColor: '#fef3c7', textColor: '#78350f' },
+    cards: ['#f5f5f4', '#fde68a', '#ddd6fe', '#fef3c7', '#8b5e3c', '#a16207', '#d97706', '#f59e0b']
+  },
+  policy_pass: {
+    chipLabel: 'Policy Pass',
+    passTemplateId: 'vip-membership',
+    title: 'Policy Pass',
+    subtitle: 'Coverage',
+    description: 'Versicherungs-/Policy-Pass mit Vertragsdaten.',
+    iconId: 'menu-card',
+    backgroundTemplateId: 'stadium-green',
+    backgroundColor: '#0f766e',
+    foregroundColor: '#f0fdfa',
+    banner: { enabled: true, text: 'Aktiv', backgroundColor: '#ccfbf1', textColor: '#0f766e' },
+    cards: ['#dbeafe', '#99f6e4', '#14b8a6', '#1d4ed8', '#bae6fd', '#86efac', '#2dd4bf', '#38bdf8']
+  }
 };
 
 function clearCardTimer(element) {
@@ -276,6 +384,95 @@ export function initTemplateSelect() {
 
 export function getTemplateById(id) {
   return passTemplates.find((template) => template.id === id) || passTemplates[0];
+}
+
+function createTemplateThumb(color) {
+  const thumb = document.createElement('span');
+  thumb.className = 'template-thumb';
+  thumb.style.background = `linear-gradient(145deg, ${color}, rgba(255,255,255,0.16))`;
+  return thumb;
+}
+
+function applyVisualTemplatePreset(typeId) {
+  const preset = visualTemplatePresetsByType[typeId];
+  if (!preset) {
+    return null;
+  }
+
+  formElements.template.value = preset.passTemplateId;
+  applyTemplateDefaults(getTemplateById(preset.passTemplateId));
+  formElements.title.value = preset.title;
+  formElements.subtitle.value = preset.subtitle;
+  formElements.description.value = preset.description;
+  formElements.icon.value = preset.iconId;
+  formElements.backgroundTemplate.value = preset.backgroundTemplateId;
+  formElements.bg.value = preset.backgroundColor;
+  formElements.fg.value = preset.foregroundColor;
+  formElements.bannerEnabled.checked = Boolean(preset.banner?.enabled);
+  formElements.bannerText.value = preset.banner?.text || '';
+  formElements.bannerBg.value = preset.banner?.backgroundColor || formElements.bannerBg.value;
+  formElements.bannerFg.value = preset.banner?.textColor || formElements.bannerFg.value;
+  syncBannerFields();
+
+  if (preset.passTemplateId === 'coffee-stamp') {
+    formElements.coffeeCurrent.value = 7;
+    formElements.coffeeTarget.value = 10;
+  }
+
+  if (preset.passTemplateId === 'stamp-card') {
+    formElements.streakCurrent.value = 7;
+    formElements.streakTarget.value = 10;
+  }
+
+  if (preset.passTemplateId === 'recharge-credit') {
+    formElements.creditBalance.value = 50;
+    formElements.creditCurrency.value = 'CHF';
+  }
+
+  return preset.passTemplateId;
+}
+
+export function initTemplateGallery(onTemplateApplied = () => {}) {
+  const galleryRoot = document.getElementById('wallet-template-gallery');
+  if (!galleryRoot) {
+    return;
+  }
+
+  galleryRoot.innerHTML = '';
+  for (const type of WALLET_TEMPLATE_TYPES) {
+    const preset = visualTemplatePresetsByType[type.id];
+    if (!preset) {
+      continue;
+    }
+
+    const block = document.createElement('article');
+    block.className = 'template-gallery-type';
+    block.innerHTML = `
+      <h4>${preset.chipLabel}</h4>
+      <p>${type.description}</p>
+      <div class="template-thumb-row"></div>
+      <button type="button" class="btn btn-secondary template-apply-btn" data-template-gallery-apply="${type.id}">
+        Layout anwenden
+      </button>
+    `;
+
+    const thumbRow = block.querySelector('.template-thumb-row');
+    preset.cards.forEach((color) => {
+      thumbRow.appendChild(createTemplateThumb(color));
+    });
+
+    galleryRoot.appendChild(block);
+  }
+
+  galleryRoot.querySelectorAll('[data-template-gallery-apply]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const typeId = button.dataset.templateGalleryApply;
+      const selectedTemplateId = applyVisualTemplatePreset(typeId);
+      if (selectedTemplateId) {
+        onTemplateApplied(selectedTemplateId);
+      }
+    });
+  });
 }
 
 export function renderProgramFields(programType) {
