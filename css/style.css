@@ -482,7 +482,6 @@ select:focus {
 
 .pass-overlay {
   padding: 18px;
-  padding-top: 86px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -490,9 +489,7 @@ select:focus {
 }
 
 .preview-logo-slot {
-  position: absolute;
-  top: 16px;
-  left: 16px;
+  position: relative;
   display: inline-flex;
   width: auto;
   height: auto;
@@ -585,7 +582,16 @@ select:focus {
 .preview-title-bucket {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
+}
+
+.preview-title-bucket > * {
+  width: fit-content;
+  max-width: 100%;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(2px);
 }
 
 .preview-banner {
@@ -631,6 +637,22 @@ select:focus {
   margin-top: 0;
 }
 
+.preview-email {
+  margin: 0;
+  font-size: 0.78rem;
+  opacity: 0.95;
+}
+
+.preview-logout-btn {
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(17, 24, 39, 0.3);
+  color: #fff;
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 0.75rem;
+  cursor: default;
+}
+
 .title-bucket-editor {
   list-style: none;
   margin: 8px 0 10px;
@@ -644,9 +666,10 @@ select:focus {
   align-items: center;
   gap: 10px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 14px;
   padding: 10px 12px;
-  background: rgba(255, 255, 255, 0.86);
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.95), rgba(245, 247, 255, 0.9));
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
   cursor: grab;
   user-select: none;
 }
@@ -658,6 +681,30 @@ select:focus {
 .title-bucket-grip {
   color: #6b7280;
   letter-spacing: -0.08em;
+}
+
+.title-bucket-delete {
+  margin-left: auto;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  color: #4b5563;
+  cursor: pointer;
+}
+
+.title-bucket-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-end;
+  margin-bottom: 10px;
+}
+
+.title-bucket-toolbar label {
+  min-width: 220px;
+  flex: 1;
 }
 
 #preview-qr {
