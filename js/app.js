@@ -535,6 +535,36 @@ function handleReplaceAccountLogo() {
   formElements.accountLogoUpload?.click();
 }
 
+async function handleDeleteAccountLogo() {
+  if (!currentUser || !currentAccountLogoUrl) {
+    return;
+  }
+
+  const storagePath = extractStoragePathFromPublicUrl(currentAccountLogoUrl);
+  if (storagePath) {
+    const { error } = await deleteCustomImageByPath(storagePath);
+    if (error) {
+      showToast(`Logo konnte nicht aus dem Speicher gelöscht werden: ${error.message}`, true);
+      return;
+    }
+  }
+
+  currentAccountLogoUrl = '';
+  persistAccountLogo(currentUser.id, '');
+  syncHeaderCompanyLogo();
+  syncAccountLogoSection();
+  formElements.accountLogoUpload.value = '';
+  showToast('Firmenlogo gelöscht.');
+}
+
+function handleReplaceAccountLogo() {
+  if (!currentUser) {
+    showToast('Bitte zuerst einloggen, bevor du Bilder hochlädst.', true);
+    return;
+  }
+  formElements.accountLogoUpload?.click();
+}
+
 async function handleBannerUpload(event) {
   const file = event.target.files?.[0];
   if (!file) {
