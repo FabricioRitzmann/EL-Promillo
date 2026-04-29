@@ -97,6 +97,9 @@ export const passTemplates = [
 ];
 
 export const backgroundTemplates = [
+  { id: 'royal-gold', name: 'Royal Gold', gradient: 'linear-gradient(135deg, #3b2a00 0%, #d4af37 52%, #7a5b00 100%)' },
+  { id: 'elegant-silver', name: 'Elegant Silver', gradient: 'linear-gradient(135deg, #2f3640 0%, #c0c7cf 50%, #5f6b7a 100%)' },
+  { id: 'elite-platinum', name: 'Elite Platinum', gradient: 'linear-gradient(135deg, #1f2937 0%, #e5e7eb 48%, #6b7280 100%)' },
   { id: 'warm-cafe', name: 'Warmes Café', gradient: 'linear-gradient(135deg, #4a2a1a 0%, #8b5e3c 55%, #2b1a12 100%)' },
   { id: 'stadium-green', name: 'Stadion Grün', gradient: 'linear-gradient(135deg, #163a1f 0%, #2f7c42 50%, #102614 100%)' },
   { id: 'neon-bar', name: 'Neon Bar', gradient: 'linear-gradient(135deg, #140f2e 0%, #442f83 45%, #ff4fa3 100%)' },
