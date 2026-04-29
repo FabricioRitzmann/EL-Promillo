@@ -149,7 +149,7 @@ function buildPreviewPayload() {
   return {
     ...formData,
     customImageUrl: currentUploadedImageUrl,
-    customIconUrl: currentUploadedIconUrl,
+    customIconUrl: currentAccountLogoUrl || currentUploadedIconUrl,
     customBannerUrl: currentUploadedBannerUrl
   };
 }
@@ -454,28 +454,6 @@ async function handleImageUpload(event) {
   showToast('Hintergrundbild hochgeladen.');
 }
 
-async function handleIconUpload(event) {
-  const file = event.target.files?.[0];
-  if (!file) {
-    currentUploadedIconUrl = '';
-    refreshPreview();
-    return;
-  }
-  if (!currentUser) {
-    showToast('Bitte zuerst einloggen, bevor du Bilder hochlädst.', true);
-    event.target.value = '';
-    return;
-  }
-  const { data, error } = await uploadCustomImage(file, currentUser.id);
-  if (error) {
-    showToast(`Icon-Upload fehlgeschlagen: ${error.message}`, true);
-    return;
-  }
-  currentUploadedIconUrl = data.publicUrl;
-  refreshPreview();
-  showToast('Firmenlogo hochgeladen.');
-}
-
 async function handleAccountLogoUpload(event) {
   const file = event.target.files?.[0];
   if (!file) {
@@ -494,7 +472,7 @@ async function handleAccountLogoUpload(event) {
   currentAccountLogoUrl = data.publicUrl;
   persistAccountLogo(currentUser.id, currentAccountLogoUrl);
   syncHeaderCompanyLogo();
-  showToast('Firmenlogo gespeichert. Du kannst es jederzeit ersetzen.');
+  showToast('Firmenlogo gespeichert und wird jetzt automatisch auf allen Karten verwendet.');
 }
 
 async function handleBannerUpload(event) {
@@ -558,7 +536,7 @@ async function handleSavePass() {
       id: currentEditingPassId,
       templateStoragePath: currentEntry?.template_storage_path || '',
       customImageUrl: currentUploadedImageUrl,
-      customIconUrl: currentUploadedIconUrl,
+      customIconUrl: currentAccountLogoUrl || currentUploadedIconUrl,
       customBannerUrl: currentUploadedBannerUrl
     },
     currentUser.id
@@ -839,7 +817,6 @@ function wireEvents() {
   formElements.bannerColor.addEventListener('change', applyBannerColorPreset);
 
   formElements.upload.addEventListener('change', handleImageUpload);
-  formElements.iconUpload.addEventListener('change', handleIconUpload);
   formElements.accountLogoUpload?.addEventListener('change', handleAccountLogoUpload);
   formElements.bannerUpload.addEventListener('change', handleBannerUpload);
   formElements.addRuleBtn.addEventListener('click', handleAddNotificationRule);
