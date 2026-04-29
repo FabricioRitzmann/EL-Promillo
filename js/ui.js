@@ -1017,6 +1017,15 @@ export function updatePreview(payload) {
   }
 }
 
+function renderSimulationIcon(entry, className = '') {
+  if (entry.customIconUrl) {
+    const safeClassName = className ? ` ${className}` : '';
+    return `<img class="wallet-sim-logo${safeClassName}" src="${entry.customIconUrl}" alt="Firmenlogo" />`;
+  }
+
+  return getIconSymbol(entry.iconId);
+}
+
 function toWalletSimulationEntry(rawEntry, fallbackId = null) {
   const title = rawEntry.title || 'Neue Karte';
   const subtitle = rawEntry.subtitle || rawEntry.business_name || rawEntry.businessName || 'Wallet Pass';
@@ -1036,6 +1045,7 @@ function toWalletSimulationEntry(rawEntry, fallbackId = null) {
     subtitle,
     qrContent,
     iconId,
+    customIconUrl: rawEntry.customIconUrl || rawEntry.custom_icon_url || '',
     cardProgramType,
     stampTarget,
     currentStamps,
@@ -1070,7 +1080,7 @@ function renderWalletSimulationDetail(entry) {
   const progressText = hasStampProgram ? `${entry.currentStamps} von ${entry.stampTarget}` : null;
   const stampPreview = hasStampProgram
     ? `<div class="wallet-sim-detail-stamp-hero">
-        <span class="wallet-sim-detail-stamp-icon">${getIconSymbol(entry.iconId)}</span>
+        <span class="wallet-sim-detail-stamp-icon">${renderSimulationIcon(entry, 'wallet-sim-logo-inline')}</span>
         <p class="wallet-sim-detail-stamp-label">Stempel</p>
         <p class="wallet-sim-detail-stamp-progress">${progressText}</p>
       </div>`
@@ -1083,7 +1093,7 @@ function renderWalletSimulationDetail(entry) {
         <span class="wallet-sim-detail-chip">Pass</span>
       </div>
       <p class="wallet-sim-detail-subtitle">${entry.subtitle}</p>
-      <h4 class="wallet-sim-detail-title">${getIconSymbol(entry.iconId)} ${entry.title}</h4>
+      <h4 class="wallet-sim-detail-title">${renderSimulationIcon(entry, 'wallet-sim-logo-inline')} ${entry.title}</h4>
       ${stampPreview}
       <img class="wallet-sim-detail-qr" src="${qrUrl}" alt="QR Code von ${entry.title}" />
     </div>
@@ -1111,7 +1121,7 @@ function renderWalletSimulationStack() {
     const progressText = hasStampProgram ? `Stempel ${entry.currentStamps} von ${entry.stampTarget}` : '';
     button.innerHTML = `
       <div class="wallet-sim-mini-leading">
-        <span class="wallet-sim-mini-icon">${getIconSymbol(entry.iconId)}</span>
+        <span class="wallet-sim-mini-icon">${renderSimulationIcon(entry)}</span>
         <div class="wallet-sim-mini-copy">
           <p class="wallet-sim-mini-subtitle">${entry.subtitle}</p>
           <p class="wallet-sim-mini-title">${entry.title}</p>
