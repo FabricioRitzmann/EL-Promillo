@@ -499,6 +499,7 @@ export function renderProgramFields(programType) {
 
   const hasStampBackground = programType === 'coffee' || programType === 'streak';
   formElements.stampFrameSection.classList.toggle('hidden', !hasStampBackground);
+  document.getElementById('stamp-logo-option')?.classList.toggle('hidden', !hasStampBackground);
 }
 
 export function initSectionDropdowns() {
