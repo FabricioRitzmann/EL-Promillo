@@ -321,7 +321,7 @@ export function getIconSymbol(id) {
 function createStampIcon(iconId, isFilled, customIconUrl = '') {
   if (customIconUrl) {
     const uploadedIcon = document.createElement('img');
-    uploadedIcon.className = 'stamp-slot-uploaded-icon';
+    uploadedIcon.className = `stamp-slot-uploaded-icon ${isFilled ? 'stamp-slot-uploaded-icon-filled' : 'stamp-slot-uploaded-icon-unfilled'}`;
     uploadedIcon.src = customIconUrl;
     uploadedIcon.alt = 'Eigenes Stempel-Icon';
     return uploadedIcon;

@@ -72,7 +72,8 @@ p {
 
 .topbar-actions {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  align-self: flex-start;
   gap: 10px;
   margin-left: auto;
 }
@@ -252,6 +253,9 @@ select:focus {
 
 .topbar-actions #logout-btn {
   border: none;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
 }
 
 .topbar-actions #logout-btn:hover {
@@ -492,6 +496,17 @@ select:focus {
   height: 70%;
   border-radius: 6px;
   object-fit: cover;
+}
+
+
+.stamp-slot-uploaded-icon-filled {
+  opacity: 1;
+  filter: none;
+}
+
+.stamp-slot-uploaded-icon-unfilled {
+  opacity: 0.22;
+  filter: saturate(0.8);
 }
 
 .stamp-slot-fallback-icon {
