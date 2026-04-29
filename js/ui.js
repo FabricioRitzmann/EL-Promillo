@@ -82,6 +82,7 @@ export const formElements = {
   stampBorderWidth: document.getElementById('stamp-border-width'),
   stampOffsetX: document.getElementById('stamp-offset-x'),
   stampOffsetY: document.getElementById('stamp-offset-y'),
+  useCompanyLogoForStamps: document.getElementById('program-use-company-logo-for-stamps'),
   pushEnabled: document.getElementById('push-enabled'),
   addRuleBtn: document.getElementById('add-rule-btn'),
   coffeeTarget: document.getElementById('coffee-target'),
@@ -604,7 +605,8 @@ export function getProgramConfig(programType) {
     stampSize: sanitizeNumber(formElements.stampSize.value, 42),
     stampBorderWidth: sanitizeNumber(formElements.stampBorderWidth.value, 2),
     stampOffsetX: sanitizeNumber(formElements.stampOffsetX.value, 0),
-    stampOffsetY: sanitizeNumber(formElements.stampOffsetY.value, 0)
+    stampOffsetY: sanitizeNumber(formElements.stampOffsetY.value, 0),
+    useCompanyLogoForStamps: formElements.useCompanyLogoForStamps.checked
   };
   if (programType === 'coffee') {
     return {
@@ -1007,7 +1009,8 @@ export function updatePreview(payload) {
       slot.style.borderColor = payload.programConfig?.stampBorderColor || 'rgba(255,255,255,0.6)';
       slot.style.borderWidth = `${payload.programConfig?.stampBorderWidth ?? 2}px`;
       slot.style.transform = `translate(${payload.programConfig?.stampOffsetX ?? 0}px, ${payload.programConfig?.stampOffsetY ?? 0}px)`;
-      slot.appendChild(createStampIcon(slotIconId || slotIconSymbol, isFilled, payload.customIconUrl));
+      const stampIconLogo = payload.programConfig?.useCompanyLogoForStamps ? payload.customIconUrl : '';
+      slot.appendChild(createStampIcon(slotIconId || slotIconSymbol, isFilled, stampIconLogo));
       stampGrid.appendChild(slot);
     }
   }
@@ -1276,6 +1279,7 @@ export function fillEditorFromSavedPass(entry) {
   formElements.stampBorderWidth.value = programConfig.stampBorderWidth ?? 2;
   formElements.stampOffsetX.value = programConfig.stampOffsetX ?? 0;
   formElements.stampOffsetY.value = programConfig.stampOffsetY ?? 0;
+  formElements.useCompanyLogoForStamps.checked = Boolean(programConfig.useCompanyLogoForStamps);
   formElements.creditBalance.value = programConfig.balance ?? 0;
   formElements.creditCurrency.value = programConfig.currency ?? 'EUR';
   formElements.creditThreshold.value = programConfig.lowBalanceThreshold ?? 5;
