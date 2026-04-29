@@ -86,13 +86,18 @@ p {
   right: 14px;
   z-index: 12;
   border-radius: 10px;
-  border: 1px solid var(--border);
+  border: 1px solid transparent;
   background: #f3f4f6;
   color: #1f2937;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+}
+
+.account-btn:hover {
+  border-color: var(--border);
+  border-radius: 10px;
 }
 
 .account-btn svg {
@@ -227,7 +232,7 @@ select:focus {
 }
 
 .btn {
-  border: none;
+  border: 1px solid transparent;
   border-radius: 10px;
   padding: 10px 16px;
   background: #e7ebf2;
@@ -238,6 +243,8 @@ select:focus {
 
 .btn:hover {
   filter: brightness(0.96);
+  border-color: var(--border);
+  border-radius: 10px;
 }
 
 .btn-primary {
@@ -629,7 +636,7 @@ select:focus {
   width: 34px;
   height: 34px;
   border-radius: 9px;
-  border: 1px solid var(--border);
+  border: 1px solid transparent;
   background: rgba(255, 255, 255, 0.65);
   color: #374151;
   display: inline-flex;
@@ -642,6 +649,8 @@ select:focus {
 .saved-icon-btn:hover {
   background: rgba(255, 255, 255, 0.92);
   color: #111827;
+  border-color: var(--border);
+  border-radius: 9px;
 }
 
 .saved-icon-btn.is-active {
