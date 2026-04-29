@@ -806,7 +806,8 @@ function wireEvents() {
     formElements.stampSize,
     formElements.stampBorderWidth,
     formElements.stampOffsetX,
-    formElements.stampOffsetY
+    formElements.stampOffsetY,
+    formElements.useCompanyLogoForStamps
   ];
 
   previewFields.forEach((field) => field.addEventListener('input', refreshPreview));
