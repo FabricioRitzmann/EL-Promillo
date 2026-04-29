@@ -86,7 +86,7 @@ p {
   right: 14px;
   z-index: 12;
   border-radius: 10px;
-  border: 1px solid transparent;
+  border: none;
   background: #f3f4f6;
   color: #1f2937;
   display: inline-flex;
@@ -96,7 +96,7 @@ p {
 }
 
 .account-btn:hover {
-  border-color: var(--border);
+  filter: brightness(0.96);
 }
 
 .account-btn svg {
@@ -253,6 +253,14 @@ select:focus {
 
 .btn-secondary {
   background: #f0f0f2;
+}
+
+.topbar-actions #logout-btn {
+  border: none;
+}
+
+.topbar-actions #logout-btn:hover {
+  border-color: transparent;
 }
 
 .row-buttons {
