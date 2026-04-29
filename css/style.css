@@ -308,6 +308,7 @@ select:focus {
   background: transparent;
   filter: none;
   color: #6b7280;
+  border-color: transparent;
 }
 
 .tab-btn.is-active {
