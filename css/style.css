@@ -72,7 +72,8 @@ p {
 
 .topbar-actions {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  align-self: flex-start;
   gap: 10px;
   margin-left: auto;
 }
@@ -252,6 +253,9 @@ select:focus {
 
 .topbar-actions #logout-btn {
   border: none;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
 }
 
 .topbar-actions #logout-btn:hover {
