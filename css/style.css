@@ -75,16 +75,11 @@ p {
   align-items: center;
   gap: 10px;
   margin-left: auto;
-  padding-right: 52px;
 }
 
 .account-btn {
   width: 40px;
   height: 40px;
-  position: absolute;
-  top: 12px;
-  right: 14px;
-  z-index: 12;
   border-radius: 10px;
   border: none;
   background: #f3f4f6;
