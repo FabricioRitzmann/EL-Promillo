@@ -498,6 +498,17 @@ select:focus {
   object-fit: cover;
 }
 
+
+.stamp-slot-uploaded-icon-filled {
+  opacity: 1;
+  filter: none;
+}
+
+.stamp-slot-uploaded-icon-unfilled {
+  opacity: 0.22;
+  filter: saturate(0.8);
+}
+
 .stamp-slot-fallback-icon {
   font-size: 1rem;
   opacity: 0.85;
