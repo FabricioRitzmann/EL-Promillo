@@ -149,7 +149,7 @@ function buildPreviewPayload() {
   return {
     ...formData,
     customImageUrl: currentUploadedImageUrl,
-    customIconUrl: currentAccountLogoUrl || currentUploadedIconUrl,
+    customIconUrl: currentAccountLogoUrl,
     customBannerUrl: currentUploadedBannerUrl
   };
 }
@@ -536,7 +536,7 @@ async function handleSavePass() {
       id: currentEditingPassId,
       templateStoragePath: currentEntry?.template_storage_path || '',
       customImageUrl: currentUploadedImageUrl,
-      customIconUrl: currentAccountLogoUrl || currentUploadedIconUrl,
+      customIconUrl: currentAccountLogoUrl,
       customBannerUrl: currentUploadedBannerUrl
     },
     currentUser.id
@@ -685,7 +685,7 @@ async function handleScanPass(passId) {
       backgroundColor: selectedPass.background_color,
       foregroundColor: selectedPass.foreground_color,
       customImageUrl: selectedPass.custom_image_url,
-      customIconUrl: selectedPass.custom_icon_url,
+      customIconUrl: currentAccountLogoUrl || selectedPass.custom_icon_url,
       customBannerUrl: selectedPass.custom_banner_url,
       banner: {
         enabled: selectedPass.banner_enabled,
