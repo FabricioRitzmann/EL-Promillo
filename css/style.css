@@ -72,10 +72,20 @@ p {
 
 .topbar-actions {
   display: flex;
-  align-items: flex-start;
-  align-self: flex-start;
+  align-items: center;
   gap: 10px;
-  margin-left: auto;
+  position: absolute;
+  top: 12px;
+  right: 14px;
+}
+
+
+.auth-state {
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: right;
 }
 
 .account-btn {
