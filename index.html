@@ -24,11 +24,6 @@
         </div>
         <div class="topbar-actions">
           <span id="auth-state" class="auth-state"></span>
-          <div class="topbar-login">
-            <input form="auth-form" type="email" id="email" placeholder="max.mustermann@example.com" required />
-            <input form="auth-form" type="password" id="password" placeholder="••••••••" required />
-            <button form="auth-form" type="button" id="login-btn" class="btn btn-primary">Login</button>
-          </div>
           <button id="account-btn" class="account-btn" type="button" aria-label="Konto öffnen">
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path
@@ -77,9 +72,17 @@
           </p>
 
           <form id="auth-form" class="stack-form">
-            <p class="muted small">Melde dich oben rechts direkt neben dem Konto-Icon an.</p>
+            <label>
+              E-Mail
+              <input type="email" id="email" placeholder="max.mustermann@example.com" required />
+            </label>
+            <label>
+              Passwort
+              <input type="password" id="password" placeholder="••••••••" required />
+            </label>
             <div class="row-buttons">
               <button type="button" id="register-btn" class="btn">Registrieren</button>
+              <button type="button" id="login-btn" class="btn btn-primary">Login</button>
             </div>
             <div class="row-buttons">
               <button type="button" id="reset-btn" class="btn btn-secondary">OTP / Reset anfordern</button>
