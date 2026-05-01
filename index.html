@@ -104,12 +104,16 @@
               <section class="config-section">
                 <h3>Basisdaten</h3>
                 <label>
-                  Karten-Template
-                  <select id="pass-template"></select>
+                  Basisdaten-Vorlage
+                  <select id="base-data-preset">
+                    <option value="">Manuell eingeben</option>
+                    <option value="restaurant">Restaurant</option>
+                    <option value="bar">Bar</option>
+                    <option value="club">Club</option>
+                    <option value="cafe">Café</option>
+                    <option value="bakery">Bäckerei</option>
+                  </select>
                 </label>
-                <p class="muted small">
-                  Templates definieren den Karteninhalt (z. B. Kaffeekarte, Streakkarte, Guthabenkarte).
-                </p>
                 <label>
                   Titel
                   <input id="pass-title" type="text" value="VIP Membership" required />
