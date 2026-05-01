@@ -889,7 +889,14 @@ select:focus {
 }
 
 .section-toggle-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1rem;
   font-size: 0.9rem;
+  line-height: 1;
+  color: currentColor;
+  opacity: 0.95;
   transition: transform 0.2s ease;
 }
 
