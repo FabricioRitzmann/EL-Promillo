@@ -51,6 +51,7 @@ export const formElements = {
   email: document.getElementById('email'),
   password: document.getElementById('password'),
   accountLogoUpload: document.getElementById('account-logo-upload'),
+  baseDataPreset: document.getElementById('base-data-preset'),
   title: document.getElementById('pass-title'),
   subtitle: document.getElementById('pass-subtitle'),
   description: document.getElementById('pass-description'),
@@ -120,6 +121,57 @@ const titleBucketLabels = {
   title: 'Titel',
   description: 'Beschreibung'
 };
+
+const baseDataPresets = {
+  restaurant: {
+    title: 'Treuekarte',
+    subtitle: 'Restaurant Bonus',
+    description: 'Sammle Besuche und sichere dir exklusive Prämien.',
+    businessName: 'Musterrestaurant',
+    businessCategory: 'restaurant'
+  },
+  bar: {
+    title: 'VIP Gäste-Pass',
+    subtitle: 'Bar Specials',
+    description: 'Dein Zugang zu Special-Drinks und Events.',
+    businessName: 'Musterbar',
+    businessCategory: 'bar'
+  },
+  club: {
+    title: 'Member Card',
+    subtitle: 'Club Access',
+    description: 'Schneller Eintritt und Zugang zu Club-Vorteilen.',
+    businessName: 'Musterclub',
+    businessCategory: 'club'
+  },
+  cafe: {
+    title: 'Kaffeepass',
+    subtitle: 'Café Bonus',
+    description: 'Sammle Stempel und erhalte deinen Bonuskaffee.',
+    businessName: 'Mustercafé',
+    businessCategory: 'cafe'
+  },
+  bakery: {
+    title: 'Genusskarte',
+    subtitle: 'Bäckerei Treueprogramm',
+    description: 'Treue belohnen und Lieblingsgebäck günstiger genießen.',
+    businessName: 'Musterbäckerei',
+    businessCategory: 'bakery'
+  }
+};
+
+export function applyBaseDataPreset(presetId) {
+  const preset = baseDataPresets[presetId];
+  if (!preset) {
+    return;
+  }
+
+  formElements.title.value = preset.title;
+  formElements.subtitle.value = preset.subtitle;
+  formElements.description.value = preset.description;
+  formElements.businessName.value = preset.businessName;
+  formElements.businessCategory.value = preset.businessCategory;
+}
 const defaultTitleBucketLayout = ['subtitle', 'title', 'description'];
 let titleBucketLayout = [...defaultTitleBucketLayout];
 
