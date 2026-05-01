@@ -525,7 +525,7 @@ export function initSectionDropdowns() {
     trigger.className = 'section-toggle';
     trigger.innerHTML = `
       <span>${title.textContent}</span>
-      <span class="section-toggle-icon" aria-hidden="true">▾</span>
+      <span class="section-toggle-icon" aria-hidden="true">▼</span>
     `;
     title.replaceWith(trigger);
 
