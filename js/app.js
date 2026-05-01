@@ -355,13 +355,30 @@ async function handleRegister() {
   const email = formElements.email.value.trim();
   const password = formElements.password.value;
 
-  const { error } = await registerWithEmail(email, password);
+  const { data, error } = await registerWithEmail(email, password);
   if (error) {
     showToast(`Registrierung fehlgeschlagen: ${error.message}`, true);
     return;
   }
 
-  showToast('Registrierung erfolgreich gestartet.');
+  const registeredUser = data?.user ?? null;
+  const activeSessionUser = data?.session?.user ?? null;
+  currentUser = activeSessionUser || registeredUser;
+
+  if (!currentUser) {
+    setLoggedOutView();
+    showToast('Registrierung erfolgreich. Bitte bestätige deine E-Mail und logge dich danach ein.');
+    return;
+  }
+
+  loadSavedCardsOrganization(currentUser.id);
+  loadAccountLogo(currentUser.id);
+  setAuthenticatedView(currentUser.email || email);
+  syncAccountPopupFields();
+  syncHeaderCompanyLogo();
+  showToast('Registrierung erfolgreich. Du bist jetzt eingeloggt.');
+  await refreshPasses();
+  await refreshStats();
 }
 
 async function handleLogin() {
