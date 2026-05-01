@@ -104,6 +104,13 @@
               <section class="config-section">
                 <h3>Basisdaten</h3>
                 <label>
+                  Karten-Template
+                  <select id="pass-template"></select>
+                </label>
+                <p class="muted small">
+                  Templates definieren den Karteninhalt (z. B. Kaffeekarte, Streakkarte, Guthabenkarte).
+                </p>
+                <label>
                   Titel
                   <input id="pass-title" type="text" value="VIP Membership" required />
                 </label>
@@ -117,13 +124,6 @@
                   Beschreibung
                   <textarea id="pass-description" rows="3">Zutritt für Events und Lounge.</textarea>
                 </label>
-                <label>
-                  Karten-Template
-                  <select id="pass-template"></select>
-                </label>
-                <p class="muted small">
-                  Templates definieren den Karteninhalt (z. B. Kaffeekarte, Streakkarte, Guthabenkarte).
-                </p>
                 <label class="inline-checkbox">
                   <input id="passkit-enabled" type="checkbox" />
                   PassKit-Konfiguration aktivieren
