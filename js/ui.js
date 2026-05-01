@@ -523,10 +523,7 @@ export function initSectionDropdowns() {
     const trigger = document.createElement('button');
     trigger.type = 'button';
     trigger.className = 'section-toggle';
-    trigger.innerHTML = `
-      <span>${title.textContent}</span>
-      <span class="section-toggle-icon" aria-hidden="true">▾</span>
-    `;
+    trigger.innerHTML = `<span>${title.textContent}</span>`;
     title.replaceWith(trigger);
 
     const isOpenByDefault = index === 0;
