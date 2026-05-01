@@ -12,6 +12,7 @@ import {
 } from './api.js';
 import {
   addNotificationRule,
+  applyBaseDataPreset,
   applyTemplateDefaults,
   applyBannerColorPreset,
   askForConfirmation,
@@ -77,6 +78,15 @@ function syncHeaderCompanyLogo() {
 
 function storageKeyForAccountLogo(userId) {
   return `passStudio.accountLogo.${userId}`;
+}
+
+function handleBaseDataPresetChange() {
+  const presetId = formElements.baseDataPreset?.value;
+  if (!presetId) {
+    return;
+  }
+  applyBaseDataPreset(presetId);
+  refreshPreview();
 }
 
 function loadAccountLogo(userId) {
@@ -833,6 +843,7 @@ function wireEvents() {
   formElements.template.addEventListener('change', handleTemplateChange);
   formElements.bannerEnabled.addEventListener('change', syncBannerFields);
   formElements.bannerColor.addEventListener('change', applyBannerColorPreset);
+  formElements.baseDataPreset?.addEventListener('change', handleBaseDataPresetChange);
 
   formElements.upload.addEventListener('change', handleImageUpload);
   formElements.accountLogoUpload?.addEventListener('change', handleAccountLogoUpload);
