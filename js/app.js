@@ -79,6 +79,10 @@ function storageKeyForAccountLogo(userId) {
   return `passStudio.accountLogo.${userId}`;
 }
 
+function storageKeyForBusinessCategory(userId) {
+  return `passStudio.businessCategory.${userId}`;
+}
+
 function loadAccountLogo(userId) {
   if (!userId) {
     currentAccountLogoUrl = '';
@@ -95,6 +99,23 @@ function persistAccountLogo(userId, logoUrl) {
     return;
   }
   localStorage.setItem(storageKeyForAccountLogo(userId), logoUrl);
+}
+
+function loadBusinessCategory(userId) {
+  if (!formElements.businessCategory) return;
+
+  if (!userId) {
+    formElements.businessCategory.value = 'restaurant';
+    return;
+  }
+
+  const storedBusinessCategory = localStorage.getItem(storageKeyForBusinessCategory(userId));
+  formElements.businessCategory.value = storedBusinessCategory || 'restaurant';
+}
+
+function persistBusinessCategory(userId, businessCategory) {
+  if (!userId || !businessCategory) return;
+  localStorage.setItem(storageKeyForBusinessCategory(userId), businessCategory);
 }
 
 function syncAccountPopupFields() {
@@ -373,6 +394,7 @@ async function handleRegister() {
 
   loadSavedCardsOrganization(currentUser.id);
   loadAccountLogo(currentUser.id);
+  loadBusinessCategory(currentUser.id);
   setAuthenticatedView(currentUser.email || email);
   syncAccountPopupFields();
   syncHeaderCompanyLogo();
@@ -394,6 +416,7 @@ async function handleLogin() {
   currentUser = data.user;
   loadSavedCardsOrganization(currentUser.id);
   loadAccountLogo(currentUser.id);
+  loadBusinessCategory(currentUser.id);
   setAuthenticatedView(currentUser.email);
   syncAccountPopupFields();
   syncHeaderCompanyLogo();
@@ -434,6 +457,7 @@ async function handleLogout() {
   currentUploadedIconUrl = '';
   currentUploadedBannerUrl = '';
   currentAccountLogoUrl = '';
+  loadBusinessCategory(null);
   currentEditingPassId = null;
   passFoldersById = {};
   savedFolderNames = [];
@@ -490,6 +514,12 @@ async function handleAccountLogoUpload(event) {
   persistAccountLogo(currentUser.id, currentAccountLogoUrl);
   syncHeaderCompanyLogo();
   showToast('Firmenlogo gespeichert und wird jetzt automatisch auf allen Karten verwendet.');
+}
+
+function handleBusinessCategoryChange() {
+  if (!currentUser || !formElements.businessCategory) return;
+  persistBusinessCategory(currentUser.id, formElements.businessCategory.value);
+  refreshPreview();
 }
 
 async function handleBannerUpload(event) {
@@ -741,6 +771,7 @@ async function bootstrapAuth() {
   if (currentUser) {
     loadSavedCardsOrganization(currentUser.id);
     loadAccountLogo(currentUser.id);
+    loadBusinessCategory(currentUser.id);
     setAuthenticatedView(currentUser.email);
     syncHeaderCompanyLogo();
     setActiveTab('editor');
@@ -748,6 +779,7 @@ async function bootstrapAuth() {
     await refreshStats();
   } else {
     currentAccountLogoUrl = '';
+    loadBusinessCategory(null);
     setLoggedOutView();
     syncHeaderCompanyLogo();
     renderSavedCardsView();
@@ -758,6 +790,7 @@ async function bootstrapAuth() {
     if (currentUser) {
       loadSavedCardsOrganization(currentUser.id);
       loadAccountLogo(currentUser.id);
+      loadBusinessCategory(currentUser.id);
       setAuthenticatedView(currentUser.email);
       syncHeaderCompanyLogo();
       setActiveTab('editor');
@@ -765,6 +798,7 @@ async function bootstrapAuth() {
       refreshStats();
     } else {
       currentAccountLogoUrl = '';
+      loadBusinessCategory(null);
       passFoldersById = {};
       savedFolderNames = [];
       savedCardsFilters = { folder: 'all', cardType: 'all', sort: 'newest' };
@@ -836,6 +870,7 @@ function wireEvents() {
 
   formElements.upload.addEventListener('change', handleImageUpload);
   formElements.accountLogoUpload?.addEventListener('change', handleAccountLogoUpload);
+  formElements.businessCategory?.addEventListener('change', handleBusinessCategoryChange);
   formElements.bannerUpload.addEventListener('change', handleBannerUpload);
   formElements.addRuleBtn.addEventListener('click', handleAddNotificationRule);
   ui.notificationRules.addEventListener('click', handleRuleLocationClick);
