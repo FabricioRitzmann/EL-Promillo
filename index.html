@@ -463,9 +463,6 @@
               <p class="muted small">
                 Hinweis: Für echte .pkpass-Dateien kann im nächsten Schritt ein Server-Endpunkt eingebunden werden.
               </p>
-              <button id="open-wallet-sim-btn" type="button" class="btn btn-secondary">
-                Apple Wallet Simulation öffnen
-              </button>
             </aside>
           </div>
         </section>
@@ -539,28 +536,7 @@
       </div>
     </div>
 
-    <div id="wallet-sim-modal" class="modal-backdrop wallet-sim-backdrop hidden">
-      <div class="wallet-sim-card">
-        <div class="wallet-sim-topbar">
-          <div class="wallet-sim-topbar-leading">
-            <button type="button" class="wallet-sim-plain-btn" aria-label="Weitere Optionen">⋯</button>
-            <p class="wallet-sim-title">Wallet</p>
-          </div>
-          <button id="wallet-sim-close-btn" type="button" class="btn btn-secondary">Schließen</button>
-        </div>
-        <p class="wallet-sim-caption">Apple Wallet Simulation (Pass-Detail + Kartenstapel)</p>
-
-        <div class="wallet-sim-device">
-          <div class="wallet-sim-notch"></div>
-          <div class="wallet-sim-screen">
-            <p class="wallet-sim-screen-title">Heute</p>
-            <div id="wallet-sim-stack" class="wallet-sim-stack"></div>
-            <div id="wallet-sim-detail" class="wallet-sim-detail"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="module" src="./js/app.js"></script>
   </body>
