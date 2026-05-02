@@ -136,6 +136,25 @@ p {
   align-items: center;
 }
 
+.account-password-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.account-password-row input {
+  flex: 1;
+}
+
+.account-password-toggle {
+  border: 1px solid var(--border);
+  background: #fff;
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+  line-height: 1;
+}
+
 .eyebrow {
   color: var(--muted);
   font-size: 0.85rem;
