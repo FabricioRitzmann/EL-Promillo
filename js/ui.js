@@ -15,6 +15,7 @@ export const ui = {
   accountPopupCloseBtn: document.getElementById('account-popup-close-btn'),
   accountEmail: document.getElementById('account-email'),
   accountPassword: document.getElementById('account-password'),
+  accountPasswordToggle: document.getElementById('account-password-toggle'),
   headerCompanyLogo: document.getElementById('header-company-logo'),
   logoutBtn: document.getElementById('logout-btn'),
   tabbar: document.getElementById('main-tabbar'),

@@ -126,12 +126,25 @@ function syncAccountPopupFields() {
   }
 }
 
+function setAccountPasswordVisibility(isVisible) {
+  if (!ui.accountPassword) return;
+
+  ui.accountPassword.type = isVisible ? 'text' : 'password';
+
+  if (ui.accountPasswordToggle) {
+    ui.accountPasswordToggle.setAttribute('aria-pressed', String(isVisible));
+    ui.accountPasswordToggle.setAttribute('aria-label', isVisible ? 'Passwort verbergen' : 'Passwort anzeigen');
+  }
+}
+
 function openAccountPopup() {
   syncAccountPopupFields();
+  setAccountPasswordVisibility(false);
   ui.accountPopup?.classList.remove('hidden');
 }
 
 function closeAccountPopup() {
+  setAccountPasswordVisibility(false);
   ui.accountPopup?.classList.add('hidden');
 }
 
@@ -809,6 +822,10 @@ function wireEvents() {
   ui.logoutBtn.addEventListener('click', handleLogout);
   ui.accountBtn?.addEventListener('click', openAccountPopup);
   ui.accountPopupCloseBtn?.addEventListener('click', closeAccountPopup);
+  ui.accountPasswordToggle?.addEventListener('click', () => {
+    const isCurrentlyVisible = ui.accountPassword?.type === 'text';
+    setAccountPasswordVisibility(!isCurrentlyVisible);
+  });
 
   const previewFields = [
     formElements.title,

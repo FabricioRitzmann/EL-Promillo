@@ -46,7 +46,18 @@
         </label>
         <label>
           Passwort
-          <input id="account-password" type="password" readonly />
+          <div class="account-password-row">
+            <input id="account-password" type="password" readonly />
+            <button
+              id="account-password-toggle"
+              class="account-password-toggle"
+              type="button"
+              aria-label="Passwort anzeigen"
+              aria-pressed="false"
+            >
+              👁️
+            </button>
+          </div>
         </label>
         <label>
           Firmenlogo einfügen (PNG/JPG)
