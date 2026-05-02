@@ -31,11 +31,6 @@ export const ui = {
   confirmText: document.getElementById('confirm-text'),
   confirmCancelBtn: document.getElementById('confirm-cancel-btn'),
   confirmOkBtn: document.getElementById('confirm-ok-btn'),
-  openWalletSimBtn: document.getElementById('open-wallet-sim-btn'),
-  walletSimModal: document.getElementById('wallet-sim-modal'),
-  walletSimCloseBtn: document.getElementById('wallet-sim-close-btn'),
-  walletSimStack: document.getElementById('wallet-sim-stack'),
-  walletSimDetail: document.getElementById('wallet-sim-detail'),
   savedFolderNameInput: document.getElementById('saved-folder-name'),
   createFolderBtn: document.getElementById('create-folder-btn'),
   savedFilterToggleBtn: document.getElementById('saved-filter-toggle-btn'),
@@ -124,8 +119,6 @@ const defaultTitleBucketLayout = ['subtitle', 'title', 'description'];
 let titleBucketLayout = [...defaultTitleBucketLayout];
 
 let pendingConfirmResolver = null;
-let selectedSimulationPassId = null;
-let simulationPasses = [];
 const cardTransitionDurationMs = 260;
 const transitionTimers = new WeakMap();
 const weekdays = [
@@ -1014,154 +1007,6 @@ export function updatePreview(payload) {
   }
 }
 
-function renderSimulationIcon(entry, className = '') {
-  if (entry.customIconUrl) {
-    const safeClassName = className ? ` ${className}` : '';
-    return `<img class="wallet-sim-logo${safeClassName}" src="${entry.customIconUrl}" alt="Firmenlogo" />`;
-  }
-
-  return getIconSymbol(entry.iconId);
-}
-
-function toWalletSimulationEntry(rawEntry, fallbackId = null) {
-  const title = rawEntry.title || 'Neue Karte';
-  const subtitle = rawEntry.subtitle || rawEntry.business_name || rawEntry.businessName || 'Wallet Pass';
-  const qrContent = rawEntry.qrContent || rawEntry.qr_content || 'https://example.com';
-  const iconId = rawEntry.iconId || rawEntry.icon_id || 'gift';
-  const entryId = rawEntry.id || fallbackId || `sim-${Math.random().toString(36).slice(2, 10)}`;
-  const cardProgramType = rawEntry.cardProgramType || rawEntry.card_program_type || 'generic';
-  const programConfig = rawEntry.programConfig || rawEntry.program_config || {};
-  const targetRaw = cardProgramType === 'coffee' ? programConfig.stampTarget : programConfig.targetDays;
-  const currentRaw = programConfig.currentStamps;
-  const stampTarget = clampNumber(sanitizeNumber(targetRaw, 10), 1, 60);
-  const currentStamps = clampNumber(sanitizeNumber(currentRaw, 0), 0, stampTarget);
-
-  return {
-    id: entryId,
-    title,
-    subtitle,
-    qrContent,
-    iconId,
-    customIconUrl: rawEntry.customIconUrl || rawEntry.custom_icon_url || '',
-    cardProgramType,
-    stampTarget,
-    currentStamps,
-    backgroundColor: rawEntry.backgroundColor || rawEntry.background_color || '#1d1d1f',
-    foregroundColor: rawEntry.foregroundColor || rawEntry.foreground_color || '#ffffff',
-    customImageUrl: rawEntry.customImageUrl || rawEntry.custom_image_url || '',
-    backgroundTemplateId: rawEntry.backgroundTemplateId || rawEntry.background_template_id || 'custom'
-  };
-}
-
-function getSimulationBackground(entry) {
-  if (entry.customImageUrl) {
-    return `url(${entry.customImageUrl})`;
-  }
-
-  const selectedBgTemplate = backgroundTemplates.find((template) => template.id === entry.backgroundTemplateId);
-  if (selectedBgTemplate) {
-    return selectedBgTemplate.gradient;
-  }
-
-  return entry.backgroundColor;
-}
-
-function renderWalletSimulationDetail(entry) {
-  if (!ui.walletSimDetail) {
-    return;
-  }
-
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=${encodeURIComponent(entry.qrContent)}`;
-  const issuer = entry.subtitle || 'Wallet Pass';
-  const hasStampProgram = entry.cardProgramType === 'coffee' || entry.cardProgramType === 'streak';
-  const progressText = hasStampProgram ? `${entry.currentStamps} von ${entry.stampTarget}` : null;
-  const stampPreview = hasStampProgram
-    ? `<div class="wallet-sim-detail-stamp-hero">
-        <span class="wallet-sim-detail-stamp-icon">${renderSimulationIcon(entry, 'wallet-sim-logo-inline')}</span>
-        <p class="wallet-sim-detail-stamp-label">Stempel</p>
-        <p class="wallet-sim-detail-stamp-progress">${progressText}</p>
-      </div>`
-    : '';
-
-  ui.walletSimDetail.innerHTML = `
-    <div class="wallet-sim-detail-pass" style="background:${getSimulationBackground(entry)}; color:${entry.foregroundColor};">
-      <div class="wallet-sim-detail-header">
-        <p class="wallet-sim-detail-issuer">${issuer}</p>
-        <span class="wallet-sim-detail-chip">Pass</span>
-      </div>
-      <p class="wallet-sim-detail-subtitle">${entry.subtitle}</p>
-      <h4 class="wallet-sim-detail-title">${renderSimulationIcon(entry, 'wallet-sim-logo-inline')} ${entry.title}</h4>
-      ${stampPreview}
-      <img class="wallet-sim-detail-qr" src="${qrUrl}" alt="QR Code von ${entry.title}" />
-    </div>
-  `;
-}
-
-function renderWalletSimulationStack() {
-  if (!ui.walletSimStack) {
-    return;
-  }
-
-  ui.walletSimStack.innerHTML = '';
-  const unselectedPasses = simulationPasses.filter((entry) => entry.id !== selectedSimulationPassId);
-
-  unselectedPasses.forEach((entry, index) => {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'wallet-sim-mini-pass';
-    button.dataset.simPassId = entry.id;
-    button.setAttribute('aria-label', `Karte ${entry.title} öffnen`);
-    button.style.background = getSimulationBackground(entry);
-    button.style.color = entry.foregroundColor;
-    button.style.zIndex = String(unselectedPasses.length - index);
-    const hasStampProgram = entry.cardProgramType === 'coffee' || entry.cardProgramType === 'streak';
-    const progressText = hasStampProgram ? `Stempel ${entry.currentStamps} von ${entry.stampTarget}` : '';
-    button.innerHTML = `
-      <div class="wallet-sim-mini-leading">
-        <span class="wallet-sim-mini-icon">${renderSimulationIcon(entry)}</span>
-        <div class="wallet-sim-mini-copy">
-          <p class="wallet-sim-mini-subtitle">${entry.subtitle}</p>
-          <p class="wallet-sim-mini-title">${entry.title}</p>
-        </div>
-      </div>
-      ${hasStampProgram ? `<p class="wallet-sim-mini-progress">${progressText}</p>` : ''}
-    `;
-    ui.walletSimStack.appendChild(button);
-  });
-
-  if (!unselectedPasses.length) {
-    ui.walletSimStack.innerHTML = '<p class="muted small">Keine weiteren Karten im Stapel.</p>';
-  }
-}
-
-export function renderWalletSimulation({ currentPass, savedPasses = [] }) {
-  const normalizedCurrent = toWalletSimulationEntry(currentPass, 'live-preview');
-  const normalizedSaved = savedPasses.map((entry) => toWalletSimulationEntry(entry));
-  simulationPasses = [normalizedCurrent, ...normalizedSaved].slice(0, 8);
-  selectedSimulationPassId = simulationPasses[0]?.id || null;
-
-  renderWalletSimulationStack();
-  if (simulationPasses[0]) {
-    renderWalletSimulationDetail(simulationPasses[0]);
-  } else if (ui.walletSimDetail) {
-    ui.walletSimDetail.innerHTML = '<p class="muted small">Keine Karten für die Simulation verfügbar.</p>';
-  }
-}
-
-export function openWalletSimulation() {
-  if (!ui.walletSimModal) {
-    return;
-  }
-  ui.walletSimModal.classList.remove('hidden');
-}
-
-export function closeWalletSimulation() {
-  if (!ui.walletSimModal) {
-    return;
-  }
-  ui.walletSimModal.classList.add('hidden');
-}
-
 export function getPassFormData() {
   const template = getTemplateById(formElements.template.value);
   const passkitConfig = getEditorPasskitConfig({
@@ -1636,24 +1481,6 @@ ui.confirmOkBtn.addEventListener('click', () => closeConfirmation(true));
 ui.confirmModal.addEventListener('click', (event) => {
   if (event.target === ui.confirmModal) {
     closeConfirmation(false);
-  }
-});
-
-ui.walletSimCloseBtn?.addEventListener('click', closeWalletSimulation);
-ui.walletSimModal?.addEventListener('click', (event) => {
-  if (event.target === ui.walletSimModal) {
-    closeWalletSimulation();
-  }
-});
-ui.walletSimStack?.addEventListener('click', (event) => {
-  const cardButton = event.target.closest('.wallet-sim-mini-pass');
-  if (!cardButton) return;
-
-  selectedSimulationPassId = cardButton.dataset.simPassId;
-  const selectedEntry = simulationPasses.find((entry) => entry.id === selectedSimulationPassId);
-  renderWalletSimulationStack();
-  if (selectedEntry) {
-    renderWalletSimulationDetail(selectedEntry);
   }
 });
 

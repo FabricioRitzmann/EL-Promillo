@@ -33,7 +33,6 @@ import {
   renderStats,
   renderProgramFields,
   renderSavedPasses,
-  renderWalletSimulation,
   resetNotificationRules,
   setActiveTab,
   setAuthenticatedView,
@@ -42,7 +41,6 @@ import {
   syncBannerFields,
   ui,
   updatePreview,
-  openWalletSimulation
 } from './ui.js';
 
 let currentUser = null;
@@ -293,14 +291,6 @@ async function refreshPasses() {
   pruneFolderAssignments();
   persistSavedCardsOrganization();
   renderSavedCardsView();
-}
-
-function handleOpenWalletSimulation() {
-  renderWalletSimulation({
-    currentPass: buildPreviewPayload(),
-    savedPasses: latestPassEntries
-  });
-  openWalletSimulation();
 }
 
 async function refreshStats() {
@@ -845,7 +835,6 @@ function wireEvents() {
   onSavedCardFiltersChange(handleSavedCardsFilterChange);
   onCreateFolder(handleCreateFolder);
   onSavedToolbarToggle();
-  ui.openWalletSimBtn?.addEventListener('click', handleOpenWalletSimulation);
   document.querySelectorAll('.tab-btn').forEach((button) =>
     button.addEventListener('click', () => setActiveTab(button.dataset.tab))
   );
