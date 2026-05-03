@@ -1325,28 +1325,12 @@ export function renderStats(entries) {
   ui.statsList.innerHTML = '';
   if (!entries.length) {
     const empty = document.createElement('li');
-    empty.textContent = 'Noch keine abgeschlossenen Karten vorhanden.';
+    empty.textContent = 'Noch keine gescannten Kundenkarten vorhanden.';
     ui.statsList.appendChild(empty);
     return;
   }
 
-  const monthLabel = (dateValue) => {
-    const date = new Date(dateValue);
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-  };
-  const allByMonth = {};
-  const groupedByType = {};
-
-  for (const row of entries) {
-    const type = row.card_program_type || 'generic';
-    const month = monthLabel(row.completed_at);
-    allByMonth[month] = (allByMonth[month] || 0) + 1;
-    if (!groupedByType[type]) groupedByType[type] = {};
-    groupedByType[type][month] = (groupedByType[type][month] || 0) + 1;
-  }
-
-  const renderChart = (title, dataByMonth) => {
-    const maxValue = Math.max(...Object.values(dataByMonth), 1);
+  for (const entry of entries) {
     const li = document.createElement('li');
     const bars = Object.entries(dataByMonth)
       .sort(([left], [right]) => left.localeCompare(right, 'de-DE'))
@@ -1366,8 +1350,11 @@ export function renderStats(entries) {
 
     li.innerHTML = `
       <div>
-        <strong>${title}</strong>
-        <div class="stats-chart">${bars}</div>
+        <strong>${entry.pass_title}</strong>
+        <p class="muted small">Scans gesamt: ${entry.total_events ?? 0}</p>
+        <p class="muted small">Eindeutige Kunden: ${entry.unique_customers ?? 0}</p>
+        <p class="muted small">Stempel-Scans: ${entry.stamp_events ?? 0}</p>
+        <p class="muted small">Zuletzt: ${entry.last_event_at ? new Date(entry.last_event_at).toLocaleString('de-DE') : '–'}</p>
       </div>
     `;
     ui.statsList.appendChild(li);

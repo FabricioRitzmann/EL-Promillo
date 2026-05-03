@@ -1,7 +1,6 @@
 import {
-  addCompletionStat,
+  listBusinessScanStats,
   listPasses,
-  listPassStats,
   loginWithEmail,
   logout,
   registerWithEmail,
@@ -330,7 +329,7 @@ async function refreshPasses() {
 
 async function refreshStats() {
   if (!currentUser) return;
-  const { data, error } = await listPassStats(currentUser.id);
+  const { data, error } = await listBusinessScanStats(currentUser.id);
   if (error) {
     showToast(`Statistik konnte nicht geladen werden: ${error.message}`, true);
     return;
@@ -699,76 +698,12 @@ async function handleOpenSavedPass(passId) {
 async function handleScanPass(passId) {
   const selectedPass = latestPassEntries.find((entry) => entry.id === passId);
   if (!selectedPass) return;
-  const programConfig = selectedPass.program_config || {};
-  const target = selectedPass.card_program_type === 'coffee' ? Number(programConfig.stampTarget || 0) : Number(programConfig.targetDays || 0);
-  const current = Number(programConfig.currentStamps || 0);
-  if (!target || current < target) {
-    showToast('Karte ist noch nicht voll und kann nicht gescannt werden.', true);
-    return;
-  }
-  const confirmed = await askForConfirmation({
-    title: 'Karte scannen und neu starten?',
-    message: 'Die Karte wird auf 0 zurückgesetzt und als abgeschlossen gezählt.',
-    confirmLabel: 'Scannen'
+  await askForConfirmation({
+    title: 'Basiskarte kann nicht direkt gescannt werden',
+    message:
+      'Diese Karte ist eine Vorlage. Scans müssen über den ausgegebenen QR-Code auf einer persönlichen Kundenkarte erfolgen.',
+    confirmLabel: 'Verstanden'
   });
-  if (!confirmed) return;
-
-  const { error: statError } = await addCompletionStat(
-    currentUser.id,
-    selectedPass.id,
-    selectedPass.title,
-    selectedPass.card_program_type || 'generic'
-  );
-  if (statError) {
-    showToast(`Statistik speichern fehlgeschlagen: ${statError.message}`, true);
-    return;
-  }
-
-  programConfig.currentStamps = 0;
-  const { error } = await savePass(
-    {
-      id: selectedPass.id,
-      title: selectedPass.title,
-      subtitle: selectedPass.subtitle,
-      description: selectedPass.description,
-      qrContent: selectedPass.qr_content,
-      businessName: selectedPass.business_name,
-      businessCategory: selectedPass.business_category,
-      templateStoragePath: selectedPass.template_storage_path,
-      templateId: selectedPass.template_id,
-      iconId: selectedPass.icon_id,
-      backgroundTemplateId: selectedPass.background_template_id,
-      backgroundColor: selectedPass.background_color,
-      foregroundColor: selectedPass.foreground_color,
-      customImageUrl: selectedPass.custom_image_url,
-      customIconUrl: currentAccountLogoUrl || selectedPass.custom_icon_url,
-      customBannerUrl: selectedPass.custom_banner_url,
-      banner: {
-        enabled: selectedPass.banner_enabled,
-        text: selectedPass.banner_text,
-        preset: selectedPass.banner_preset,
-        backgroundColor: selectedPass.banner_background_color,
-        textColor: selectedPass.banner_text_color,
-        shape: selectedPass.banner_shape,
-        width: selectedPass.banner_width,
-        height: selectedPass.banner_height,
-        positionX: selectedPass.banner_position_x,
-        positionY: selectedPass.banner_position_y
-      },
-      cardProgramType: selectedPass.card_program_type,
-      programConfig,
-      pushEnabled: selectedPass.push_enabled,
-      notificationRules: selectedPass.notification_rules
-    },
-    currentUser.id
-  );
-  if (error) {
-    showToast(`Karte zurücksetzen fehlgeschlagen: ${error.message}`, true);
-    return;
-  }
-  showToast('Karte gescannt und zurückgesetzt.');
-  await refreshPasses();
-  await refreshStats();
 }
 
 async function handleCompletePass(passId) {
