@@ -720,6 +720,53 @@ async function handleOpenSavedPass(passId) {
 async function handleScanPass(passId) {
   const selectedPass = latestPassEntries.find((entry) => entry.id === passId);
   if (!selectedPass) return;
+  if (selectedPass.card_program_type === 'streak') {
+    const currentValue = Number(selectedPass.program_config?.currentStamps ?? 0);
+    const nextValue = Number.isFinite(currentValue) ? currentValue + 1 : 1;
+    const updatedPayload = {
+      id: selectedPass.id,
+      title: selectedPass.title || '',
+      subtitle: selectedPass.subtitle || '',
+      description: selectedPass.description || '',
+      qrContent: selectedPass.qr_content || '',
+      businessName: selectedPass.business_name || '',
+      businessCategory: selectedPass.business_category || 'restaurant',
+      templateId: selectedPass.template_id || 'generic',
+      iconId: selectedPass.icon_id || 'coffee',
+      backgroundTemplateId: selectedPass.background_template_id || 'sunset',
+      backgroundColor: selectedPass.background_color || '#1f2937',
+      foregroundColor: selectedPass.foreground_color || '#ffffff',
+      customImageUrl: selectedPass.custom_image_url || '',
+      customIconUrl: selectedPass.custom_icon_url || '',
+      customBannerUrl: selectedPass.custom_banner_url || '',
+      banner: {
+        enabled: selectedPass.banner_enabled ?? false,
+        text: selectedPass.banner_text || '',
+        preset: selectedPass.banner_preset || '',
+        backgroundColor: selectedPass.banner_background_color || '#000000',
+        textColor: selectedPass.banner_text_color || '#ffffff',
+        shape: selectedPass.banner_shape || 'pill',
+        width: selectedPass.banner_width ?? 60,
+        height: selectedPass.banner_height ?? 42,
+        positionX: selectedPass.banner_position_x ?? 4,
+        positionY: selectedPass.banner_position_y ?? 4
+      },
+      cardProgramType: selectedPass.card_program_type || 'generic',
+      programConfig: { ...(selectedPass.program_config || {}), currentStamps: nextValue },
+      pushEnabled: selectedPass.push_enabled ?? false,
+      notificationRules: selectedPass.notification_rules || [],
+      passkitConfig: selectedPass.passkit_config || {}
+    };
+    const { error } = await savePass(updatedPayload, currentUser.id);
+    if (error) {
+      showToast(`Streak konnte nicht erhöht werden: ${error.message}`, true);
+      return;
+    }
+    showToast(`Streak erhöht: ${nextValue}`);
+    await refreshPasses();
+    await refreshStats();
+    return;
+  }
   await askForConfirmation({
     title: 'Basiskarte kann nicht direkt gescannt werden',
     message:

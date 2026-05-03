@@ -899,6 +899,7 @@ export function updatePreview(payload) {
   const qrImage = document.getElementById('preview-qr');
   const banner = document.getElementById('preview-banner');
   const stampGrid = document.getElementById('preview-stamp-grid');
+  const streakCounter = document.getElementById('preview-streak-counter');
   const walletLabel = document.getElementById('preview-wallet-label');
 
   const walletSkin = payload.walletSkin || 'apple';
@@ -977,6 +978,10 @@ export function updatePreview(payload) {
 
   stampGrid.innerHTML = '';
   stampGrid.classList.add('hidden');
+  if (streakCounter) {
+    streakCounter.classList.add('hidden');
+    streakCounter.innerHTML = '';
+  }
 
   const isCoffee = payload.cardProgramType === 'coffee';
   const isStreak = payload.cardProgramType === 'streak';
@@ -989,21 +994,32 @@ export function updatePreview(payload) {
     const target = clampNumber(sanitizeNumber(targetRaw, 1), 1, 60);
     const progress = clampNumber(sanitizeNumber(progressRaw, 0), 0, target);
 
-    stampGrid.classList.remove('hidden');
-    for (let index = 0; index < target; index += 1) {
-      const slot = document.createElement('span');
-      const isFilled = index < progress;
-      slot.className = 'stamp-slot';
-      slot.dataset.shape = selectedShape || 'circle';
-      slot.classList.toggle('stamp-slot-filled', isFilled);
-      slot.style.width = `${payload.programConfig?.stampSize ?? 42}px`;
-      slot.style.height = `${payload.programConfig?.stampSize ?? 42}px`;
-      slot.style.borderColor = payload.programConfig?.stampBorderColor || 'rgba(255,255,255,0.6)';
-      slot.style.borderWidth = `${payload.programConfig?.stampBorderWidth ?? 2}px`;
-      slot.style.transform = `translate(${payload.programConfig?.stampOffsetX ?? 0}px, ${payload.programConfig?.stampOffsetY ?? 0}px)`;
-      const stampIconLogo = payload.programConfig?.useCompanyLogoForStamps ? payload.customIconUrl : '';
-      slot.appendChild(createStampIcon(slotIconId || slotIconSymbol, isFilled, stampIconLogo));
-      stampGrid.appendChild(slot);
+    if (isCoffee) {
+      stampGrid.classList.remove('hidden');
+      for (let index = 0; index < target; index += 1) {
+        const slot = document.createElement('span');
+        const isFilled = index < progress;
+        slot.className = 'stamp-slot';
+        slot.dataset.shape = selectedShape || 'circle';
+        slot.classList.toggle('stamp-slot-filled', isFilled);
+        slot.style.width = `${payload.programConfig?.stampSize ?? 42}px`;
+        slot.style.height = `${payload.programConfig?.stampSize ?? 42}px`;
+        slot.style.borderColor = payload.programConfig?.stampBorderColor || 'rgba(255,255,255,0.6)';
+        slot.style.borderWidth = `${payload.programConfig?.stampBorderWidth ?? 2}px`;
+        slot.style.transform = `translate(${payload.programConfig?.stampOffsetX ?? 0}px, ${payload.programConfig?.stampOffsetY ?? 0}px)`;
+        const stampIconLogo = payload.programConfig?.useCompanyLogoForStamps ? payload.customIconUrl : '';
+        slot.appendChild(createStampIcon(slotIconId || slotIconSymbol, isFilled, stampIconLogo));
+        stampGrid.appendChild(slot);
+      }
+    } else if (streakCounter) {
+      streakCounter.classList.remove('hidden');
+      const iconWrapper = document.createElement('span');
+      const iconNode = createStampIcon(slotIconId || slotIconSymbol, true, '');
+      iconNode.classList.add('preview-streak-counter-icon');
+      iconWrapper.appendChild(iconNode);
+      const valueNode = document.createElement('span');
+      valueNode.textContent = String(progress);
+      streakCounter.append(iconWrapper, valueNode);
     }
   }
 }
