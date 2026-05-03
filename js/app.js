@@ -412,34 +412,15 @@ async function handleLogin() {
 
   const { data, error } = await loginWithEmail(email, password);
   if (error) {
-    const authMessage = error.message || '';
-    const needsEmailConfirmation = /email not confirmed/i.test(authMessage);
-    const blockedByRls = /row-level security|permission denied/i.test(authMessage);
-
-    if (needsEmailConfirmation) {
-      showToast('Login gesperrt: Bitte bestätige zuerst deine E-Mail-Adresse in Supabase und versuche es dann erneut.', true);
-      return;
-    }
-
-    if (blockedByRls) {
-      showToast('Login blockiert durch Supabase-Richtlinien. Prüfe die RLS-Policies im Projekt.', true);
-      return;
-    }
-
-    showToast(`Login fehlgeschlagen: ${authMessage}`, true);
+    showToast(`Login fehlgeschlagen: ${error.message}`, true);
     return;
   }
 
-  currentUser = data?.user || data?.session?.user || null;
-  if (!currentUser) {
-    showToast('Login fehlgeschlagen: Keine Benutzersitzung erhalten. Bitte prüfe E-Mail-Bestätigung und Supabase-Konfiguration.', true);
-    return;
-  }
-
+  currentUser = data.user;
   loadSavedCardsOrganization(currentUser.id);
   loadAccountLogo(currentUser.id);
   loadBusinessCategory(currentUser.id);
-  setAuthenticatedView(currentUser.email || email);
+  setAuthenticatedView(currentUser.email);
   syncAccountPopupFields();
   syncHeaderCompanyLogo();
   showToast('Login erfolgreich.');
@@ -718,20 +699,15 @@ async function handleScanPass(passId) {
   const selectedPass = latestPassEntries.find((entry) => entry.id === passId);
   if (!selectedPass) return;
   const programConfig = selectedPass.program_config || {};
-  const isStreakCard = selectedPass.card_program_type === 'streak';
   const target = selectedPass.card_program_type === 'coffee' ? Number(programConfig.stampTarget || 0) : Number(programConfig.targetDays || 0);
   const current = Number(programConfig.currentStamps || 0);
-  if (!isStreakCard) {
-    if (!target || current < target) {
-      showToast('Karte ist noch nicht voll und kann nicht gescannt werden.', true);
-      return;
-    }
+  if (!target || current < target) {
+    showToast('Karte ist noch nicht voll und kann nicht gescannt werden.', true);
+    return;
   }
   const confirmed = await askForConfirmation({
-    title: isStreakCard ? 'Streak scannen?' : 'Karte scannen und neu starten?',
-    message: isStreakCard
-      ? 'Der Streak-Zähler wird um 1 erhöht und als Scan gespeichert.'
-      : 'Die Karte wird auf 0 zurückgesetzt und als abgeschlossen gezählt.',
+    title: 'Karte scannen und neu starten?',
+    message: 'Die Karte wird auf 0 zurückgesetzt und als abgeschlossen gezählt.',
     confirmLabel: 'Scannen'
   });
   if (!confirmed) return;
@@ -742,7 +718,7 @@ async function handleScanPass(passId) {
     return;
   }
 
-  programConfig.currentStamps = isStreakCard ? current + 1 : 0;
+  programConfig.currentStamps = 0;
   const { error } = await savePass(
     {
       id: selectedPass.id,
@@ -784,7 +760,7 @@ async function handleScanPass(passId) {
     showToast(`Karte zurücksetzen fehlgeschlagen: ${error.message}`, true);
     return;
   }
-  showToast(isStreakCard ? `Streak erhöht: ${programConfig.currentStamps}.` : 'Karte gescannt und zurückgesetzt.');
+  showToast('Karte gescannt und zurückgesetzt.');
   await refreshPasses();
   await refreshStats();
 }

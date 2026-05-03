@@ -154,6 +154,10 @@
                 <details class="passkit-dropdown">
                   <summary>PassKit-Menü</summary>
                   <label>
+                    Pass-Typ
+                    <select id="passkit-pass-type"></select>
+                  </label>
+                  <label>
                     Pass Type Identifier
                     <input id="passkit-pass-type-identifier" type="text" placeholder="pass.com.deinefirma.app" />
                   </label>
@@ -273,7 +277,7 @@
                     <input id="streak-target" type="number" min="1" value="30" />
                   </label>
                   <label>
-                    Bereits erreichte Streak
+                    Aktuelle Stempel
                     <input id="streak-current" type="number" min="0" value="0" />
                   </label>
                   <label>
@@ -305,6 +309,22 @@
                     <input id="credit-threshold" type="number" min="0" step="0.01" value="5" />
                   </label>
                 </div>
+              </section>
+
+              <section class="config-section">
+                <div class="inline-space-between">
+                  <h3>Push Benachrichtigungen</h3>
+                  <label class="toggle-inline">
+                    <input id="push-enabled" type="checkbox" />
+                    Aktivieren
+                  </label>
+                </div>
+                <p class="muted small">
+                  Lege pro Karte mehrere Regeln fest. Für zeit- und standortbasierte Regeln kannst du entweder ein
+                  genaues Datum mit Uhrzeit oder einen wiederkehrenden Wochentag mit Uhrzeit festlegen.
+                </p>
+                <div id="notification-rules" class="stack-form"></div>
+                <button id="add-rule-btn" type="button" class="btn btn-secondary">Regel hinzufügen</button>
               </section>
 
               <section class="config-section">
@@ -448,10 +468,6 @@
                       <h4 id="preview-title"></h4>
                     </div>
                     <p id="preview-description"></p>
-                  </div>
-                  <div id="preview-streak-counter" class="preview-streak-counter hidden" aria-label="Streak Counter">
-                    <span id="preview-streak-icon" class="preview-streak-icon" aria-hidden="true"></span>
-                    <span id="preview-streak-value" class="preview-streak-value">0</span>
                   </div>
                   <div id="preview-stamp-grid" class="preview-stamp-grid hidden"></div>
                   <img id="preview-qr" alt="QR Code Vorschau" />

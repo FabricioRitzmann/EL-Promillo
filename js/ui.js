@@ -4,7 +4,8 @@ import {
   getEditorPasskitConfig,
   getDefaultPasskitConfig,
   normalizePasskitConfig,
-  passkitBarcodeFormats
+  passkitBarcodeFormats,
+  passkitPassTypes
 } from './passkit.js';
 
 export const ui = {
@@ -94,6 +95,7 @@ export const formElements = {
   creditThreshold: document.getElementById('credit-threshold'),
   stampFrameSection: document.getElementById('stamp-frame-section'),
   passkitEnabled: document.getElementById('passkit-enabled'),
+  passkitPassType: document.getElementById('passkit-pass-type'),
   passkitPassTypeIdentifier: document.getElementById('passkit-pass-type-identifier'),
   passkitTeamIdentifier: document.getElementById('passkit-team-identifier'),
   passkitOrganizationName: document.getElementById('passkit-organization-name'),
@@ -344,11 +346,6 @@ function createStampIcon(iconId, isFilled, customIconUrl = '') {
   return icon;
 }
 
-function getTemplatePasskitType(templateId) {
-  const template = getTemplateById(templateId);
-  return template.passkitType || 'generic';
-}
-
 export function initTemplateSelect() {
   formElements.template.innerHTML = '';
   for (const template of passTemplates) {
@@ -379,6 +376,13 @@ export function initTemplateSelect() {
     formElements.backgroundTemplate.appendChild(option);
   }
 
+  formElements.passkitPassType.innerHTML = '';
+  for (const type of passkitPassTypes) {
+    const option = document.createElement('option');
+    option.value = type.id;
+    option.textContent = type.name;
+    formElements.passkitPassType.appendChild(option);
+  }
 
   formElements.passkitBarcodeFormat.innerHTML = '';
   for (const format of passkitBarcodeFormats) {
@@ -895,9 +899,6 @@ export function updatePreview(payload) {
   const qrImage = document.getElementById('preview-qr');
   const banner = document.getElementById('preview-banner');
   const stampGrid = document.getElementById('preview-stamp-grid');
-  const streakCounter = document.getElementById('preview-streak-counter');
-  const streakCounterIcon = document.getElementById('preview-streak-icon');
-  const streakCounterValue = document.getElementById('preview-streak-value');
   const walletLabel = document.getElementById('preview-wallet-label');
 
   const walletSkin = payload.walletSkin || 'apple';
@@ -976,19 +977,10 @@ export function updatePreview(payload) {
 
   stampGrid.innerHTML = '';
   stampGrid.classList.add('hidden');
-  if (streakCounter) {
-    streakCounter.classList.add('hidden');
-  }
-  if (streakCounterIcon) {
-    streakCounterIcon.innerHTML = '';
-  }
-  if (streakCounterValue) {
-    streakCounterValue.textContent = '0';
-  }
 
   const isCoffee = payload.cardProgramType === 'coffee';
   const isStreak = payload.cardProgramType === 'streak';
-  if (isCoffee) {
+  if (isCoffee || isStreak) {
     const targetRaw = isCoffee ? payload.programConfig?.stampTarget : payload.programConfig?.targetDays;
     const progressRaw = payload.programConfig?.currentStamps;
     const selectedShape = isCoffee ? payload.programConfig?.stampShape : payload.programConfig?.streakShape;
@@ -1014,29 +1006,13 @@ export function updatePreview(payload) {
       stampGrid.appendChild(slot);
     }
   }
-
-  if (isStreak) {
-    const slotIconId = payload.programConfig?.streakIconId;
-    const slotIconSymbol = getIconSymbol(slotIconId);
-    const progress = clampNumber(sanitizeNumber(payload.programConfig?.currentStamps, 0), 0, 999999);
-
-    if (streakCounter) {
-      streakCounter.classList.remove('hidden');
-    }
-    if (streakCounterIcon) {
-      streakCounterIcon.appendChild(createStampIcon(slotIconId || slotIconSymbol, true));
-    }
-    if (streakCounterValue) {
-      streakCounterValue.textContent = String(progress);
-    }
-  }
 }
 
 export function getPassFormData() {
   const template = getTemplateById(formElements.template.value);
   const passkitConfig = getEditorPasskitConfig({
     enabled: formElements.passkitEnabled.checked,
-    passType: getTemplatePasskitType(formElements.template.value),
+    passType: formElements.passkitPassType.value,
     passTypeIdentifier: formElements.passkitPassTypeIdentifier.value,
     teamIdentifier: formElements.passkitTeamIdentifier.value,
     organizationName: formElements.passkitOrganizationName.value,
@@ -1163,6 +1139,7 @@ export function fillEditorFromSavedPass(entry) {
   formElements.creditThreshold.value = programConfig.lowBalanceThreshold ?? 5;
 
   formElements.passkitEnabled.checked = Boolean(passkitConfig.enabled);
+  formElements.passkitPassType.value = passkitConfig.passType;
   formElements.passkitPassTypeIdentifier.value = passkitConfig.passTypeIdentifier;
   formElements.passkitTeamIdentifier.value = passkitConfig.teamIdentifier;
   formElements.passkitOrganizationName.value = passkitConfig.organizationName;
