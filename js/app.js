@@ -699,26 +699,34 @@ async function handleScanPass(passId) {
   const selectedPass = latestPassEntries.find((entry) => entry.id === passId);
   if (!selectedPass) return;
   const programConfig = selectedPass.program_config || {};
-  const target = selectedPass.card_program_type === 'coffee' ? Number(programConfig.stampTarget || 0) : Number(programConfig.targetDays || 0);
-  const current = Number(programConfig.currentStamps || 0);
-  if (!target || current < target) {
-    showToast('Karte ist noch nicht voll und kann nicht gescannt werden.', true);
-    return;
-  }
-  const confirmed = await askForConfirmation({
-    title: 'Karte scannen und neu starten?',
-    message: 'Die Karte wird auf 0 zurückgesetzt und als abgeschlossen gezählt.',
-    confirmLabel: 'Scannen'
-  });
-  if (!confirmed) return;
+  const isCoffee = selectedPass.card_program_type === 'coffee';
+  const isStreak = selectedPass.card_program_type === 'streak';
 
-  const { error: statError } = await addCompletionStat(currentUser.id, selectedPass.id, selectedPass.title);
-  if (statError) {
-    showToast(`Statistik speichern fehlgeschlagen: ${statError.message}`, true);
-    return;
-  }
+  if (isStreak) {
+    const current = Number(programConfig.currentStamps || 0);
+    programConfig.currentStamps = Math.max(0, current) + 1;
+  } else {
+    const target = Number(programConfig.stampTarget || 0);
+    const current = Number(programConfig.currentStamps || 0);
+    if (!target || current < target) {
+      showToast('Karte ist noch nicht voll und kann nicht gescannt werden.', true);
+      return;
+    }
+    const confirmed = await askForConfirmation({
+      title: 'Karte scannen und neu starten?',
+      message: 'Die Karte wird auf 0 zurückgesetzt und als abgeschlossen gezählt.',
+      confirmLabel: 'Scannen'
+    });
+    if (!confirmed) return;
 
-  programConfig.currentStamps = 0;
+    const { error: statError } = await addCompletionStat(currentUser.id, selectedPass.id, selectedPass.title);
+    if (statError) {
+      showToast(`Statistik speichern fehlgeschlagen: ${statError.message}`, true);
+      return;
+    }
+
+    programConfig.currentStamps = 0;
+  }
   const { error } = await savePass(
     {
       id: selectedPass.id,
@@ -760,7 +768,7 @@ async function handleScanPass(passId) {
     showToast(`Karte zurücksetzen fehlgeschlagen: ${error.message}`, true);
     return;
   }
-  showToast('Karte gescannt und zurückgesetzt.');
+  showToast(isStreak ? 'Streak erfolgreich erhöht.' : 'Karte gescannt und zurückgesetzt.');
   await refreshPasses();
   await refreshStats();
 }
