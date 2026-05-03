@@ -410,38 +410,13 @@ async function handleLogin() {
   const email = formElements.email.value.trim();
   const password = formElements.password.value;
 
-  if (!email || !password) {
-    showToast('Bitte E-Mail und Passwort eingeben.', true);
-    return;
-  }
-
   const { data, error } = await loginWithEmail(email, password);
   if (error) {
-    const rawMessage = (error.message || '').toLowerCase();
-    const looksLikeUnconfirmedUser =
-      rawMessage.includes('email not confirmed') ||
-      rawMessage.includes('email_not_confirmed') ||
-      rawMessage.includes('confirm your email');
-
-    if (looksLikeUnconfirmedUser) {
-      showToast('Login fehlgeschlagen: Bitte zuerst deine E-Mail bestätigen und dann erneut einloggen.', true);
-      return;
-    }
-
     showToast(`Login fehlgeschlagen: ${error.message}`, true);
     return;
   }
 
-  currentUser = data?.user ?? null;
-  if (!currentUser) {
-    showToast(
-      'Login fehlgeschlagen: Kein Benutzer in der Antwort. Prüfe in Supabase, ob "Confirm email" aktiv ist und die E-Mail bestätigt wurde.',
-      true
-    );
-    setLoggedOutView();
-    return;
-  }
-
+  currentUser = data.user;
   loadSavedCardsOrganization(currentUser.id);
   loadAccountLogo(currentUser.id);
   loadBusinessCategory(currentUser.id);
