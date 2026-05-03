@@ -91,6 +91,10 @@ function storageKeyForBusinessCategory(userId) {
   return `passStudio.businessCategory.${userId}`;
 }
 
+function storageKeyForBusinessCategories(userId) {
+  return `passStudio.businessCategories.${userId}`;
+}
+
 function loadAccountLogo(userId) {
   if (!userId) {
     currentAccountLogoUrl = '';
@@ -119,6 +123,36 @@ function loadBusinessCategory(userId) {
 
   const storedBusinessCategory = localStorage.getItem(storageKeyForBusinessCategory(userId));
   formElements.businessCategory.value = storedBusinessCategory || 'restaurant';
+}
+
+function appendBusinessCategoryOption(value, label = value) {
+  if (!formElements.businessCategory || !value) return;
+  const exists = Array.from(formElements.businessCategory.options).some((option) => option.value === value);
+  if (exists) return;
+  formElements.businessCategory.add(new Option(label, value));
+}
+
+function normalizeBusinessCategoryLabel(value) {
+  return value.trim().replace(/\s+/g, ' ');
+}
+
+function saveBusinessCategories(userId, categories) {
+  if (!userId) return;
+  localStorage.setItem(storageKeyForBusinessCategories(userId), JSON.stringify(categories));
+}
+
+function loadBusinessCategories(userId) {
+  if (!formElements.businessCategory || !userId) return;
+  const storedCategories = localStorage.getItem(storageKeyForBusinessCategories(userId));
+  if (!storedCategories) return;
+
+  try {
+    const parsed = JSON.parse(storedCategories);
+    if (!Array.isArray(parsed)) return;
+    parsed.forEach((category) => appendBusinessCategoryOption(category, category));
+  } catch {
+    localStorage.removeItem(storageKeyForBusinessCategories(userId));
+  }
 }
 
 function persistBusinessCategory(userId, businessCategory) {
@@ -535,6 +569,32 @@ function handleBusinessCategoryChange() {
   refreshPreview();
 }
 
+function handleAddBusinessCategory() {
+  ui.addBusinessCategoryPanel?.classList.remove('hidden');
+  ui.newBusinessCategoryInput?.focus();
+}
+
+function confirmNewBusinessCategory() {
+  if (!currentUser || !formElements.businessCategory || !ui.newBusinessCategoryInput) return;
+
+  const newCategory = normalizeBusinessCategoryLabel(ui.newBusinessCategoryInput.value);
+  if (!newCategory) return;
+
+  appendBusinessCategoryOption(newCategory, newCategory);
+  formElements.businessCategory.value = newCategory;
+  persistBusinessCategory(currentUser.id, newCategory);
+
+  const defaultCategories = ['restaurant', 'bar', 'club', 'cafe', 'bakery', 'other'];
+  const customCategories = Array.from(formElements.businessCategory.options)
+    .map((option) => option.value)
+    .filter((value) => !defaultCategories.includes(value));
+  saveBusinessCategories(currentUser.id, customCategories);
+
+  ui.newBusinessCategoryInput.value = '';
+  ui.addBusinessCategoryPanel?.classList.add('hidden');
+  refreshPreview();
+}
+
 async function handleBannerUpload(event) {
   const file = event.target.files?.[0];
   if (!file) {
@@ -814,6 +874,7 @@ async function bootstrapAuth() {
   if (currentUser) {
     loadSavedCardsOrganization(currentUser.id);
     loadAccountLogo(currentUser.id);
+    loadBusinessCategories(currentUser.id);
     loadBusinessCategory(currentUser.id);
     setAuthenticatedView(currentUser.email);
     syncHeaderCompanyLogo();
@@ -833,6 +894,7 @@ async function bootstrapAuth() {
     if (currentUser) {
       loadSavedCardsOrganization(currentUser.id);
       loadAccountLogo(currentUser.id);
+      loadBusinessCategories(currentUser.id);
       loadBusinessCategory(currentUser.id);
       setAuthenticatedView(currentUser.email);
       syncHeaderCompanyLogo();
@@ -918,6 +980,13 @@ function wireEvents() {
   formElements.upload.addEventListener('change', handleImageUpload);
   formElements.accountLogoUpload?.addEventListener('change', handleAccountLogoUpload);
   formElements.businessCategory?.addEventListener('change', handleBusinessCategoryChange);
+  ui.addBusinessCategoryBtn?.addEventListener('click', handleAddBusinessCategory);
+  ui.confirmBusinessCategoryBtn?.addEventListener('click', confirmNewBusinessCategory);
+  ui.newBusinessCategoryInput?.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter') return;
+    event.preventDefault();
+    confirmNewBusinessCategory();
+  });
   formElements.bannerUpload.addEventListener('change', handleBannerUpload);
   formElements.addRuleBtn.addEventListener('click', handleAddNotificationRule);
   ui.notificationRules.addEventListener('click', handleRuleLocationClick);
