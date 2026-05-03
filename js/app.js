@@ -723,7 +723,14 @@ async function handleCompletePass(passId) {
     return;
   }
 
-  programConfig.currentStamps = 0;
+    const { error: statError } = await addCompletionStat(currentUser.id, selectedPass.id, selectedPass.title);
+    if (statError) {
+      showToast(`Statistik speichern fehlgeschlagen: ${statError.message}`, true);
+      return;
+    }
+
+    programConfig.currentStamps = 0;
+  }
   const { error } = await savePass(
     {
       id: selectedPass.id,

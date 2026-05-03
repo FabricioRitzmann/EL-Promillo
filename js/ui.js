@@ -899,6 +899,9 @@ export function updatePreview(payload) {
   const qrImage = document.getElementById('preview-qr');
   const banner = document.getElementById('preview-banner');
   const stampGrid = document.getElementById('preview-stamp-grid');
+  const streakCounter = document.getElementById('preview-streak-counter');
+  const streakCounterIcon = document.getElementById('preview-streak-icon');
+  const streakCounterValue = document.getElementById('preview-streak-value');
   const walletLabel = document.getElementById('preview-wallet-label');
 
   const walletSkin = payload.walletSkin || 'apple';
@@ -977,14 +980,17 @@ export function updatePreview(payload) {
 
   stampGrid.innerHTML = '';
   stampGrid.classList.add('hidden');
+  streakCounter.classList.add('hidden');
+  streakCounterValue.textContent = '0';
+  streakCounterIcon.textContent = '';
 
   const isCoffee = payload.cardProgramType === 'coffee';
   const isStreak = payload.cardProgramType === 'streak';
-  if (isCoffee || isStreak) {
-    const targetRaw = isCoffee ? payload.programConfig?.stampTarget : payload.programConfig?.targetDays;
+  if (isCoffee) {
+    const targetRaw = payload.programConfig?.stampTarget;
     const progressRaw = payload.programConfig?.currentStamps;
-    const selectedShape = isCoffee ? payload.programConfig?.stampShape : payload.programConfig?.streakShape;
-    const slotIconId = isCoffee ? payload.iconId : payload.programConfig?.streakIconId;
+    const selectedShape = payload.programConfig?.stampShape;
+    const slotIconId = payload.iconId;
     const slotIconSymbol = getIconSymbol(slotIconId);
     const target = clampNumber(sanitizeNumber(targetRaw, 1), 1, 60);
     const progress = clampNumber(sanitizeNumber(progressRaw, 0), 0, target);
@@ -1005,6 +1011,14 @@ export function updatePreview(payload) {
       slot.appendChild(createStampIcon(slotIconId || slotIconSymbol, isFilled, stampIconLogo));
       stampGrid.appendChild(slot);
     }
+  }
+
+  if (isStreak) {
+    const streakValue = Math.max(0, sanitizeNumber(payload.programConfig?.currentStamps, 0));
+    const streakIconId = payload.programConfig?.streakIconId;
+    streakCounterIcon.textContent = getIconSymbol(streakIconId);
+    streakCounterValue.textContent = String(streakValue);
+    streakCounter.classList.remove('hidden');
   }
 }
 

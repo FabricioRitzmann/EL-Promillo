@@ -499,6 +499,30 @@ select:focus {
   object-fit: contain;
 }
 
+.preview-streak-counter {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  font-weight: 700;
+}
+
+.preview-streak-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.preview-streak-value {
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
 .preview-stamp-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
