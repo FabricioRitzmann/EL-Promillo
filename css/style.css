@@ -506,6 +506,24 @@ select:focus {
   margin-top: 4px;
 }
 
+.preview-streak-counter {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.28);
+  font-weight: 700;
+}
+
+.preview-streak-counter-icon {
+  width: 20px;
+  height: 20px;
+}
+
 .stamp-slot {
   width: 42px;
   height: 42px;
