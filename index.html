@@ -234,6 +234,96 @@
               </section>
 
               <section class="config-section">
+                <h3>Gestaltung</h3>
+                <p class="muted small">
+                  Diese Optionen betreffen nur das Aussehen der Karte und können den Stil individuell überschreiben.
+                </p>
+
+                <div class="design-grid">
+                  <input id="pass-wallet-skin" type="hidden" value="apple" />
+
+                  <label>
+                    🎞️ Hintergrund-Vorlage
+                    <select id="pass-background-template"></select>
+                  </label>
+
+                  <label>
+                    🟦 Hintergrundfarbe
+                    <input id="pass-bg" type="color" value="#1d1d1f" />
+                  </label>
+
+                  <label>
+                    🔤 Textfarbe
+                    <input id="pass-fg" type="color" value="#ffffff" />
+                  </label>
+                </div>
+
+                <label>
+                  🖼️ Eigener Hintergrund (PNG/JPG)
+                  <input id="pass-upload" type="file" accept="image/png,image/jpeg" />
+                </label>
+
+                <div class="banner-config hidden">
+                  <div class="inline-space-between">
+                    <h4>Kleiner Banner</h4>
+                    <label class="toggle-inline">
+                      <input id="pass-banner-enabled" type="checkbox" />
+                      Einblenden
+                    </label>
+                  </div>
+
+                  <div id="banner-fields" class="design-grid hidden">
+                    <label>
+                      Banner Text
+                      <input id="pass-banner-text" type="text" value="Dein Angebot hier" />
+                    </label>
+                    <label>
+                      Banner Farbe
+                      <select id="pass-banner-color"></select>
+                    </label>
+                    <label>
+                      Banner Hintergrundfarbe
+                      <input id="pass-banner-bg" type="color" value="#f5c451" />
+                    </label>
+                    <label>
+                      Banner Textfarbe
+                      <input id="pass-banner-fg" type="color" value="#2d1b00" />
+                    </label>
+                    <label>
+                      Banner Form
+                      <select id="pass-banner-shape">
+                        <option value="pill">Pille</option>
+                        <option value="rectangle">Rechteck</option>
+                        <option value="rounded">Rund</option>
+                        <option value="ticket">Ticket</option>
+                        <option value="diamond">Diamant</option>
+                      </select>
+                    </label>
+                    <label>
+                      Banner Breite (%)
+                      <input id="pass-banner-width" type="range" min="20" max="100" value="60" />
+                    </label>
+                    <label>
+                      Banner Höhe (px)
+                      <input id="pass-banner-height" type="range" min="28" max="120" value="42" />
+                    </label>
+                    <label>
+                      Banner X-Position (%)
+                      <input id="pass-banner-x" type="range" min="0" max="100" value="4" />
+                    </label>
+                    <label>
+                      Banner Y-Position (%)
+                      <input id="pass-banner-y" type="range" min="0" max="70" value="4" />
+                    </label>
+                    <label>
+                      Eigenes Banner-Bild (PNG/JPG)
+                      <input id="pass-banner-upload" type="file" accept="image/png,image/jpeg" />
+                    </label>
+                  </div>
+                </div>
+              </section>
+
+              <section class="config-section">
                 <h3>Firmenlogo</h3>
                 <p class="muted small">
                   Das Firmenlogo wird automatisch aus dem Konto-Popup übernommen und auf jeder Karte oben links angezeigt.
@@ -338,95 +428,6 @@
                 <button id="add-rule-btn" type="button" class="btn btn-secondary">Regel hinzufügen</button>
               </section>
 
-              <section class="config-section">
-                <h3>Gestaltung</h3>
-                <p class="muted small">
-                  Diese Optionen betreffen nur das Aussehen der Karte und können den Stil individuell überschreiben.
-                </p>
-
-                <div class="design-grid">
-                  <input id="pass-wallet-skin" type="hidden" value="apple" />
-
-                  <label>
-                    🎞️ Hintergrund-Vorlage
-                    <select id="pass-background-template"></select>
-                  </label>
-
-                  <label>
-                    🟦 Hintergrundfarbe
-                    <input id="pass-bg" type="color" value="#1d1d1f" />
-                  </label>
-
-                  <label>
-                    🔤 Textfarbe
-                    <input id="pass-fg" type="color" value="#ffffff" />
-                  </label>
-                </div>
-
-                <label>
-                  🖼️ Eigener Hintergrund (PNG/JPG)
-                  <input id="pass-upload" type="file" accept="image/png,image/jpeg" />
-                </label>
-
-                <div class="banner-config hidden">
-                  <div class="inline-space-between">
-                    <h4>Kleiner Banner</h4>
-                    <label class="toggle-inline">
-                      <input id="pass-banner-enabled" type="checkbox" />
-                      Einblenden
-                    </label>
-                  </div>
-
-                  <div id="banner-fields" class="design-grid hidden">
-                    <label>
-                      Banner Text
-                      <input id="pass-banner-text" type="text" value="Dein Angebot hier" />
-                    </label>
-                    <label>
-                      Banner Farbe
-                      <select id="pass-banner-color"></select>
-                    </label>
-                    <label>
-                      Banner Hintergrundfarbe
-                      <input id="pass-banner-bg" type="color" value="#f5c451" />
-                    </label>
-                    <label>
-                      Banner Textfarbe
-                      <input id="pass-banner-fg" type="color" value="#2d1b00" />
-                    </label>
-                    <label>
-                      Banner Form
-                      <select id="pass-banner-shape">
-                        <option value="pill">Pille</option>
-                        <option value="rectangle">Rechteck</option>
-                        <option value="rounded">Rund</option>
-                        <option value="ticket">Ticket</option>
-                        <option value="diamond">Diamant</option>
-                      </select>
-                    </label>
-                    <label>
-                      Banner Breite (%)
-                      <input id="pass-banner-width" type="range" min="20" max="100" value="60" />
-                    </label>
-                    <label>
-                      Banner Höhe (px)
-                      <input id="pass-banner-height" type="range" min="28" max="120" value="42" />
-                    </label>
-                    <label>
-                      Banner X-Position (%)
-                      <input id="pass-banner-x" type="range" min="0" max="100" value="4" />
-                    </label>
-                    <label>
-                      Banner Y-Position (%)
-                      <input id="pass-banner-y" type="range" min="0" max="70" value="4" />
-                    </label>
-                    <label>
-                      Eigenes Banner-Bild (PNG/JPG)
-                      <input id="pass-banner-upload" type="file" accept="image/png,image/jpeg" />
-                    </label>
-                  </div>
-                </div>
-              </section>
 
               <section class="config-section" id="stamp-frame-section">
                 <h3>Stempel-Rahmen</h3>
