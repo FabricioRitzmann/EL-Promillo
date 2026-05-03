@@ -28,6 +28,7 @@ import {
   onSavedToolbarToggle,
   onSavedPassFolderChange,
   onSavedPassOpen,
+  onSavedPassComplete,
   onSavedPassScan,
   renderStats,
   renderProgramFields,
@@ -705,6 +706,29 @@ async function handleScanPass(passId) {
   });
 }
 
+async function handleCompletePass(passId) {
+  const selectedPass = latestPassEntries.find((entry) => entry.id === passId);
+  if (!selectedPass) return;
+  const confirmed = await askForConfirmation({
+    title: 'Karte abschließen?',
+    message: 'Der Abschluss wird in der Statistik erfasst.',
+    confirmLabel: 'Abschließen'
+  });
+  if (!confirmed) return;
+  const { error } = await addCompletionStat(
+    currentUser.id,
+    selectedPass.id,
+    selectedPass.title,
+    selectedPass.card_program_type || 'generic'
+  );
+  if (error) {
+    showToast(`Abschluss speichern fehlgeschlagen: ${error.message}`, true);
+    return;
+  }
+  showToast('Karte wurde als abgeschlossen markiert.');
+  await refreshStats();
+}
+
 async function bootstrapAuth() {
   const {
     data: { session }
@@ -822,6 +846,7 @@ function wireEvents() {
   formElements.addRuleBtn.addEventListener('click', handleAddNotificationRule);
   ui.notificationRules.addEventListener('click', handleRuleLocationClick);
   onSavedPassOpen(handleOpenSavedPass);
+  onSavedPassComplete(handleCompletePass);
   onSavedPassScan(handleScanPass);
   onSavedPassFolderChange(handleSavedPassFolderChange);
   onSavedCardFiltersChange(handleSavedCardsFilterChange);

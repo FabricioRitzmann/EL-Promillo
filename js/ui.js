@@ -1310,6 +1310,7 @@ export function renderSavedPasses(entries, options = {}) {
         <div class="row-buttons">
           <button type="button" class="btn btn-secondary open-pass-btn">Öffnen</button>
           <button type="button" class="btn btn-secondary scan-pass-btn">Karte scannen</button>
+          <button type="button" class="btn btn-primary complete-pass-btn">Karte abschließen</button>
           <a class="btn btn-secondary" href="https://api.qrserver.com/v1/create-qr-code/?size=420x420&data=${encodeURIComponent(
             entry.qr_content
           )}" target="_blank" rel="noreferrer">QR öffnen</a>
@@ -1331,6 +1332,22 @@ export function renderStats(entries) {
 
   for (const entry of entries) {
     const li = document.createElement('li');
+    const bars = Object.entries(dataByMonth)
+      .sort(([left], [right]) => left.localeCompare(right, 'de-DE'))
+      .map(([label, value]) => {
+        const width = Math.max(8, Math.round((value / maxValue) * 100));
+        return `
+          <div class="stats-bar-row">
+            <span class="stats-bar-label">${label}</span>
+            <div class="stats-bar-track">
+              <span class="stats-bar-fill" style="width:${width}%"></span>
+            </div>
+            <span class="stats-bar-value">${value}</span>
+          </div>
+        `;
+      })
+      .join('');
+
     li.innerHTML = `
       <div>
         <strong>${entry.pass_title}</strong>
@@ -1341,7 +1358,12 @@ export function renderStats(entries) {
       </div>
     `;
     ui.statsList.appendChild(li);
-  }
+  };
+
+  renderChart('Gesamtübersicht aller Karten', allByMonth);
+  Object.entries(groupedByType)
+    .sort(([left], [right]) => left.localeCompare(right, 'de-DE'))
+    .forEach(([type, dataByMonth]) => renderChart(`Kartenart: ${getCardKindLabel(type)}`, dataByMonth));
 }
 
 export function onSavedPassOpen(handler) {
@@ -1357,6 +1379,16 @@ export function onSavedPassOpen(handler) {
 export function onSavedPassScan(handler) {
   ui.passList.addEventListener('click', (event) => {
     const button = event.target.closest('.scan-pass-btn');
+    if (!button) return;
+    const row = button.closest('li[data-pass-id]');
+    if (!row) return;
+    handler(row.dataset.passId);
+  });
+}
+
+export function onSavedPassComplete(handler) {
+  ui.passList.addEventListener('click', (event) => {
+    const button = event.target.closest('.complete-pass-btn');
     if (!button) return;
     const row = button.closest('li[data-pass-id]');
     if (!row) return;
