@@ -202,14 +202,13 @@ export async function listPasses(userId) {
   }
 }
 
-export async function addCompletionStat(userId, passId, passTitle, passType) {
+export async function addCompletionStat(userId, passId, passTitle) {
   if (!isConfigured) return notConfiguredError();
   try {
     const response = await supabaseClient.from('pass_completion_stats').insert({
       user_id: userId,
       pass_id: passId,
       pass_title: passTitle,
-      pass_type: passType || 'unknown',
       completed_at: new Date().toISOString()
     });
     if (isMissingRelationError(response.error, 'pass_completion_stats')) {
@@ -229,7 +228,7 @@ export async function listPassStats(userId) {
   try {
     const response = await supabaseClient
       .from('pass_completion_stats')
-      .select('pass_title, pass_type, completed_at')
+      .select('pass_title, completed_at')
       .eq('user_id', userId)
       .order('completed_at', { ascending: false });
     if (isMissingRelationError(response.error, 'pass_completion_stats')) {
