@@ -1323,7 +1323,7 @@ export function renderSavedPasses(entries, options = {}) {
         </label>
         <div class="row-buttons">
           <button type="button" class="btn btn-secondary open-pass-btn">Öffnen</button>
-          <button type="button" class="btn btn-secondary scan-pass-btn">Karte scannen</button>
+          <button type="button" class="btn btn-secondary complete-pass-btn">Karte abschliessen</button>
           <a class="btn btn-secondary" href="https://api.qrserver.com/v1/create-qr-code/?size=420x420&data=${encodeURIComponent(
             entry.qr_content
           )}" target="_blank" rel="noreferrer">QR öffnen</a>
@@ -1343,27 +1343,45 @@ export function renderStats(entries) {
     return;
   }
 
-  const grouped = entries.reduce((acc, row) => {
-    const key = row.pass_title || 'Unbenannte Karte';
-    if (!acc[key]) {
-      acc[key] = { pass_title: key, completed_count: 0, last_completed_at: row.completed_at };
-    }
-    acc[key].completed_count += 1;
-    if (new Date(row.completed_at) > new Date(acc[key].last_completed_at)) {
-      acc[key].last_completed_at = row.completed_at;
-    }
-    return acc;
-  }, {});
+  const bucketKeyFormatter = new Intl.DateTimeFormat('de-DE', { month: '2-digit', year: 'numeric' });
+  const timelineTotals = {};
+  const groupedByType = {};
 
-  for (const entry of Object.values(grouped)) {
+  for (const row of entries) {
+    const typeKey = row.pass_type || 'unknown';
+    const date = new Date(row.completed_at);
+    const bucketLabel = bucketKeyFormatter.format(date);
+
+    timelineTotals[bucketLabel] = (timelineTotals[bucketLabel] || 0) + 1;
+    if (!groupedByType[typeKey]) groupedByType[typeKey] = {};
+    groupedByType[typeKey][bucketLabel] = (groupedByType[typeKey][bucketLabel] || 0) + 1;
+  }
+
+  const bucketOrder = Object.keys(timelineTotals).sort((a, b) => {
+    const [aMonth, aYear] = a.split('.');
+    const [bMonth, bYear] = b.split('.');
+    return new Date(`${aYear}-${aMonth}-01`).getTime() - new Date(`${bYear}-${bMonth}-01`).getTime();
+  });
+
+  function buildBars(title, valuesByBucket) {
+    const maxValue = Math.max(1, ...Object.values(valuesByBucket));
+    const bars = bucketOrder
+      .map((bucket) => {
+        const count = valuesByBucket[bucket] || 0;
+        const width = Math.max(4, Math.round((count / maxValue) * 100));
+        return `<div class="muted small">${bucket}: ${count}<div style="height:8px;background:#335cfa;border-radius:999px;width:${width}%;margin-top:4px;"></div></div>`;
+      })
+      .join('');
+    return `<div><strong>${title}</strong><div style="display:grid;gap:8px;margin-top:8px;">${bars}</div></div>`;
+  }
+
+  const overview = document.createElement('li');
+  overview.innerHTML = buildBars('Gesamtübersicht (alle Kartenarten)', timelineTotals);
+  ui.statsList.appendChild(overview);
+
+  for (const [typeKey, values] of Object.entries(groupedByType)) {
     const li = document.createElement('li');
-    li.innerHTML = `
-      <div>
-        <strong>${entry.pass_title}</strong>
-        <p class="muted small">Abschlüsse: ${entry.completed_count}</p>
-        <p class="muted small">Zuletzt: ${new Date(entry.last_completed_at).toLocaleString('de-DE')}</p>
-      </div>
-    `;
+    li.innerHTML = buildBars(`Kartenart: ${getCardKindLabel(typeKey)}`, values);
     ui.statsList.appendChild(li);
   }
 }
@@ -1378,9 +1396,9 @@ export function onSavedPassOpen(handler) {
   });
 }
 
-export function onSavedPassScan(handler) {
+export function onSavedPassComplete(handler) {
   ui.passList.addEventListener('click', (event) => {
-    const button = event.target.closest('.scan-pass-btn');
+    const button = event.target.closest('.complete-pass-btn');
     if (!button) return;
     const row = button.closest('li[data-pass-id]');
     if (!row) return;

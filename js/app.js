@@ -29,7 +29,7 @@ import {
   onSavedToolbarToggle,
   onSavedPassFolderChange,
   onSavedPassOpen,
-  onSavedPassScan,
+  onSavedPassComplete,
   renderStats,
   renderProgramFields,
   renderSavedPasses,
@@ -695,29 +695,33 @@ async function handleOpenSavedPass(passId) {
   showToast('Karte im Editor geöffnet.');
 }
 
-async function handleScanPass(passId) {
+async function handleCompletePass(passId) {
   const selectedPass = latestPassEntries.find((entry) => entry.id === passId);
   if (!selectedPass) return;
   const programConfig = selectedPass.program_config || {};
-  const isCoffee = selectedPass.card_program_type === 'coffee';
-  const isStreak = selectedPass.card_program_type === 'streak';
+  const target = selectedPass.card_program_type === 'coffee' ? Number(programConfig.stampTarget || 0) : Number(programConfig.targetDays || 0);
+  const current = Number(programConfig.currentStamps || 0);
+  if (!target || current < target) {
+    showToast('Karte ist noch nicht voll und kann nicht gescannt werden.', true);
+    return;
+  }
+  const confirmed = await askForConfirmation({
+    title: 'Karte abschliessen und neu starten?',
+    message: 'Die Karte wird auf 0 zurückgesetzt und als abgeschlossen gezählt.',
+    confirmLabel: 'Abschliessen'
+  });
+  if (!confirmed) return;
 
-  if (isStreak) {
-    const current = Number(programConfig.currentStamps || 0);
-    programConfig.currentStamps = Math.max(0, current) + 1;
-  } else {
-    const target = Number(programConfig.stampTarget || 0);
-    const current = Number(programConfig.currentStamps || 0);
-    if (!target || current < target) {
-      showToast('Karte ist noch nicht voll und kann nicht gescannt werden.', true);
-      return;
-    }
-    const confirmed = await askForConfirmation({
-      title: 'Karte scannen und neu starten?',
-      message: 'Die Karte wird auf 0 zurückgesetzt und als abgeschlossen gezählt.',
-      confirmLabel: 'Scannen'
-    });
-    if (!confirmed) return;
+  const { error: statError } = await addCompletionStat(
+    currentUser.id,
+    selectedPass.id,
+    selectedPass.title,
+    selectedPass.template_id || 'unknown'
+  );
+  if (statError) {
+    showToast(`Statistik speichern fehlgeschlagen: ${statError.message}`, true);
+    return;
+  }
 
     const { error: statError } = await addCompletionStat(currentUser.id, selectedPass.id, selectedPass.title);
     if (statError) {
@@ -768,7 +772,7 @@ async function handleScanPass(passId) {
     showToast(`Karte zurücksetzen fehlgeschlagen: ${error.message}`, true);
     return;
   }
-  showToast(isStreak ? 'Streak erfolgreich erhöht.' : 'Karte gescannt und zurückgesetzt.');
+  showToast('Karte abgeschlossen und zurückgesetzt.');
   await refreshPasses();
   await refreshStats();
 }
@@ -890,7 +894,7 @@ function wireEvents() {
   formElements.addRuleBtn.addEventListener('click', handleAddNotificationRule);
   ui.notificationRules.addEventListener('click', handleRuleLocationClick);
   onSavedPassOpen(handleOpenSavedPass);
-  onSavedPassScan(handleScanPass);
+  onSavedPassComplete(handleCompletePass);
   onSavedPassFolderChange(handleSavedPassFolderChange);
   onSavedCardFiltersChange(handleSavedCardsFilterChange);
   onCreateFolder(handleCreateFolder);
