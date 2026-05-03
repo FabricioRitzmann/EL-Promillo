@@ -75,6 +75,49 @@ Die App zeigt dafür jetzt eine klarere Fehlermeldung an.
 Diese Version erstellt und verwaltet die Pass-Daten und QR-Codes im Frontend.
 Für echte `.pkpass`-Dateien brauchst du zusätzlich einen Server-Endpunkt, der Apple-Zertifikate nutzt und PassKit-Dateien signiert.
 
+## Apple Wallet per QR-Scan (automatischer Add-Flow)
+
+Neu im Frontend:
+
+- Wenn `passkit_enabled = true` und `js/config.js -> passkitServiceUrl` gesetzt ist, wird der QR-Inhalt nach dem Speichern automatisch auf einen Apple-Wallet-Scan-Link gesetzt.
+- Format des QR-Links:  
+  `https://DEIN-PASSKIT-ENDPUNKT/passes/<PASS_ID>/apple`
+
+So funktioniert der mobile Ablauf:
+
+1. User scannt den QR-Code mit dem iPhone.
+2. Safari öffnet den Link.
+3. Der Endpunkt liefert eine `.pkpass` Datei (Content-Type: `application/vnd.apple.pkpass`).
+4. iOS zeigt automatisch die Abfrage „Zu Wallet hinzufügen“.
+5. Nach Bestätigung ist die Karte direkt in Apple Wallet aktiv.
+
+### Supabase SQL (immer ausführen)
+
+```sql
+-- Apple Wallet Scan-Links je Karte speichern
+alter table public.wallet_passes
+  add column if not exists apple_wallet_path text;
+
+-- Hilfsfunktion: erzeugt den Standardpfad /passes/<id>/apple
+create or replace function public.set_default_apple_wallet_path()
+returns trigger
+language plpgsql
+as $$
+begin
+  if new.apple_wallet_path is null or new.apple_wallet_path = '' then
+    new.apple_wallet_path := '/passes/' || new.id::text || '/apple';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists wallet_passes_set_apple_wallet_path on public.wallet_passes;
+create trigger wallet_passes_set_apple_wallet_path
+before insert or update on public.wallet_passes
+for each row
+execute function public.set_default_apple_wallet_path();
+```
+
 ## PassKit-Felder im Basisdaten-Editor
 
 Die PassKit-Felder sind im Editor direkt in den Bereich **„📝 Basisdaten”** integriert.
