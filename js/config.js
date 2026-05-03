@@ -33,6 +33,7 @@ export const passTemplates = [
     id: 'vip-membership',
     name: 'VIP-Mitgliedskarte',
     programType: 'generic',
+    passkitType: 'generic',
     defaults: {
       title: 'VIP Membership',
       subtitle: 'Premium Club',
@@ -44,6 +45,7 @@ export const passTemplates = [
     id: 'coffee-stamp',
     name: 'Stempelkarte',
     programType: 'coffee',
+    passkitType: 'storeCard',
     defaults: {
       title: 'Coffee Club',
       subtitle: 'Sammle Stempel',
@@ -59,6 +61,7 @@ export const passTemplates = [
     id: 'stamp-card',
     name: 'Streak Karte',
     programType: 'streak',
+    passkitType: 'generic',
     defaults: {
       title: '30 Tage Stempel-Challenge',
       subtitle: 'Bleib dran',
@@ -76,6 +79,7 @@ export const passTemplates = [
     id: 'recharge-credit',
     name: 'Aufladbare Guthabenkarte',
     programType: 'credit',
+    passkitType: 'storeCard',
     defaults: {
       title: 'Store Wallet',
       subtitle: 'Dein Guthaben',
@@ -90,6 +94,7 @@ export const passTemplates = [
     id: 'coupon-card',
     name: 'Couponkarte',
     programType: 'generic',
+    passkitType: 'coupon',
     defaults: {
       iconId: 'gift'
     }
