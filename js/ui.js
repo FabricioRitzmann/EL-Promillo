@@ -1158,6 +1158,8 @@ export function fillEditorFromSavedPass(entry) {
   setNotificationRules(entry.notification_rules || []);
 }
 
+const COMPLETED_CARDS_FOLDER = 'Abgeschlossene Karten';
+
 function getCardKind(entry) {
   return entry.template_id || 'unknown';
 }
@@ -1262,7 +1264,10 @@ export function renderSavedPasses(entries, options = {}) {
 
   const filteredEntries = entries.filter((entry) => {
     const assignedFolder = folderAssignments[entry.id] || 'none';
-    const folderMatches = filters.folder === 'all' || assignedFolder === filters.folder;
+    const folderMatches =
+      filters.folder === 'all'
+        ? assignedFolder !== COMPLETED_CARDS_FOLDER
+        : assignedFolder === filters.folder;
     const cardKind = getCardKind(entry);
     const typeMatches = filters.cardType === 'all' || cardKind === filters.cardType;
     return folderMatches && typeMatches;

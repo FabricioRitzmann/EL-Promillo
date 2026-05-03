@@ -1,4 +1,5 @@
 import {
+  addCompletionStat,
   listBusinessScanStats,
   listPasses,
   loginWithEmail,
@@ -60,6 +61,8 @@ let savedCardsFilters = {
   cardType: 'all',
   sort: 'newest'
 };
+
+const COMPLETED_CARDS_FOLDER = 'Abgeschlossene Karten';
 
 function buildAppleWalletScanUrl(passId) {
   if (!appConfig.passkitServiceUrl || !passId) return '';
@@ -744,7 +747,14 @@ async function handleCompletePass(passId) {
     showToast(`Abschluss speichern fehlgeschlagen: ${error.message}`, true);
     return;
   }
-  showToast('Karte wurde als abgeschlossen markiert.');
+  if (!savedFolderNames.includes(COMPLETED_CARDS_FOLDER)) {
+    savedFolderNames = [...savedFolderNames, COMPLETED_CARDS_FOLDER].sort((a, b) => a.localeCompare(b, 'de-DE', { sensitivity: 'base' }));
+  }
+  passFoldersById[selectedPass.id] = COMPLETED_CARDS_FOLDER;
+  persistSavedCardsOrganization();
+  renderSavedCardsView();
+
+  showToast('Karte wurde als abgeschlossen markiert und in „Abgeschlossene Karten“ verschoben.');
   await refreshStats();
 }
 
