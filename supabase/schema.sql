@@ -76,8 +76,12 @@ create table if not exists public.pass_completion_stats (
   user_id uuid not null references auth.users(id) on delete cascade,
   pass_id uuid not null references public.wallet_passes(id) on delete cascade,
   pass_title text not null,
+  card_program_type text not null default 'generic',
   completed_at timestamptz not null default now()
 );
+
+alter table public.pass_completion_stats
+  add column if not exists card_program_type text not null default 'generic';
 
 alter table public.pass_completion_stats enable row level security;
 

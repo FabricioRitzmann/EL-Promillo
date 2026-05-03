@@ -1310,6 +1310,7 @@ export function renderSavedPasses(entries, options = {}) {
         <div class="row-buttons">
           <button type="button" class="btn btn-secondary open-pass-btn">Öffnen</button>
           <button type="button" class="btn btn-secondary scan-pass-btn">Karte scannen</button>
+          <button type="button" class="btn btn-primary complete-pass-btn">Karte abschließen</button>
           <a class="btn btn-secondary" href="https://api.qrserver.com/v1/create-qr-code/?size=420x420&data=${encodeURIComponent(
             entry.qr_content
           )}" target="_blank" rel="noreferrer">QR öffnen</a>
@@ -1329,29 +1330,53 @@ export function renderStats(entries) {
     return;
   }
 
-  const grouped = entries.reduce((acc, row) => {
-    const key = row.pass_title || 'Unbenannte Karte';
-    if (!acc[key]) {
-      acc[key] = { pass_title: key, completed_count: 0, last_completed_at: row.completed_at };
-    }
-    acc[key].completed_count += 1;
-    if (new Date(row.completed_at) > new Date(acc[key].last_completed_at)) {
-      acc[key].last_completed_at = row.completed_at;
-    }
-    return acc;
-  }, {});
+  const monthLabel = (dateValue) => {
+    const date = new Date(dateValue);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+  };
+  const allByMonth = {};
+  const groupedByType = {};
 
-  for (const entry of Object.values(grouped)) {
+  for (const row of entries) {
+    const type = row.card_program_type || 'generic';
+    const month = monthLabel(row.completed_at);
+    allByMonth[month] = (allByMonth[month] || 0) + 1;
+    if (!groupedByType[type]) groupedByType[type] = {};
+    groupedByType[type][month] = (groupedByType[type][month] || 0) + 1;
+  }
+
+  const renderChart = (title, dataByMonth) => {
+    const maxValue = Math.max(...Object.values(dataByMonth), 1);
     const li = document.createElement('li');
+    const bars = Object.entries(dataByMonth)
+      .sort(([left], [right]) => left.localeCompare(right, 'de-DE'))
+      .map(([label, value]) => {
+        const width = Math.max(8, Math.round((value / maxValue) * 100));
+        return `
+          <div class="stats-bar-row">
+            <span class="stats-bar-label">${label}</span>
+            <div class="stats-bar-track">
+              <span class="stats-bar-fill" style="width:${width}%"></span>
+            </div>
+            <span class="stats-bar-value">${value}</span>
+          </div>
+        `;
+      })
+      .join('');
+
     li.innerHTML = `
       <div>
-        <strong>${entry.pass_title}</strong>
-        <p class="muted small">Abschlüsse: ${entry.completed_count}</p>
-        <p class="muted small">Zuletzt: ${new Date(entry.last_completed_at).toLocaleString('de-DE')}</p>
+        <strong>${title}</strong>
+        <div class="stats-chart">${bars}</div>
       </div>
     `;
     ui.statsList.appendChild(li);
-  }
+  };
+
+  renderChart('Gesamtübersicht aller Karten', allByMonth);
+  Object.entries(groupedByType)
+    .sort(([left], [right]) => left.localeCompare(right, 'de-DE'))
+    .forEach(([type, dataByMonth]) => renderChart(`Kartenart: ${getCardKindLabel(type)}`, dataByMonth));
 }
 
 export function onSavedPassOpen(handler) {
@@ -1367,6 +1392,16 @@ export function onSavedPassOpen(handler) {
 export function onSavedPassScan(handler) {
   ui.passList.addEventListener('click', (event) => {
     const button = event.target.closest('.scan-pass-btn');
+    if (!button) return;
+    const row = button.closest('li[data-pass-id]');
+    if (!row) return;
+    handler(row.dataset.passId);
+  });
+}
+
+export function onSavedPassComplete(handler) {
+  ui.passList.addEventListener('click', (event) => {
+    const button = event.target.closest('.complete-pass-btn');
     if (!button) return;
     const row = button.closest('li[data-pass-id]');
     if (!row) return;

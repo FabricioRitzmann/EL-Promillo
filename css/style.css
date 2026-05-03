@@ -765,6 +765,40 @@ select:focus {
   align-items: center;
 }
 
+.stats-chart {
+  margin-top: 0.6rem;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.stats-bar-row {
+  display: grid;
+  grid-template-columns: 90px 1fr 34px;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.stats-bar-label,
+.stats-bar-value {
+  font-size: 0.78rem;
+  color: #6b7280;
+}
+
+.stats-bar-track {
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  overflow: hidden;
+}
+
+.stats-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #2563eb, #0ea5e9);
+}
+
 .muted {
   color: var(--muted);
 }
