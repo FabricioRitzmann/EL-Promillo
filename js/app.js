@@ -29,7 +29,7 @@ import {
   onSavedToolbarToggle,
   onSavedPassFolderChange,
   onSavedPassOpen,
-  onSavedPassScan,
+  onSavedPassComplete,
   renderStats,
   renderProgramFields,
   renderSavedPasses,
@@ -695,7 +695,7 @@ async function handleOpenSavedPass(passId) {
   showToast('Karte im Editor geöffnet.');
 }
 
-async function handleScanPass(passId) {
+async function handleCompletePass(passId) {
   const selectedPass = latestPassEntries.find((entry) => entry.id === passId);
   if (!selectedPass) return;
   const programConfig = selectedPass.program_config || {};
@@ -706,13 +706,18 @@ async function handleScanPass(passId) {
     return;
   }
   const confirmed = await askForConfirmation({
-    title: 'Karte scannen und neu starten?',
+    title: 'Karte abschliessen und neu starten?',
     message: 'Die Karte wird auf 0 zurückgesetzt und als abgeschlossen gezählt.',
-    confirmLabel: 'Scannen'
+    confirmLabel: 'Abschliessen'
   });
   if (!confirmed) return;
 
-  const { error: statError } = await addCompletionStat(currentUser.id, selectedPass.id, selectedPass.title);
+  const { error: statError } = await addCompletionStat(
+    currentUser.id,
+    selectedPass.id,
+    selectedPass.title,
+    selectedPass.template_id || 'unknown'
+  );
   if (statError) {
     showToast(`Statistik speichern fehlgeschlagen: ${statError.message}`, true);
     return;
@@ -760,7 +765,7 @@ async function handleScanPass(passId) {
     showToast(`Karte zurücksetzen fehlgeschlagen: ${error.message}`, true);
     return;
   }
-  showToast('Karte gescannt und zurückgesetzt.');
+  showToast('Karte abgeschlossen und zurückgesetzt.');
   await refreshPasses();
   await refreshStats();
 }
@@ -882,7 +887,7 @@ function wireEvents() {
   formElements.addRuleBtn.addEventListener('click', handleAddNotificationRule);
   ui.notificationRules.addEventListener('click', handleRuleLocationClick);
   onSavedPassOpen(handleOpenSavedPass);
-  onSavedPassScan(handleScanPass);
+  onSavedPassComplete(handleCompletePass);
   onSavedPassFolderChange(handleSavedPassFolderChange);
   onSavedCardFiltersChange(handleSavedCardsFilterChange);
   onCreateFolder(handleCreateFolder);
