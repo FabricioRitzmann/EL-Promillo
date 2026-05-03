@@ -412,15 +412,34 @@ async function handleLogin() {
 
   const { data, error } = await loginWithEmail(email, password);
   if (error) {
-    showToast(`Login fehlgeschlagen: ${error.message}`, true);
+    const authMessage = error.message || '';
+    const needsEmailConfirmation = /email not confirmed/i.test(authMessage);
+    const blockedByRls = /row-level security|permission denied/i.test(authMessage);
+
+    if (needsEmailConfirmation) {
+      showToast('Login gesperrt: Bitte bestätige zuerst deine E-Mail-Adresse in Supabase und versuche es dann erneut.', true);
+      return;
+    }
+
+    if (blockedByRls) {
+      showToast('Login blockiert durch Supabase-Richtlinien. Prüfe die RLS-Policies im Projekt.', true);
+      return;
+    }
+
+    showToast(`Login fehlgeschlagen: ${authMessage}`, true);
     return;
   }
 
-  currentUser = data.user;
+  currentUser = data?.user || data?.session?.user || null;
+  if (!currentUser) {
+    showToast('Login fehlgeschlagen: Keine Benutzersitzung erhalten. Bitte prüfe E-Mail-Bestätigung und Supabase-Konfiguration.', true);
+    return;
+  }
+
   loadSavedCardsOrganization(currentUser.id);
   loadAccountLogo(currentUser.id);
   loadBusinessCategory(currentUser.id);
-  setAuthenticatedView(currentUser.email);
+  setAuthenticatedView(currentUser.email || email);
   syncAccountPopupFields();
   syncHeaderCompanyLogo();
   showToast('Login erfolgreich.');
