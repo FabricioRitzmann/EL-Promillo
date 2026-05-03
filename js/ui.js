@@ -895,6 +895,9 @@ export function updatePreview(payload) {
   const qrImage = document.getElementById('preview-qr');
   const banner = document.getElementById('preview-banner');
   const stampGrid = document.getElementById('preview-stamp-grid');
+  const streakCounter = document.getElementById('preview-streak-counter');
+  const streakCounterIcon = document.getElementById('preview-streak-icon');
+  const streakCounterValue = document.getElementById('preview-streak-value');
   const walletLabel = document.getElementById('preview-wallet-label');
 
   const walletSkin = payload.walletSkin || 'apple';
@@ -973,10 +976,19 @@ export function updatePreview(payload) {
 
   stampGrid.innerHTML = '';
   stampGrid.classList.add('hidden');
+  if (streakCounter) {
+    streakCounter.classList.add('hidden');
+  }
+  if (streakCounterIcon) {
+    streakCounterIcon.innerHTML = '';
+  }
+  if (streakCounterValue) {
+    streakCounterValue.textContent = '0';
+  }
 
   const isCoffee = payload.cardProgramType === 'coffee';
   const isStreak = payload.cardProgramType === 'streak';
-  if (isCoffee || isStreak) {
+  if (isCoffee) {
     const targetRaw = isCoffee ? payload.programConfig?.stampTarget : payload.programConfig?.targetDays;
     const progressRaw = payload.programConfig?.currentStamps;
     const selectedShape = isCoffee ? payload.programConfig?.stampShape : payload.programConfig?.streakShape;
@@ -1000,6 +1012,22 @@ export function updatePreview(payload) {
       const stampIconLogo = payload.programConfig?.useCompanyLogoForStamps ? payload.customIconUrl : '';
       slot.appendChild(createStampIcon(slotIconId || slotIconSymbol, isFilled, stampIconLogo));
       stampGrid.appendChild(slot);
+    }
+  }
+
+  if (isStreak) {
+    const slotIconId = payload.programConfig?.streakIconId;
+    const slotIconSymbol = getIconSymbol(slotIconId);
+    const progress = clampNumber(sanitizeNumber(payload.programConfig?.currentStamps, 0), 0, 999999);
+
+    if (streakCounter) {
+      streakCounter.classList.remove('hidden');
+    }
+    if (streakCounterIcon) {
+      streakCounterIcon.appendChild(createStampIcon(slotIconId || slotIconSymbol, true));
+    }
+    if (streakCounterValue) {
+      streakCounterValue.textContent = String(progress);
     }
   }
 }
