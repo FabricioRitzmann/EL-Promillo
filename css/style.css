@@ -1069,6 +1069,20 @@ select:focus {
   color: #a51212;
 }
 
+.delete-pass-btn {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.delete-pass-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
 @media (max-width: 640px) {
   .design-grid {
     grid-template-columns: 1fr;
