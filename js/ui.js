@@ -1324,30 +1324,20 @@ export function renderStats(entries) {
   ui.statsList.innerHTML = '';
   if (!entries.length) {
     const empty = document.createElement('li');
-    empty.textContent = 'Noch keine abgeschlossenen Karten vorhanden.';
+    empty.textContent = 'Noch keine gescannten Kundenkarten vorhanden.';
     ui.statsList.appendChild(empty);
     return;
   }
 
-  const grouped = entries.reduce((acc, row) => {
-    const key = row.pass_title || 'Unbenannte Karte';
-    if (!acc[key]) {
-      acc[key] = { pass_title: key, completed_count: 0, last_completed_at: row.completed_at };
-    }
-    acc[key].completed_count += 1;
-    if (new Date(row.completed_at) > new Date(acc[key].last_completed_at)) {
-      acc[key].last_completed_at = row.completed_at;
-    }
-    return acc;
-  }, {});
-
-  for (const entry of Object.values(grouped)) {
+  for (const entry of entries) {
     const li = document.createElement('li');
     li.innerHTML = `
       <div>
         <strong>${entry.pass_title}</strong>
-        <p class="muted small">Abschlüsse: ${entry.completed_count}</p>
-        <p class="muted small">Zuletzt: ${new Date(entry.last_completed_at).toLocaleString('de-DE')}</p>
+        <p class="muted small">Scans gesamt: ${entry.total_events ?? 0}</p>
+        <p class="muted small">Eindeutige Kunden: ${entry.unique_customers ?? 0}</p>
+        <p class="muted small">Stempel-Scans: ${entry.stamp_events ?? 0}</p>
+        <p class="muted small">Zuletzt: ${entry.last_event_at ? new Date(entry.last_event_at).toLocaleString('de-DE') : '–'}</p>
       </div>
     `;
     ui.statsList.appendChild(li);
