@@ -1175,7 +1175,19 @@ export function fillEditorFromSavedPass(entry) {
   formElements.passkitMessageEncoding.value = passkitConfig.barcode.messageEncoding;
 
   renderProgramFields(entry.card_program_type || 'generic');
-  setNotificationRules(entry.notification_rules || []);
+  setNotificationRules(normalizeNotificationRules(entry));
+}
+
+function normalizeNotificationRules(entry = {}) {
+  const candidateSources = [
+    entry.notification_rules,
+    entry.notificationRules,
+    entry.push_rules,
+    entry.pushRules
+  ];
+
+  const rules = candidateSources.find((value) => Array.isArray(value));
+  return Array.isArray(rules) ? rules : [];
 }
 
 const COMPLETED_CARDS_FOLDER = 'Abgeschlossene Karten';
