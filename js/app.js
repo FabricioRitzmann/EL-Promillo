@@ -46,6 +46,7 @@ import {
 } from './ui.js';
 
 let currentUser = null;
+let latestAccountPassword = '';
 let currentUploadedImageUrl = '';
 let currentUploadedIconUrl = '';
 let currentUploadedBannerUrl = '';
@@ -132,7 +133,13 @@ function syncAccountPopupFields() {
   }
 
   if (ui.accountPassword) {
-    ui.accountPassword.value = formElements.password.value;
+    const typedPassword = formElements.password.value.trim();
+    if (typedPassword) {
+      latestAccountPassword = typedPassword;
+    }
+
+    ui.accountPassword.value = latestAccountPassword;
+    ui.accountPassword.placeholder = latestAccountPassword ? '' : 'Nicht gespeichert';
   }
 }
 
@@ -388,6 +395,7 @@ function handleCreateFolder(folderNameInput) {
 async function handleRegister() {
   const email = formElements.email.value.trim();
   const password = formElements.password.value;
+  latestAccountPassword = password.trim();
 
   const { data, error } = await registerWithEmail(email, password);
   if (error) {
@@ -419,6 +427,7 @@ async function handleRegister() {
 async function handleLogin() {
   const email = formElements.email.value.trim();
   const password = formElements.password.value;
+  latestAccountPassword = password.trim();
 
   const { data, error } = await loginWithEmail(email, password);
   if (error) {
