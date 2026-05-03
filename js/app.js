@@ -9,6 +9,7 @@ import {
   supabaseClient,
   uploadCustomImage
 } from './api.js';
+import { appConfig } from './config.js';
 import {
   addNotificationRule,
   applyTemplateDefaults,
@@ -59,6 +60,12 @@ let savedCardsFilters = {
   cardType: 'all',
   sort: 'newest'
 };
+
+function buildAppleWalletScanUrl(passId) {
+  if (!appConfig.passkitServiceUrl || !passId) return '';
+  const normalizedBaseUrl = appConfig.passkitServiceUrl.replace(/\/+$/, '');
+  return `${normalizedBaseUrl}/passes/${passId}/apple`;
+}
 
 function syncHeaderCompanyLogo() {
   if (!ui.headerCompanyLogo) return;
@@ -580,7 +587,7 @@ async function handleSavePass() {
     ? latestPassEntries.find((entry) => entry.id === currentEditingPassId)
     : null;
 
-  const { error } = await savePass(
+  const { data, error } = await savePass(
     {
       ...passData,
       id: currentEditingPassId,
@@ -600,6 +607,18 @@ async function handleSavePass() {
   showToast(currentEditingPassId ? 'Karte erfolgreich aktualisiert.' : 'Pass erfolgreich gespeichert.');
   await refreshPasses();
   await refreshStats();
+
+  if (passData.passkitConfig?.enabled && appConfig.passkitServiceUrl) {
+    const insertedId = Array.isArray(data) && data.length ? data[0].id : null;
+    const savedEntry = latestPassEntries.find((entry) => entry.id === currentEditingPassId || entry.id === insertedId);
+    const effectivePassId = currentEditingPassId || insertedId || savedEntry?.id || '';
+    const scanUrl = buildAppleWalletScanUrl(effectivePassId);
+    if (scanUrl) {
+      formElements.qrContent.value = scanUrl;
+      refreshPreview();
+      showToast('QR-Code wurde auf Apple Wallet Scan-Link gesetzt.');
+    }
+  }
 }
 
 async function handleCreateNewPass() {
