@@ -202,6 +202,19 @@ export async function listPasses(userId) {
   }
 }
 
+export async function deletePass(passId, userId) {
+  if (!isConfigured) return notConfiguredError();
+  try {
+    return await supabaseClient
+      .from('wallet_passes')
+      .delete()
+      .eq('id', passId)
+      .eq('user_id', userId);
+  } catch (error) {
+    return networkError(error);
+  }
+}
+
 export async function addCompletionStat(userId, passId, passTitle, cardProgramType = 'generic') {
   if (!isConfigured) return notConfiguredError();
   try {

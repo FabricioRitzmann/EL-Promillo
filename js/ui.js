@@ -1333,6 +1333,7 @@ export function renderSavedPasses(entries, options = {}) {
           </select>
         </label>
         <div class="row-buttons">
+          <button type="button" class="btn btn-danger delete-pass-btn" aria-label="Karte löschen" title="Karte löschen">🗑️</button>
           <button type="button" class="btn btn-secondary open-pass-btn">Öffnen</button>
           <button type="button" class="btn btn-secondary scan-pass-btn">Karte scannen</button>
           <button type="button" class="btn btn-primary complete-pass-btn">Karte abschließen</button>
@@ -1426,6 +1427,16 @@ export function onSavedPassFolderChange(handler) {
     const select = event.target.closest('.saved-pass-folder-select');
     if (!select) return;
     handler(select.dataset.passId, select.value);
+  });
+}
+
+export function onSavedPassDelete(handler) {
+  ui.passList.addEventListener('click', (event) => {
+    const button = event.target.closest('.delete-pass-btn');
+    if (!button) return;
+    const row = button.closest('li[data-pass-id]');
+    if (!row) return;
+    handler(row.dataset.passId);
   });
 }
 

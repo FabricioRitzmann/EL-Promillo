@@ -1,5 +1,6 @@
 import {
   addCompletionStat,
+  deletePass,
   listBusinessScanStats,
   listPasses,
   loginWithEmail,
@@ -31,6 +32,7 @@ import {
   onSavedPassFolderChange,
   onSavedPassOpen,
   onSavedPassComplete,
+  onSavedPassDelete,
   onSavedPassScan,
   renderStats,
   renderProgramFields,
@@ -874,6 +876,30 @@ async function handleCompletePass(passId) {
   await refreshStats();
 }
 
+async function handleDeletePass(passId) {
+  const selectedPass = latestPassEntries.find((entry) => entry.id === passId);
+  if (!selectedPass) return;
+
+  const confirmed = await askForConfirmation({
+    title: 'Karte löschen?',
+    message: `Die Karte „${selectedPass.title || 'Ohne Titel'}“ wird dauerhaft gelöscht.`,
+    confirmLabel: 'Löschen'
+  });
+  if (!confirmed) return;
+
+  const { error } = await deletePass(selectedPass.id, currentUser.id);
+  if (error) {
+    showToast(`Karte konnte nicht gelöscht werden: ${error.message}`, true);
+    return;
+  }
+
+  delete passFoldersById[selectedPass.id];
+  persistSavedCardsOrganization();
+  showToast('Karte wurde gelöscht.');
+  await refreshPasses();
+  await refreshStats();
+}
+
 async function bootstrapAuth() {
   const {
     data: { session }
@@ -1001,6 +1027,7 @@ function wireEvents() {
   ui.notificationRules.addEventListener('click', handleRuleLocationClick);
   onSavedPassOpen(handleOpenSavedPass);
   onSavedPassComplete(handleCompletePass);
+  onSavedPassDelete(handleDeletePass);
   onSavedPassScan(handleScanPass);
   onSavedPassFolderChange(handleSavedPassFolderChange);
   onSavedCardFiltersChange(handleSavedCardsFilterChange);
