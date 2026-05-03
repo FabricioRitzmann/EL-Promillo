@@ -4,8 +4,7 @@ import {
   getEditorPasskitConfig,
   getDefaultPasskitConfig,
   normalizePasskitConfig,
-  passkitBarcodeFormats,
-  passkitPassTypes
+  passkitBarcodeFormats
 } from './passkit.js';
 
 export const ui = {
@@ -95,7 +94,6 @@ export const formElements = {
   creditThreshold: document.getElementById('credit-threshold'),
   stampFrameSection: document.getElementById('stamp-frame-section'),
   passkitEnabled: document.getElementById('passkit-enabled'),
-  passkitPassType: document.getElementById('passkit-pass-type'),
   passkitPassTypeIdentifier: document.getElementById('passkit-pass-type-identifier'),
   passkitTeamIdentifier: document.getElementById('passkit-team-identifier'),
   passkitOrganizationName: document.getElementById('passkit-organization-name'),
@@ -346,6 +344,11 @@ function createStampIcon(iconId, isFilled, customIconUrl = '') {
   return icon;
 }
 
+function getTemplatePasskitType(templateId) {
+  const template = getTemplateById(templateId);
+  return template.passkitType || 'generic';
+}
+
 export function initTemplateSelect() {
   formElements.template.innerHTML = '';
   for (const template of passTemplates) {
@@ -376,13 +379,6 @@ export function initTemplateSelect() {
     formElements.backgroundTemplate.appendChild(option);
   }
 
-  formElements.passkitPassType.innerHTML = '';
-  for (const type of passkitPassTypes) {
-    const option = document.createElement('option');
-    option.value = type.id;
-    option.textContent = type.name;
-    formElements.passkitPassType.appendChild(option);
-  }
 
   formElements.passkitBarcodeFormat.innerHTML = '';
   for (const format of passkitBarcodeFormats) {
@@ -1012,7 +1008,7 @@ export function getPassFormData() {
   const template = getTemplateById(formElements.template.value);
   const passkitConfig = getEditorPasskitConfig({
     enabled: formElements.passkitEnabled.checked,
-    passType: formElements.passkitPassType.value,
+    passType: getTemplatePasskitType(formElements.template.value),
     passTypeIdentifier: formElements.passkitPassTypeIdentifier.value,
     teamIdentifier: formElements.passkitTeamIdentifier.value,
     organizationName: formElements.passkitOrganizationName.value,
@@ -1139,7 +1135,6 @@ export function fillEditorFromSavedPass(entry) {
   formElements.creditThreshold.value = programConfig.lowBalanceThreshold ?? 5;
 
   formElements.passkitEnabled.checked = Boolean(passkitConfig.enabled);
-  formElements.passkitPassType.value = passkitConfig.passType;
   formElements.passkitPassTypeIdentifier.value = passkitConfig.passTypeIdentifier;
   formElements.passkitTeamIdentifier.value = passkitConfig.teamIdentifier;
   formElements.passkitOrganizationName.value = passkitConfig.organizationName;

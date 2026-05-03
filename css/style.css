@@ -481,12 +481,18 @@ select:focus {
   top: 16px;
   left: 16px;
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: auto;
   height: auto;
-  max-width: 96px;
-  max-height: 64px;
-  border: none;
-  background: transparent;
+  max-width: 108px;
+  max-height: 72px;
+  padding: 6px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: rgba(15, 23, 42, 0.36);
+  backdrop-filter: blur(4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
   overflow: visible;
 }
 
@@ -494,9 +500,10 @@ select:focus {
   display: block;
   width: auto;
   height: auto;
-  max-width: 96px;
-  max-height: 64px;
+  max-width: 92px;
+  max-height: 58px;
   object-fit: contain;
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.45));
 }
 
 .preview-stamp-grid {
@@ -1209,6 +1216,7 @@ select:focus {
   height: 100%;
   object-fit: cover;
   border-radius: inherit;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.5), 0 4px 10px rgba(15, 23, 42, 0.35);
 }
 
 .wallet-sim-logo-inline {
@@ -1218,6 +1226,7 @@ select:focus {
   border-radius: 4px;
   object-fit: cover;
   margin-right: 6px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35), 0 2px 6px rgba(15, 23, 42, 0.35);
 }
 
 .wallet-sim-mini-copy {
