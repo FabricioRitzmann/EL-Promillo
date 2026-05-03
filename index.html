@@ -312,19 +312,22 @@
               </section>
 
               <section class="config-section">
-                <div class="inline-space-between">
-                  <h3>Push Benachrichtigungen</h3>
-                  <label class="toggle-inline">
-                    <input id="push-enabled" type="checkbox" />
-                    Aktivieren
-                  </label>
-                </div>
-                <p class="muted small">
-                  Lege pro Karte mehrere Regeln fest. Für zeit- und standortbasierte Regeln kannst du entweder ein
-                  genaues Datum mit Uhrzeit oder einen wiederkehrenden Wochentag mit Uhrzeit festlegen.
-                </p>
-                <div id="notification-rules" class="stack-form"></div>
-                <button id="add-rule-btn" type="button" class="btn btn-secondary">Regel hinzufügen</button>
+                <details class="config-menu" open>
+                  <summary>Push Benachrichtigungen</summary>
+                  <div class="inline-space-between">
+                    <h3 class="visually-hidden">Push Benachrichtigungen</h3>
+                    <label class="toggle-inline">
+                      <input id="push-enabled" type="checkbox" />
+                      Aktivieren
+                    </label>
+                  </div>
+                  <p class="muted small">
+                    Lege pro Karte mehrere Regeln fest. Für zeit- und standortbasierte Regeln kannst du entweder ein
+                    genaues Datum mit Uhrzeit oder einen wiederkehrenden Wochentag mit Uhrzeit festlegen.
+                  </p>
+                  <div id="notification-rules" class="stack-form"></div>
+                  <button id="add-rule-btn" type="button" class="btn btn-secondary">Regel hinzufügen</button>
+                </details>
               </section>
 
               <section class="config-section">
