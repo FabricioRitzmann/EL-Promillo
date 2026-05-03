@@ -29,7 +29,7 @@ import {
   onSavedToolbarToggle,
   onSavedPassFolderChange,
   onSavedPassOpen,
-  onSavedPassComplete,
+  onSavedPassScan,
   renderStats,
   renderProgramFields,
   renderSavedPasses,
@@ -695,7 +695,7 @@ async function handleOpenSavedPass(passId) {
   showToast('Karte im Editor geöffnet.');
 }
 
-async function handleCompletePass(passId) {
+async function handleScanPass(passId) {
   const selectedPass = latestPassEntries.find((entry) => entry.id === passId);
   if (!selectedPass) return;
   const programConfig = selectedPass.program_config || {};
@@ -706,31 +706,19 @@ async function handleCompletePass(passId) {
     return;
   }
   const confirmed = await askForConfirmation({
-    title: 'Karte abschliessen und neu starten?',
+    title: 'Karte scannen und neu starten?',
     message: 'Die Karte wird auf 0 zurückgesetzt und als abgeschlossen gezählt.',
-    confirmLabel: 'Abschliessen'
+    confirmLabel: 'Scannen'
   });
   if (!confirmed) return;
 
-  const { error: statError } = await addCompletionStat(
-    currentUser.id,
-    selectedPass.id,
-    selectedPass.title,
-    selectedPass.template_id || 'unknown'
-  );
+  const { error: statError } = await addCompletionStat(currentUser.id, selectedPass.id, selectedPass.title);
   if (statError) {
     showToast(`Statistik speichern fehlgeschlagen: ${statError.message}`, true);
     return;
   }
 
-    const { error: statError } = await addCompletionStat(currentUser.id, selectedPass.id, selectedPass.title);
-    if (statError) {
-      showToast(`Statistik speichern fehlgeschlagen: ${statError.message}`, true);
-      return;
-    }
-
-    programConfig.currentStamps = 0;
-  }
+  programConfig.currentStamps = 0;
   const { error } = await savePass(
     {
       id: selectedPass.id,
@@ -772,7 +760,7 @@ async function handleCompletePass(passId) {
     showToast(`Karte zurücksetzen fehlgeschlagen: ${error.message}`, true);
     return;
   }
-  showToast('Karte abgeschlossen und zurückgesetzt.');
+  showToast('Karte gescannt und zurückgesetzt.');
   await refreshPasses();
   await refreshStats();
 }
@@ -894,7 +882,7 @@ function wireEvents() {
   formElements.addRuleBtn.addEventListener('click', handleAddNotificationRule);
   ui.notificationRules.addEventListener('click', handleRuleLocationClick);
   onSavedPassOpen(handleOpenSavedPass);
-  onSavedPassComplete(handleCompletePass);
+  onSavedPassScan(handleScanPass);
   onSavedPassFolderChange(handleSavedPassFolderChange);
   onSavedCardFiltersChange(handleSavedCardsFilterChange);
   onCreateFolder(handleCreateFolder);
