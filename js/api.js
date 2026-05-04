@@ -125,7 +125,21 @@ export async function requestPasswordOtp(email) {
   if (!isConfigured) return notConfiguredError();
   try {
     return await supabaseClient.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.href
+      redirectTo: `${window.location.origin}/reset-password`
+    });
+  } catch (error) {
+    return networkError(error);
+  }
+}
+
+export async function requestOtpLogin(email) {
+  if (!isConfigured) return notConfiguredError();
+  try {
+    return await supabaseClient.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`
+      }
     });
   } catch (error) {
     return networkError(error);
