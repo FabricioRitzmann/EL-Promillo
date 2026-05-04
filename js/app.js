@@ -6,6 +6,7 @@ import {
   loginWithEmail,
   logout,
   registerWithEmail,
+  requestOtpLogin,
   requestPasswordOtp,
   savePass,
   supabaseClient,
@@ -66,6 +67,60 @@ let savedCardsFilters = {
 };
 
 const COMPLETED_CARDS_FOLDER = 'Abgeschlossene Karten';
+function normalizeEmail(rawEmail) {
+  return (rawEmail || '').trim().toLowerCase();
+}
+
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+async function askEmailConfirmation({ type, email }) {
+  const modal = document.getElementById('email-confirm-modal');
+  const title = document.getElementById('email-confirm-title');
+  const message = document.getElementById('email-confirm-message');
+  const preview = document.getElementById('email-confirm-preview');
+  const inputWrap = document.getElementById('email-confirm-edit-wrap');
+  const input = document.getElementById('email-confirm-input');
+  const error = document.getElementById('email-confirm-error');
+  const cancelBtn = document.getElementById('email-confirm-cancel-btn');
+  const editBtn = document.getElementById('email-confirm-edit-btn');
+  const okBtn = document.getElementById('email-confirm-ok-btn');
+  let currentEmail = normalizeEmail(email);
+  const isOtp = type === 'otp';
+  title.textContent = isOtp ? 'Login-Link senden?' : 'Passwort zurücksetzen?';
+  message.textContent = isOtp
+    ? 'Soll der Login-Link an diese E-Mail-Adresse gesendet werden?'
+    : 'Soll der Link zum Zurücksetzen des Passworts an diese E-Mail-Adresse gesendet werden?';
+  preview.textContent = currentEmail;
+  input.value = currentEmail;
+  inputWrap.classList.add('hidden');
+  error.classList.add('hidden');
+  okBtn.disabled = !isValidEmail(currentEmail);
+  modal.classList.remove('hidden');
+  return await new Promise((resolve) => {
+    const validate = () => {
+      currentEmail = normalizeEmail(input.value);
+      const valid = isValidEmail(currentEmail);
+      okBtn.disabled = !valid;
+      error.textContent = valid ? '' : 'Bitte überprüfe die E-Mail-Adresse.';
+      error.classList.toggle('hidden', valid);
+      preview.textContent = currentEmail || '–';
+    };
+    const cleanup = (result) => {
+      modal.classList.add('hidden');
+      cancelBtn.onclick = null;
+      editBtn.onclick = null;
+      okBtn.onclick = null;
+      input.oninput = null;
+      resolve(result);
+    };
+    cancelBtn.onclick = () => cleanup(null);
+    editBtn.onclick = () => inputWrap.classList.remove('hidden');
+    okBtn.onclick = () => cleanup(isValidEmail(currentEmail) ? currentEmail : null);
+    input.oninput = validate;
+  });
+}
 
 function buildAppleWalletScanUrl(passId) {
   if (!appConfig.passkitServiceUrl || !passId) return '';
@@ -499,19 +554,37 @@ async function handleAuthSubmit(event) {
 }
 
 async function handleResetOtp() {
-  const email = formElements.email.value.trim();
-  if (!email) {
-    showToast('Bitte zuerst eine E-Mail eingeben.', true);
+  const email = normalizeEmail(formElements.email.value);
+  if (!isValidEmail(email)) {
+    showToast('Bitte gib eine gültige E-Mail-Adresse ein.', true);
     return;
   }
-
-  const { error } = await requestPasswordOtp(email);
+  const confirmedEmail = await askEmailConfirmation({ type: 'passwordReset', email });
+  if (!confirmedEmail) return;
+  showToast('Reset-Link wird gesendet ...');
+  const { error } = await requestPasswordOtp(confirmedEmail);
   if (error) {
-    showToast(`OTP konnte nicht angefordert werden: ${error.message}`, true);
+    showToast('Der Link konnte nicht gesendet werden. Bitte versuche es später erneut.', true);
     return;
   }
+  showToast('Falls ein Konto mit dieser E-Mail-Adresse existiert, wurde ein Link zum Zurücksetzen des Passworts gesendet. Der Link ist 15 Minuten gültig.');
+}
 
-  showToast('OTP/Reset-E-Mail wurde verschickt.');
+async function handleOtpLogin() {
+  const email = normalizeEmail(formElements.email.value);
+  if (!isValidEmail(email)) {
+    showToast('Bitte gib eine gültige E-Mail-Adresse ein.', true);
+    return;
+  }
+  const confirmedEmail = await askEmailConfirmation({ type: 'otp', email });
+  if (!confirmedEmail) return;
+  showToast('Login-Link wird gesendet ...');
+  const { error } = await requestOtpLogin(confirmedEmail);
+  if (error) {
+    showToast('Der Link konnte nicht gesendet werden. Bitte versuche es später erneut.', true);
+    return;
+  }
+  showToast('Falls ein Konto mit dieser E-Mail-Adresse existiert, wurde ein Login-Link gesendet. Der Link ist 15 Minuten gültig.');
 }
 
 async function handleLogout() {
@@ -964,6 +1037,7 @@ function wireEvents() {
   document.getElementById('auth-form').addEventListener('submit', handleAuthSubmit);
   document.getElementById('register-btn').addEventListener('click', handleRegister);
   document.getElementById('login-btn').addEventListener('click', handleLogin);
+  document.getElementById('otp-btn').addEventListener('click', handleOtpLogin);
   document.getElementById('reset-btn').addEventListener('click', handleResetOtp);
   document.getElementById('save-pass-btn').addEventListener('click', handleSavePass);
   document.getElementById('new-pass-btn').addEventListener('click', handleCreateNewPass);

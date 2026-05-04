@@ -1154,6 +1154,11 @@ select:focus {
   gap: 14px;
 }
 
+.error-text {
+  color: #b42318;
+  margin: 6px 0 0;
+}
+
 .wallet-sim-card {
   width: min(920px, 100%);
   max-height: 90vh;
