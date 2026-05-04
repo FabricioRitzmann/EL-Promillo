@@ -395,7 +395,7 @@ async function refreshStats() {
   if (!currentUser) return;
   const { data, error } = await listBusinessScanStats(currentUser.id);
   if (error) {
-    showToast(`Statistik konnte nicht geladen werden: ${error.message}`, true);
+    showToast(error.friendlyMessage || `Statistik konnte nicht geladen werden: ${error.message}`, true);
     return;
   }
   latestPassStats = data || [];
