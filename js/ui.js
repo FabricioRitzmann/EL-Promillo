@@ -64,6 +64,7 @@ export const formElements = {
   bg: document.getElementById('pass-bg'),
   fg: document.getElementById('pass-fg'),
   walletSkin: document.getElementById('pass-wallet-skin'),
+  previewMode: document.getElementById('pass-preview-mode'),
   backgroundTemplate: document.getElementById('pass-background-template'),
   upload: document.getElementById('pass-upload'),
   bannerEnabled: document.getElementById('pass-banner-enabled'),
@@ -914,6 +915,8 @@ export function updatePreview(payload) {
   };
 
   preview.dataset.walletSkin = walletSkin;
+  const previewMode = payload.previewMode || 'horizontal';
+  preview.dataset.previewMode = previewMode;
   if (walletLabel) {
     walletLabel.textContent = walletLabels[walletSkin] || walletLabels.apple;
   }
@@ -962,6 +965,7 @@ export function updatePreview(payload) {
     payload.qrContent || 'https://example.com'
   )}`;
   qrImage.src = qrUrl;
+  qrImage.classList.toggle('hidden', previewMode !== 'vertical');
 
   if (payload.banner?.enabled && payload.banner?.text) {
     banner.classList.remove('hidden');
@@ -1062,6 +1066,7 @@ export function getPassFormData() {
     templateId: formElements.template.value,
     iconId: formElements.icon.value,
     walletSkin: formElements.walletSkin.value,
+    previewMode: formElements.previewMode.value,
     backgroundTemplateId: formElements.backgroundTemplate.value,
     backgroundColor: formElements.bg.value,
     foregroundColor: formElements.fg.value,
@@ -1120,6 +1125,7 @@ export function fillEditorFromSavedPass(entry) {
   formElements.template.value = entry.template_id || passTemplates[0].id;
   formElements.icon.value = entry.icon_id || templateIcons[0].id;
   formElements.walletSkin.value = entry.wallet_skin || 'apple';
+  formElements.previewMode.value = entry.preview_mode || 'horizontal';
   formElements.bg.value = entry.background_color || '#1d1d1f';
   formElements.fg.value = entry.foreground_color || '#ffffff';
   formElements.backgroundTemplate.value = entry.background_template_id || 'custom';

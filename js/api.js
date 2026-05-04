@@ -156,6 +156,8 @@ export async function savePass(passPayload, userId) {
       template_id: passPayload.templateId,
       icon_id: passPayload.iconId,
       background_template_id: passPayload.backgroundTemplateId,
+      wallet_skin: passPayload.walletSkin || 'apple',
+      preview_mode: passPayload.previewMode || 'horizontal',
       background_color: passPayload.backgroundColor,
       foreground_color: passPayload.foregroundColor,
       custom_image_url: passPayload.customImageUrl,

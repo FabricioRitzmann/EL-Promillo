@@ -448,6 +448,23 @@ select:focus {
   color: #0f172a;
 }
 
+.wallet-preview-mode-tabbar {
+  margin-top: 8px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.pass-preview[data-preview-mode='vertical'] {
+  max-width: 320px;
+  min-height: 520px;
+  margin: 0 auto;
+}
+
+.pass-preview[data-preview-mode='vertical'] .pass-overlay {
+  padding-top: 98px;
+}
+
 .pass-preview {
   border-radius: 22px;
   min-height: 228px;
