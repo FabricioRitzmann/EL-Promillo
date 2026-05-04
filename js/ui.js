@@ -7,6 +7,7 @@ import {
   passkitBarcodeFormats,
   passkitPassTypes
 } from './passkit.js';
+import { shouldShowBarcode, toWalletViewMode } from './barcodeVisibility.js';
 
 export const ui = {
   authState: document.getElementById('auth-state'),
@@ -965,7 +966,20 @@ export function updatePreview(payload) {
     payload.qrContent || 'https://example.com'
   )}`;
   qrImage.src = qrUrl;
-  qrImage.classList.toggle('hidden', previewMode !== 'vertical');
+  const walletViewMode = toWalletViewMode(walletSkin, previewMode);
+  const barcodeTemplate = {
+    barcode: {
+      enabled: Boolean(payload.qrContent),
+      showInVertical: true,
+      showInHorizontal: false,
+      showInBack: false,
+      showInCardView: false,
+      showInDetailView: true,
+      showInQuickAccessView: true
+    }
+  };
+  const showBarcode = shouldShowBarcode(barcodeTemplate, walletSkin, walletViewMode);
+  qrImage.classList.toggle('hidden', !showBarcode);
 
   if (payload.banner?.enabled && payload.banner?.text) {
     banner.classList.remove('hidden');
