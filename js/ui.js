@@ -1368,7 +1368,7 @@ export function renderSavedPasses(entries, options = {}) {
           <button type="button" class="btn btn-danger delete-pass-btn" aria-label="Karte löschen" title="Karte löschen">🗑️</button>
           <button type="button" class="btn btn-secondary open-pass-btn">Öffnen</button>
           <button type="button" class="btn btn-secondary scan-pass-btn">Karte scannen</button>
-          <button type="button" class="btn btn-primary complete-pass-btn">Karte abschließen</button>
+          <button type="button" class="btn btn-primary complete-pass-btn">${entry.is_completed ? 'Abschluss rückgängig machen' : 'Karte abschließen'}</button>
           <a class="btn btn-secondary" href="https://api.qrserver.com/v1/create-qr-code/?size=420x420&data=${encodeURIComponent(
             entry.qr_content
           )}" target="_blank" rel="noreferrer">QR öffnen</a>

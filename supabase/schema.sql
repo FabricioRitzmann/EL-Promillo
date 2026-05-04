@@ -42,6 +42,13 @@ create table if not exists public.wallet_passes (
   notification_rules jsonb not null default '[]'::jsonb,
   passkit_enabled boolean not null default false,
   passkit_config jsonb not null default '{}'::jsonb,
+  is_completed boolean not null default false,
+  completed_at timestamptz,
+  completed_by uuid references auth.users(id) on delete set null,
+  completion_source text,
+  completion_progress_percent numeric(5,2),
+  completion_snapshot jsonb,
+  parent_pass_id uuid references public.wallet_passes(id) on delete set null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -72,7 +79,14 @@ alter table public.wallet_passes
   add column if not exists banner_width integer not null default 60,
   add column if not exists banner_height integer not null default 42,
   add column if not exists banner_position_x integer not null default 4,
-  add column if not exists banner_position_y integer not null default 4;
+  add column if not exists banner_position_y integer not null default 4,
+  add column if not exists is_completed boolean not null default false,
+  add column if not exists completed_at timestamptz,
+  add column if not exists completed_by uuid references auth.users(id) on delete set null,
+  add column if not exists completion_source text,
+  add column if not exists completion_progress_percent numeric(5,2),
+  add column if not exists completion_snapshot jsonb,
+  add column if not exists parent_pass_id uuid references public.wallet_passes(id) on delete set null;
 
 -- 1c) Statistik pro abgeschlossene Stempelkarte/Streak Karte
 create table if not exists public.pass_completion_stats (

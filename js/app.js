@@ -1,5 +1,5 @@
 import {
-  addCompletionStat,
+  completePass,
   deletePass,
   listBusinessScanStats,
   listPasses,
@@ -10,6 +10,7 @@ import {
   requestPasswordOtp,
   savePass,
   supabaseClient,
+  undoCompletePass,
   uploadCustomImage
 } from './api.js';
 import { appConfig } from './config.js';
@@ -933,30 +934,44 @@ async function handleScanPass(passId) {
 async function handleCompletePass(passId) {
   const selectedPass = latestPassEntries.find((entry) => entry.id === passId);
   if (!selectedPass) return;
+
+  const isCompleted = selectedPass.is_completed === true;
   const confirmed = await askForConfirmation({
-    title: 'Karte abschließen?',
-    message: 'Der Abschluss wird in der Statistik erfasst.',
-    confirmLabel: 'Abschließen'
+    title: isCompleted ? 'Abschluss rückgängig machen?' : 'Karte abschließen?',
+    message: isCompleted
+      ? 'Die Karte wird wieder geöffnet und aus Abschlusswerten entfernt.'
+      : 'Der Abschluss wird mit aktuellem Fortschritt gespeichert.',
+    confirmLabel: isCompleted ? 'Rückgängig machen' : 'Abschließen'
   });
   if (!confirmed) return;
-  const { error } = await addCompletionStat(
-    currentUser.id,
-    selectedPass.id,
-    selectedPass.title,
-    selectedPass.card_program_type || 'generic'
-  );
+
+  const { error } = isCompleted
+    ? await undoCompletePass({ passId: selectedPass.id, userId: currentUser.id })
+    : await completePass({ pass: selectedPass, userId: currentUser.id });
+
   if (error) {
-    showToast(`Abschluss speichern fehlgeschlagen: ${error.message}`, true);
+    showToast(
+      isCompleted
+        ? `Abschluss konnte nicht rückgängig gemacht werden: ${error.message}`
+        : `Karte konnte nicht abgeschlossen werden: ${error.message}`,
+      true
+    );
     return;
   }
-  if (!savedFolderNames.includes(COMPLETED_CARDS_FOLDER)) {
+
+  if (!isCompleted && !savedFolderNames.includes(COMPLETED_CARDS_FOLDER)) {
     savedFolderNames = [...savedFolderNames, COMPLETED_CARDS_FOLDER].sort((a, b) => a.localeCompare(b, 'de-DE', { sensitivity: 'base' }));
   }
-  passFoldersById[selectedPass.id] = COMPLETED_CARDS_FOLDER;
-  persistSavedCardsOrganization();
-  renderSavedCardsView();
 
-  showToast('Karte wurde als abgeschlossen markiert und in „Abgeschlossene Karten“ verschoben.');
+  if (isCompleted) {
+    delete passFoldersById[selectedPass.id];
+  } else {
+    passFoldersById[selectedPass.id] = COMPLETED_CARDS_FOLDER;
+  }
+
+  persistSavedCardsOrganization();
+  await refreshPasses();
+  showToast(isCompleted ? 'Abschluss wurde rückgängig gemacht.' : 'Karte wurde abgeschlossen.');
   await refreshStats();
 }
 
