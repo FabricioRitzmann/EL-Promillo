@@ -7,6 +7,7 @@ import {
   passkitBarcodeFormats,
   passkitPassTypes
 } from './passkit.js';
+import { shouldShowBarcode, toWalletViewMode } from './barcodeVisibility.js';
 
 export const ui = {
   authState: document.getElementById('auth-state'),
@@ -907,6 +908,12 @@ export function updatePreview(payload) {
   const streakCounter = document.getElementById('preview-streak-counter');
   const walletLabel = document.getElementById('preview-wallet-label');
 
+  const headerField = document.getElementById('preview-field-header');
+  const primaryField = document.getElementById('preview-field-primary');
+  const secondaryField = document.getElementById('preview-field-secondary');
+  const auxiliaryField = document.getElementById('preview-field-auxiliary');
+  const backFields = document.getElementById('preview-back-fields');
+
   const walletSkin = payload.walletSkin || 'apple';
   const walletLabels = {
     apple: 'Apple Wallet',
@@ -931,6 +938,24 @@ export function updatePreview(payload) {
     companyLogo.src = '';
   }
   description.textContent = payload.description || '';
+  if (headerField) headerField.textContent = payload.fields?.validUntil || payload.fields?.eventDate || '31.12.2026';
+  if (primaryField) primaryField.textContent = payload.title || payload.fields?.title || 'Premium Pass';
+  if (secondaryField) secondaryField.textContent = payload.fields?.fullName || payload.fields?.customerNumber || 'Max Muster';
+  if (auxiliaryField) auxiliaryField.textContent = payload.fields?.tier || payload.fields?.gate || 'Aktiv';
+  if (backFields) {
+    backFields.innerHTML = '';
+    const rows = [
+      payload.description,
+      payload.fields?.customerNumber,
+      payload.fields?.eventLocation,
+      payload.fields?.gate
+    ].filter(Boolean);
+    rows.forEach((row) => {
+      const p = document.createElement('p');
+      p.textContent = row;
+      backFields.appendChild(p);
+    });
+  }
   const activeTitleBucketLayout = normalizeTitleBucketLayout(payload.titleBucketLayout);
   const previewNodes = {
     subtitle,
@@ -965,7 +990,21 @@ export function updatePreview(payload) {
     payload.qrContent || 'https://example.com'
   )}`;
   qrImage.src = qrUrl;
-  qrImage.classList.toggle('hidden', previewMode !== 'vertical');
+  const walletViewMode = toWalletViewMode(walletSkin, previewMode);
+  const barcodeTemplate = {
+    barcode: {
+      enabled: Boolean(payload.qrContent),
+      showInVertical: true,
+      showInHorizontal: false,
+      showInBack: false,
+      showInCardView: false,
+      showInDetailView: true,
+      showInQuickAccessView: true
+    }
+  };
+  const showBarcode = shouldShowBarcode(barcodeTemplate, walletSkin, walletViewMode);
+  qrImage.classList.toggle('hidden', !showBarcode);
+  backFields?.classList.toggle('hidden', !(walletSkin === 'apple' && previewMode === 'vertical' && !showBarcode));
 
   if (payload.banner?.enabled && payload.banner?.text) {
     banner.classList.remove('hidden');
