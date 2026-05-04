@@ -320,11 +320,23 @@ export async function recordWalletScan({ passInstanceId, passId, businessUserId,
 export async function listBusinessScanStats(userId) {
   if (!isConfigured) return notConfiguredError();
   try {
-    return await supabaseClient
+    const response = await supabaseClient
       .from('business_scan_stats_anonymized')
       .select('*')
       .eq('business_user_id', userId)
       .order('last_event_at', { ascending: false });
+
+    if (response.error?.code === 'PGRST205') {
+      return {
+        data: [],
+        error: {
+          ...response.error,
+          friendlyMessage: 'Statistik-View ist noch nicht verfügbar. Bitte Migration ausführen und Schema-Cache neu laden.'
+        }
+      };
+    }
+
+    return response;
   } catch (error) {
     return networkError(error);
   }
