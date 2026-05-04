@@ -550,6 +550,12 @@ select:focus {
   height: 20px;
 }
 
+.preview-streak-counter-value {
+  max-width: 8ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .stamp-slot {
   width: 42px;
   height: 42px;
@@ -1152,6 +1158,11 @@ select:focus {
   display: flex;
   flex-direction: column;
   gap: 14px;
+}
+
+.error-text {
+  color: #b42318;
+  margin: 6px 0 0;
 }
 
 .wallet-sim-card {

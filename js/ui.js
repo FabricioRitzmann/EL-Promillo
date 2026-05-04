@@ -548,6 +548,21 @@ function clampNumber(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 
+function getStreakCount(cardPayload) {
+  const value =
+    cardPayload?.programConfig?.currentStreak ??
+    cardPayload?.programConfig?.streakCount ??
+    cardPayload?.programConfig?.streak_count ??
+    cardPayload?.programConfig?.current_value ??
+    cardPayload?.programConfig?.progress ??
+    cardPayload?.programConfig?.scan_count ??
+    cardPayload?.programConfig?.currentStamps ??
+    0;
+  const numericValue = Number(value);
+  if (!Number.isFinite(numericValue) || numericValue < 0) return 0;
+  return Math.floor(numericValue);
+}
+
 export function syncBannerFields() {
   const bannerFields = document.getElementById('banner-fields');
   bannerFields.classList.toggle('hidden', !formElements.bannerEnabled.checked);
@@ -1004,7 +1019,6 @@ export function updatePreview(payload) {
   };
   const showBarcode = shouldShowBarcode(barcodeTemplate, walletSkin, walletViewMode);
   qrImage.classList.toggle('hidden', !showBarcode);
-  backFields?.classList.toggle('hidden', !(walletSkin === 'apple' && previewMode === 'vertical' && !showBarcode));
 
   if (payload.banner?.enabled && payload.banner?.text) {
     banner.classList.remove('hidden');
@@ -1034,12 +1048,13 @@ export function updatePreview(payload) {
   const isStreak = payload.cardProgramType === 'streak';
   if (isCoffee || isStreak) {
     const targetRaw = isCoffee ? payload.programConfig?.stampTarget : payload.programConfig?.targetDays;
-    const progressRaw = payload.programConfig?.currentStamps;
     const selectedShape = isCoffee ? payload.programConfig?.stampShape : payload.programConfig?.streakShape;
-    const slotIconId = isCoffee ? payload.iconId : payload.programConfig?.streakIconId;
+    const slotIconId = isCoffee ? payload.iconId : payload.programConfig?.streakIconId || 'fire';
     const slotIconSymbol = getIconSymbol(slotIconId);
     const target = clampNumber(sanitizeNumber(targetRaw, 1), 1, 60);
-    const progress = clampNumber(sanitizeNumber(progressRaw, 0), 0, target);
+    const progress = isCoffee
+      ? clampNumber(sanitizeNumber(payload.programConfig?.currentStamps, 0), 0, target)
+      : getStreakCount(payload);
 
     if (isCoffee) {
       stampGrid.classList.remove('hidden');
@@ -1065,6 +1080,7 @@ export function updatePreview(payload) {
       iconNode.classList.add('preview-streak-counter-icon');
       iconWrapper.appendChild(iconNode);
       const valueNode = document.createElement('span');
+      valueNode.classList.add('preview-streak-counter-value');
       valueNode.textContent = String(progress);
       streakCounter.append(iconWrapper, valueNode);
     }
@@ -1393,7 +1409,7 @@ export function renderSavedPasses(entries, options = {}) {
           <button type="button" class="btn btn-danger delete-pass-btn" aria-label="Karte löschen" title="Karte löschen">🗑️</button>
           <button type="button" class="btn btn-secondary open-pass-btn">Öffnen</button>
           <button type="button" class="btn btn-secondary scan-pass-btn">Karte scannen</button>
-          <button type="button" class="btn btn-primary complete-pass-btn">Karte abschließen</button>
+          <button type="button" class="btn btn-primary complete-pass-btn">${entry.is_completed ? 'Abschluss rückgängig machen' : 'Karte abschließen'}</button>
           <a class="btn btn-secondary" href="https://api.qrserver.com/v1/create-qr-code/?size=420x420&data=${encodeURIComponent(
             entry.qr_content
           )}" target="_blank" rel="noreferrer">QR öffnen</a>

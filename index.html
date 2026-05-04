@@ -116,8 +116,13 @@
               <button type="button" id="register-btn" class="btn">Registrieren</button>
               <button type="button" id="login-btn" class="btn btn-primary">Login</button>
             </div>
+            <p class="muted small">Alternative Anmeldung:</p>
             <div class="row-buttons">
-              <button type="button" id="reset-btn" class="btn btn-secondary">OTP / Reset anfordern</button>
+              <button type="button" id="otp-btn" class="btn btn-secondary">Einmal-Link per E-Mail senden</button>
+            </div>
+            <p class="muted small">Passwort vergessen?</p>
+            <div class="row-buttons">
+              <button type="button" id="reset-btn" class="btn btn-secondary">Passwort zurücksetzen</button>
             </div>
           </form>
         </section>
@@ -571,6 +576,26 @@
         <div class="row-buttons">
           <button id="confirm-cancel-btn" class="btn btn-secondary" type="button">Abbrechen</button>
           <button id="confirm-ok-btn" class="btn btn-primary" type="button">Bestätigen</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="email-confirm-modal" class="modal-backdrop hidden">
+      <div class="modal-card">
+        <h3 id="email-confirm-title">E-Mail bestätigen</h3>
+        <p id="email-confirm-message" class="muted"></p>
+        <p id="email-confirm-preview" class="small"></p>
+        <div id="email-confirm-edit-wrap" class="hidden">
+          <label>
+            E-Mail-Adresse
+            <input id="email-confirm-input" type="email" />
+          </label>
+          <p id="email-confirm-error" class="error-text hidden"></p>
+        </div>
+        <div class="row-buttons">
+          <button id="email-confirm-cancel-btn" class="btn btn-secondary" type="button">Abbrechen</button>
+          <button id="email-confirm-edit-btn" class="btn btn-secondary" type="button">E-Mail ändern</button>
+          <button id="email-confirm-ok-btn" class="btn btn-primary" type="button">Ja, Link senden</button>
         </div>
       </div>
     </div>

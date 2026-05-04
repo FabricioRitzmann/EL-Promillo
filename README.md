@@ -138,3 +138,33 @@ Das SQL enthält jetzt zusätzlich ein Datenmodell für den echten Betriebseinsa
 - `business_scan_stats_anonymized` (View): liefert lesbare Statistiken pro Betrieb/Karte mit anonymisierten Kundenzahlen (`customer_reference_hash`).
 
 So können Betriebe nachvollziehen, wie oft Karten genutzt werden, ohne personenbezogene Endkundendaten im Klartext auszulesen.
+
+## Fehlerbehebung: `business_scan_stats_anonymized` nicht gefunden
+
+Wenn im Frontend ein Fehler wie
+
+`Could not find the table 'public.business_scan_stats_anonymized' in the schema cache.`
+
+auftaucht, ist meistens die Migration für die Statistik-View noch nicht ausgeführt oder der PostgREST-Schema-Cache noch nicht aktualisiert.
+
+### 1) Migration ausführen
+
+Im Supabase SQL Editor die Datei `supabase/migration_20260504_business_scan_stats_anonymized.sql` ausführen.
+
+### 2) Schema-Cache neu laden
+
+Falls die View bereits existiert, reicht oft dieser Befehl im Supabase SQL Editor:
+
+```sql
+notify pgrst, 'reload schema';
+```
+
+### 3) View prüfen
+
+```sql
+select *
+from public.business_scan_stats_anonymized
+limit 10;
+```
+
+Wenn das Query ohne Fehler läuft, ist die View verfügbar. Anschließend die Web-App neu laden.

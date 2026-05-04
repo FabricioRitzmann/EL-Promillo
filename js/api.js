@@ -125,7 +125,21 @@ export async function requestPasswordOtp(email) {
   if (!isConfigured) return notConfiguredError();
   try {
     return await supabaseClient.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.href
+      redirectTo: `${window.location.origin}/reset-password`
+    });
+  } catch (error) {
+    return networkError(error);
+  }
+}
+
+export async function requestOtpLogin(email) {
+  if (!isConfigured) return notConfiguredError();
+  try {
+    return await supabaseClient.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`
+      }
     });
   } catch (error) {
     return networkError(error);
@@ -235,6 +249,91 @@ export async function addCompletionStat(userId, passId, passTitle, cardProgramTy
     if (isMissingRelationError(error, 'pass_completion_stats')) {
       return { data: null, error: null };
     }
+    return networkError(error);
+  }
+}
+
+function clampProgress(value) {
+  if (!Number.isFinite(value)) return 0;
+  return Math.max(0, Math.min(100, Math.round(value)));
+}
+
+export function calculateCardProgress(card = {}) {
+  const programType = card.card_program_type || card.cardProgramType || 'generic';
+  const config = card.program_config || card.programConfig || {};
+  const fallback = Number(card.progress_percent ?? card.progress ?? 0);
+
+  if (programType === 'coffee') {
+    const current = Number(config.currentStamps ?? 0);
+    const target = Number(config.stampTarget ?? 0);
+    if (target <= 0) return clampProgress(fallback);
+    return clampProgress((current / target) * 100);
+  }
+
+  if (programType === 'streak') {
+    const current = Number(config.currentStamps ?? 0);
+    const target = Number(config.targetDays ?? 0);
+    if (target <= 0) return clampProgress(fallback);
+    return clampProgress((current / target) * 100);
+  }
+
+  if (programType === 'loyalty') {
+    const current = Number(config.currentPoints ?? config.points ?? 0);
+    const target = Number(config.targetPoints ?? 0);
+    if (target <= 0) return clampProgress(fallback);
+    return clampProgress((current / target) * 100);
+  }
+
+  return clampProgress(fallback);
+}
+
+export async function completePass({ pass, userId }) {
+  if (!isConfigured) return notConfiguredError();
+  const nowIso = new Date().toISOString();
+  const progress = calculateCardProgress(pass);
+  const completionSnapshot = {
+    card_type: pass.card_program_type || 'generic',
+    current_value: Number(pass.program_config?.currentStamps ?? pass.program_config?.currentPoints ?? 0),
+    target_value: Number(pass.program_config?.stampTarget ?? pass.program_config?.targetDays ?? pass.program_config?.targetPoints ?? 0),
+    progress_percent: progress,
+    completed_from: 'manual_completion',
+    completed_at: nowIso
+  };
+
+  try {
+    return await supabaseClient
+      .from('wallet_passes')
+      .update({
+        is_completed: true,
+        completed_at: nowIso,
+        completed_by: userId,
+        completion_source: 'manual_completion',
+        completion_progress_percent: progress,
+        completion_snapshot: completionSnapshot
+      })
+      .eq('id', pass.id)
+      .eq('user_id', userId);
+  } catch (error) {
+    return networkError(error);
+  }
+}
+
+export async function undoCompletePass({ passId, userId }) {
+  if (!isConfigured) return notConfiguredError();
+  try {
+    return await supabaseClient
+      .from('wallet_passes')
+      .update({
+        is_completed: false,
+        completed_at: null,
+        completed_by: null,
+        completion_source: null,
+        completion_progress_percent: null,
+        completion_snapshot: null
+      })
+      .eq('id', passId)
+      .eq('user_id', userId);
+  } catch (error) {
     return networkError(error);
   }
 }
