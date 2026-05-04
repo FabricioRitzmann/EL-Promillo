@@ -243,6 +243,7 @@ function refreshPreview() {
   updatePreview(buildPreviewPayload());
   syncHeaderCompanyLogo();
   syncPreviewWalletTabs();
+  syncPreviewModeTabs();
 }
 
 function syncPreviewWalletTabs() {
@@ -254,6 +255,16 @@ function syncPreviewWalletTabs() {
   });
 }
 
+
+
+function syncPreviewModeTabs() {
+  const selectedMode = formElements.previewMode?.value || 'horizontal';
+  document.querySelectorAll('[data-preview-mode-tab]').forEach((button) => {
+    const isActive = button.dataset.previewModeTab === selectedMode;
+    button.classList.toggle('is-active', isActive);
+    button.setAttribute('aria-selected', String(isActive));
+  });
+}
 function focusEditorTab() {
   setActiveTab('editor');
   requestAnimationFrame(() => setActiveTab('editor'));
@@ -974,6 +985,7 @@ function wireEvents() {
     formElements.bg,
     formElements.fg,
     formElements.walletSkin,
+    formElements.previewMode,
     formElements.backgroundTemplate,
     formElements.bannerEnabled,
     formElements.bannerText,
@@ -1058,6 +1070,18 @@ function wireEvents() {
 
       formElements.walletSkin.value = selectedSkin;
       formElements.walletSkin.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+  });
+
+  document.querySelectorAll('[data-preview-mode-tab]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const selectedMode = button.dataset.previewModeTab;
+      if (!selectedMode || formElements.previewMode.value === selectedMode) {
+        return;
+      }
+
+      formElements.previewMode.value = selectedMode;
+      formElements.previewMode.dispatchEvent(new Event('change', { bubbles: true }));
     });
   });
 }

@@ -241,6 +241,7 @@
 
                 <div class="design-grid">
                   <input id="pass-wallet-skin" type="hidden" value="apple" />
+                  <input id="pass-preview-mode" type="hidden" value="horizontal" />
 
                   <label>
                     🎞️ Hintergrund-Vorlage
@@ -468,7 +469,11 @@
                   <button type="button" class="wallet-preview-tab" data-wallet-skin-tab="google">Google</button>
                   <button type="button" class="wallet-preview-tab" data-wallet-skin-tab="samsung">Samsung</button>
                 </div>
-                <div id="pass-preview" class="pass-preview" data-wallet-skin="apple">
+                <div class="wallet-preview-mode-tabbar" role="tablist" aria-label="Vorschau Ausrichtung">
+                  <button type="button" class="wallet-preview-tab is-active" data-preview-mode-tab="horizontal">Kreditkarte</button>
+                  <button type="button" class="wallet-preview-tab" data-preview-mode-tab="vertical">Wallet hochkant</button>
+                </div>
+                <div id="pass-preview" class="pass-preview" data-wallet-skin="apple" data-preview-mode="horizontal">
                 <div class="pass-overlay">
                   <div class="preview-logo-slot">
                     <img id="preview-company-logo" class="preview-company-logo hidden" alt="Firmenlogo" />
