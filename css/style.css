@@ -550,6 +550,12 @@ select:focus {
   height: 20px;
 }
 
+.preview-streak-counter-value {
+  max-width: 8ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .stamp-slot {
   width: 42px;
   height: 42px;

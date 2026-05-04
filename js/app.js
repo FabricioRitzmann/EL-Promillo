@@ -876,8 +876,18 @@ async function handleScanPass(passId) {
   const selectedPass = latestPassEntries.find((entry) => entry.id === passId);
   if (!selectedPass) return;
   if (selectedPass.card_program_type === 'streak') {
-    const currentValue = Number(selectedPass.program_config?.currentStamps ?? 0);
-    const nextValue = Number.isFinite(currentValue) ? currentValue + 1 : 1;
+    const currentValueRaw =
+      selectedPass.program_config?.currentStreak ??
+      selectedPass.program_config?.streakCount ??
+      selectedPass.program_config?.streak_count ??
+      selectedPass.program_config?.current_value ??
+      selectedPass.program_config?.progress ??
+      selectedPass.program_config?.scan_count ??
+      selectedPass.program_config?.currentStamps ??
+      0;
+    const currentValue = Number(currentValueRaw);
+    const normalizedCurrent = Number.isFinite(currentValue) && currentValue >= 0 ? Math.floor(currentValue) : 0;
+    const nextValue = normalizedCurrent + 1;
     const updatedPayload = {
       id: selectedPass.id,
       title: selectedPass.title || '',
@@ -907,7 +917,7 @@ async function handleScanPass(passId) {
         positionY: selectedPass.banner_position_y ?? 4
       },
       cardProgramType: selectedPass.card_program_type || 'generic',
-      programConfig: { ...(selectedPass.program_config || {}), currentStamps: nextValue },
+      programConfig: { ...(selectedPass.program_config || {}), currentStamps: nextValue, currentStreak: nextValue },
       pushEnabled: selectedPass.push_enabled ?? false,
       notificationRules: selectedPass.notification_rules || [],
       passkitConfig: selectedPass.passkit_config || {}
