@@ -1,6 +1,7 @@
 import { backgroundTemplates, bannerColorOptions, passTemplates, streakIcons, templateIcons } from './config.js';
 import { WALLET_TEMPLATE_TYPES } from './walletTemplates.js';
 import {
+  getDefaultWalletConfig,
   getEditorPasskitConfig,
   getDefaultPasskitConfig,
   normalizePasskitConfig,
@@ -1111,6 +1112,13 @@ export function getPassFormData() {
     }
   });
 
+  const walletConfig = getDefaultWalletConfig();
+  walletConfig.baseData = {
+    ...walletConfig.baseData,
+    description: formElements.description.value.trim()
+  };
+  walletConfig.platforms.apple = passkitConfig;
+
   return {
     title: formElements.title.value.trim(),
     subtitle: formElements.subtitle.value.trim(),
@@ -1145,7 +1153,8 @@ export function getPassFormData() {
     },
     pushEnabled: formElements.pushEnabled.checked,
     notificationRules: getNotificationRules(),
-    passkitConfig
+    passkitConfig,
+    walletConfig
   };
 }
 
@@ -1170,7 +1179,10 @@ export function setLoggedOutView() {
 }
 
 export function fillEditorFromSavedPass(entry) {
-  const passkitConfig = normalizePasskitConfig(entry.passkit_config || getDefaultPasskitConfig());
+  const walletConfig = entry.wallet_config || getDefaultWalletConfig();
+  const passkitConfig = normalizePasskitConfig(
+    walletConfig?.platforms?.apple || entry.passkit_config || getDefaultPasskitConfig()
+  );
   formElements.title.value = entry.title || '';
   formElements.subtitle.value = entry.subtitle || '';
   formElements.description.value = entry.description || '';

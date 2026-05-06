@@ -191,6 +191,7 @@ export async function savePass(passPayload, userId) {
       program_config: passPayload.programConfig,
       push_enabled: passPayload.pushEnabled,
       notification_rules: passPayload.notificationRules,
+      wallet_config: passPayload.walletConfig || null,
       passkit_enabled: passPayload.passkitConfig?.enabled ?? false,
       passkit_config: passPayload.passkitConfig || {}
     };
