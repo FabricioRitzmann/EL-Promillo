@@ -921,6 +921,7 @@ export function updatePreview(payload) {
   const previewTitleBucket = document.getElementById('preview-title-bucket');
   const previewTitleRow = document.getElementById('preview-title-row');
   const qrImage = document.getElementById('preview-qr');
+  const barcodeTypeLabel = document.getElementById('preview-barcode-type');
   const banner = document.getElementById('preview-banner');
   const stampGrid = document.getElementById('preview-stamp-grid');
   const streakCounter = document.getElementById('preview-streak-counter');
@@ -1004,14 +1005,15 @@ export function updatePreview(payload) {
 
   preview.style.color = payload.foregroundColor;
 
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(
-    payload.qrContent || 'https://example.com'
-  )}`;
+  const selectedBarcodeType = payload.barcodeConfig?.type || payload.walletConfig?.barcode?.selection || 'QR';
+  const normalizedBarcodeType = String(selectedBarcodeType).toUpperCase();
+  const barcodeValue = payload.barcodeConfig?.value || payload.qrContent || 'https://example.com';
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(barcodeValue)}`;
   qrImage.src = qrUrl;
   const walletViewMode = toWalletViewMode(walletSkin, previewMode);
   const barcodeTemplate = {
     barcode: {
-      enabled: Boolean(payload.qrContent),
+      enabled: normalizedBarcodeType !== 'NONE' && Boolean(barcodeValue),
       showInVertical: true,
       showInHorizontal: false,
       showInBack: false,
@@ -1022,6 +1024,15 @@ export function updatePreview(payload) {
   };
   const showBarcode = shouldShowBarcode(barcodeTemplate, walletSkin, walletViewMode);
   qrImage.classList.toggle('hidden', !showBarcode);
+  if (barcodeTypeLabel) {
+    const needsQrFallbackPreview = normalizedBarcodeType !== 'QR' && normalizedBarcodeType !== 'NONE';
+    barcodeTypeLabel.textContent = normalizedBarcodeType === 'NONE'
+      ? 'Kein Barcode aktiv'
+      : needsQrFallbackPreview
+        ? `${normalizedBarcodeType} ausgewählt (Vorschau als QR-Fallback)`
+        : 'QR Code';
+    barcodeTypeLabel.classList.toggle('hidden', !showBarcode && normalizedBarcodeType !== 'NONE');
+  }
 
   if (payload.banner?.enabled && payload.banner?.text) {
     banner.classList.remove('hidden');
