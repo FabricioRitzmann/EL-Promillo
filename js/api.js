@@ -164,6 +164,7 @@ export async function savePass(passPayload, userId) {
       subtitle: passPayload.subtitle,
       description: passPayload.description,
       qr_content: passPayload.qrContent,
+      barcode_config: passPayload.barcodeConfig || null,
       business_name: passPayload.businessName || null,
       business_category: passPayload.businessCategory || 'restaurant',
       template_storage_path: buildTemplateStoragePath(passPayload, userId),
@@ -191,6 +192,7 @@ export async function savePass(passPayload, userId) {
       program_config: passPayload.programConfig,
       push_enabled: passPayload.pushEnabled,
       notification_rules: passPayload.notificationRules,
+      wallet_config: passPayload.walletConfig || null,
       passkit_enabled: passPayload.passkitConfig?.enabled ?? false,
       passkit_config: passPayload.passkitConfig || {}
     };

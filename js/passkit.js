@@ -9,9 +9,12 @@ export const passkitPassTypes = [
 
 export const passkitBarcodeFormats = [
   { id: 'PKBarcodeFormatQR', name: 'QR Code' },
+  { id: 'PKBarcodeFormatAztec', name: 'Aztec' },
   { id: 'PKBarcodeFormatPDF417', name: 'PDF417' },
-  { id: 'PKBarcodeFormatCode128', name: 'Code128' }
+  { id: 'PKBarcodeFormatCode128', name: 'Code128 (nicht auf Apple Watch)' }
 ];
+
+const SUPPORTED_APPLE_BARCODES = new Set(passkitBarcodeFormats.map((item) => item.id));
 
 export function getDefaultPasskitConfig() {
   return {
@@ -34,14 +37,41 @@ export function getDefaultPasskitConfig() {
   };
 }
 
-function sanitizeString(value) {
-  return String(value || '').trim();
+export function getDefaultWalletConfig() {
+  return {
+    walletConfigVersion: 2,
+    baseData: {
+      locale: 'de-CH',
+      timezone: 'Europe/Zurich',
+      status: 'active'
+    },
+    platforms: {
+      apple: getDefaultPasskitConfig(),
+      google: { enabled: true, passType: 'generic' },
+      samsung: { enabled: false, cardType: 'generic' }
+    },
+    barcode: {
+      selection: 'QR',
+      static: true
+    },
+    previewConfig: {
+      appleVertical: {},
+      appleWatch: {},
+      google: {},
+      samsung: {},
+      webHorizontal: {},
+      webVertical: {}
+    }
+  };
 }
 
-function sanitizeNumber(value) {
-  if (value === '' || value === null || value === undefined) return null;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
+function sanitizeString(value) { return String(value || '').trim(); }
+function sanitizeNumber(value) { if (value === '' || value === null || value === undefined) return null; const p = Number(value); return Number.isFinite(p) ? p : null; }
+
+function normalizeAppleBarcode(format) {
+  const candidate = sanitizeString(format);
+  if (SUPPORTED_APPLE_BARCODES.has(candidate)) return candidate;
+  return 'PKBarcodeFormatQR';
 }
 
 export function normalizePasskitConfig(config = {}) {
@@ -61,12 +91,9 @@ export function normalizePasskitConfig(config = {}) {
     backgroundColor: sanitizeString(config.backgroundColor) || fallback.backgroundColor,
     labelColor: sanitizeString(config.labelColor) || fallback.labelColor,
     relevantDate: sanitizeString(config.relevantDate),
-    location: {
-      latitude: sanitizeNumber(location.latitude),
-      longitude: sanitizeNumber(location.longitude)
-    },
+    location: { latitude: sanitizeNumber(location.latitude), longitude: sanitizeNumber(location.longitude) },
     barcode: {
-      format: sanitizeString(config.barcode?.format) || fallback.barcode.format,
+      format: normalizeAppleBarcode(config.barcode?.format),
       messageEncoding: sanitizeString(config.barcode?.messageEncoding) || fallback.barcode.messageEncoding
     }
   };
@@ -74,18 +101,10 @@ export function normalizePasskitConfig(config = {}) {
 
 export function getEditorPasskitConfig(config = {}) {
   const normalized = normalizePasskitConfig(config);
-  if (!normalized.enabled) {
-    return { enabled: false };
-  }
-
-  const location =
-    normalized.location.latitude !== null && normalized.location.longitude !== null
-      ? {
-          latitude: normalized.location.latitude,
-          longitude: normalized.location.longitude
-        }
-      : undefined;
-
+  if (!normalized.enabled) return { enabled: false };
+  const location = normalized.location.latitude !== null && normalized.location.longitude !== null
+    ? { latitude: normalized.location.latitude, longitude: normalized.location.longitude }
+    : undefined;
   return {
     enabled: true,
     passType: normalized.passType,
@@ -99,9 +118,6 @@ export function getEditorPasskitConfig(config = {}) {
     labelColor: normalized.labelColor,
     relevantDate: normalized.relevantDate,
     location,
-    barcode: {
-      format: normalized.barcode.format,
-      messageEncoding: normalized.barcode.messageEncoding
-    }
+    barcode: { format: normalized.barcode.format, messageEncoding: normalized.barcode.messageEncoding }
   };
 }

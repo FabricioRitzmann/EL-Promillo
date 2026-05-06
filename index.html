@@ -231,6 +231,30 @@
                   <input id="pass-qr-content" type="text" value="https://example.com/checkin/ABC123" required />
                 </label>
 
+                <h4>Barcode &amp; Scan</h4>
+                <p class="muted small">Code128 wird auf Apple Watch nicht angezeigt. Nutze QR oder Aztec als Fallback.</p>
+                <label>
+                  Barcode-Typ
+                  <select id="barcode-type">
+                    <option value="none">Kein Code</option>
+                    <option value="QR">QR Code</option>
+                    <option value="AZTEC">Aztec</option>
+                    <option value="PDF417">PDF417</option>
+                    <option value="CODE128">Code128</option>
+                    <option value="EAN_13">EAN-13</option>
+                    <option value="EAN_8">EAN-8</option>
+                    <option value="UPC_A">UPC-A</option>
+                    <option value="UPC_E">UPC-E</option>
+                    <option value="CODE_39">Code39</option>
+                    <option value="CODE_93">Code93</option>
+                    <option value="DATA_MATRIX">Data Matrix</option>
+                  </select>
+                </label>
+                <label class="inline-checkbox">
+                  <input id="barcode-dynamic" type="checkbox" />
+                  Dynamischer QR/Barcode
+                </label>
+
                 <label>
                   Betrieb
                   <input id="business-name" type="text" value="Musterbetrieb" />
@@ -327,12 +351,10 @@
                     </label>
                   </div>
                 </div>
-              </section>
 
-              <section class="config-section">
-                <h3>Firmenlogo</h3>
                 <p class="muted small">
-                  Das Firmenlogo wird automatisch aus dem Konto-Popup übernommen und auf jeder Karte oben links angezeigt.
+                  Firmenlogo, Hintergrund, Banner und Farben sind jetzt in einem gemeinsamen Design-Menü gebündelt.
+                  Das Firmenlogo wird weiterhin automatisch aus dem Konto-Popup übernommen und auf der Karte angezeigt.
                 </p>
                 <select id="pass-icon" class="hidden" aria-hidden="true" tabindex="-1"></select>
                 <select id="streak-icon" class="hidden" aria-hidden="true" tabindex="-1"></select>
@@ -501,6 +523,7 @@
                   <div id="preview-streak-counter" class="preview-streak-counter hidden"></div>
                   <div id="preview-stamp-grid" class="preview-stamp-grid hidden"></div>
                   <img id="preview-qr" alt="QR Code Vorschau" />
+                  <p id="preview-barcode-type" class="muted small hidden"></p>
                 </div>
               </div>
               </div>

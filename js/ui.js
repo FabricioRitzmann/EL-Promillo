@@ -1,6 +1,7 @@
 import { backgroundTemplates, bannerColorOptions, passTemplates, streakIcons, templateIcons } from './config.js';
 import { WALLET_TEMPLATE_TYPES } from './walletTemplates.js';
 import {
+  getDefaultWalletConfig,
   getEditorPasskitConfig,
   getDefaultPasskitConfig,
   normalizePasskitConfig,
@@ -56,6 +57,8 @@ export const formElements = {
   subtitle: document.getElementById('pass-subtitle'),
   description: document.getElementById('pass-description'),
   qrContent: document.getElementById('pass-qr-content'),
+  barcodeType: document.getElementById('barcode-type'),
+  barcodeDynamic: document.getElementById('barcode-dynamic'),
   businessName: document.getElementById('business-name'),
   businessCategory: document.getElementById('business-category'),
   template: document.getElementById('pass-template'),
@@ -918,6 +921,7 @@ export function updatePreview(payload) {
   const previewTitleBucket = document.getElementById('preview-title-bucket');
   const previewTitleRow = document.getElementById('preview-title-row');
   const qrImage = document.getElementById('preview-qr');
+  const barcodeTypeLabel = document.getElementById('preview-barcode-type');
   const banner = document.getElementById('preview-banner');
   const stampGrid = document.getElementById('preview-stamp-grid');
   const streakCounter = document.getElementById('preview-streak-counter');
@@ -1001,14 +1005,15 @@ export function updatePreview(payload) {
 
   preview.style.color = payload.foregroundColor;
 
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(
-    payload.qrContent || 'https://example.com'
-  )}`;
+  const selectedBarcodeType = payload.barcodeConfig?.type || payload.walletConfig?.barcode?.selection || 'QR';
+  const normalizedBarcodeType = String(selectedBarcodeType).toUpperCase();
+  const barcodeValue = payload.barcodeConfig?.value || payload.qrContent || 'https://example.com';
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(barcodeValue)}`;
   qrImage.src = qrUrl;
   const walletViewMode = toWalletViewMode(walletSkin, previewMode);
   const barcodeTemplate = {
     barcode: {
-      enabled: Boolean(payload.qrContent),
+      enabled: normalizedBarcodeType !== 'NONE' && Boolean(barcodeValue),
       showInVertical: true,
       showInHorizontal: false,
       showInBack: false,
@@ -1019,6 +1024,15 @@ export function updatePreview(payload) {
   };
   const showBarcode = shouldShowBarcode(barcodeTemplate, walletSkin, walletViewMode);
   qrImage.classList.toggle('hidden', !showBarcode);
+  if (barcodeTypeLabel) {
+    const needsQrFallbackPreview = normalizedBarcodeType !== 'QR' && normalizedBarcodeType !== 'NONE';
+    barcodeTypeLabel.textContent = normalizedBarcodeType === 'NONE'
+      ? 'Kein Barcode aktiv'
+      : needsQrFallbackPreview
+        ? `${normalizedBarcodeType} ausgewählt (Vorschau als QR-Fallback)`
+        : 'QR Code';
+    barcodeTypeLabel.classList.toggle('hidden', !showBarcode && normalizedBarcodeType !== 'NONE');
+  }
 
   if (payload.banner?.enabled && payload.banner?.text) {
     banner.classList.remove('hidden');
@@ -1111,11 +1125,27 @@ export function getPassFormData() {
     }
   });
 
+  const walletConfig = getDefaultWalletConfig();
+  walletConfig.baseData = {
+    ...walletConfig.baseData,
+    description: formElements.description.value.trim()
+  };
+  walletConfig.platforms.apple = passkitConfig;
+  walletConfig.barcode = {
+    selection: formElements.barcodeType.value || 'QR',
+    static: !formElements.barcodeDynamic.checked
+  };
+
   return {
     title: formElements.title.value.trim(),
     subtitle: formElements.subtitle.value.trim(),
     description: formElements.description.value.trim(),
     qrContent: formElements.qrContent.value.trim(),
+    barcodeConfig: {
+      type: formElements.barcodeType.value || 'QR',
+      dynamic: Boolean(formElements.barcodeDynamic.checked),
+      value: formElements.qrContent.value.trim()
+    },
     businessName: formElements.businessName.value.trim(),
     businessCategory: formElements.businessCategory.value,
     templateId: formElements.template.value,
@@ -1145,7 +1175,8 @@ export function getPassFormData() {
     },
     pushEnabled: formElements.pushEnabled.checked,
     notificationRules: getNotificationRules(),
-    passkitConfig
+    passkitConfig,
+    walletConfig
   };
 }
 
@@ -1170,11 +1201,16 @@ export function setLoggedOutView() {
 }
 
 export function fillEditorFromSavedPass(entry) {
-  const passkitConfig = normalizePasskitConfig(entry.passkit_config || getDefaultPasskitConfig());
+  const walletConfig = entry.wallet_config || getDefaultWalletConfig();
+  const passkitConfig = normalizePasskitConfig(
+    walletConfig?.platforms?.apple || entry.passkit_config || getDefaultPasskitConfig()
+  );
   formElements.title.value = entry.title || '';
   formElements.subtitle.value = entry.subtitle || '';
   formElements.description.value = entry.description || '';
   formElements.qrContent.value = entry.qr_content || '';
+  formElements.barcodeType.value = entry.wallet_config?.barcode?.selection || entry.barcode_config?.type || 'QR';
+  formElements.barcodeDynamic.checked = entry.wallet_config?.barcode?.static === false || Boolean(entry.barcode_config?.dynamic);
   formElements.businessName.value = entry.business_name || '';
   formElements.businessCategory.value = entry.business_category || 'restaurant';
   formElements.template.value = entry.template_id || passTemplates[0].id;
