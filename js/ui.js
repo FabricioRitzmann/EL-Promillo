@@ -1131,10 +1131,6 @@ export function getPassFormData() {
     description: formElements.description.value.trim()
   };
   walletConfig.platforms.apple = passkitConfig;
-  walletConfig.barcode = {
-    selection: formElements.barcodeType.value || 'QR',
-    static: !formElements.barcodeDynamic.checked
-  };
 
   return {
     title: formElements.title.value.trim(),
