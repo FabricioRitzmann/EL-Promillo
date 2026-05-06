@@ -1015,7 +1015,7 @@ export function updatePreview(payload) {
     barcode: {
       enabled: normalizedBarcodeType !== 'NONE' && Boolean(barcodeValue),
       showInVertical: true,
-      showInHorizontal: false,
+      showInHorizontal: true,
       showInBack: false,
       showInCardView: false,
       showInDetailView: true,

@@ -3,7 +3,7 @@ export function shouldShowBarcode(template, walletType, viewMode) {
 
   if (walletType === 'apple') {
     if (viewMode === 'verticalFront') return template.barcode.showInVertical === true;
-    if (viewMode === 'horizontalCard') return false;
+    if (viewMode === 'horizontalCard') return template.barcode.showInHorizontal === true;
     if (viewMode === 'verticalBack') return template.barcode.showInBack === true;
   }
 
