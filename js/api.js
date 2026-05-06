@@ -164,6 +164,7 @@ export async function savePass(passPayload, userId) {
       subtitle: passPayload.subtitle,
       description: passPayload.description,
       qr_content: passPayload.qrContent,
+      barcode_config: passPayload.barcodeConfig || null,
       business_name: passPayload.businessName || null,
       business_category: passPayload.businessCategory || 'restaurant',
       template_storage_path: buildTemplateStoragePath(passPayload, userId),

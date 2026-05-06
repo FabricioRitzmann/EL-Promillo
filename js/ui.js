@@ -57,6 +57,8 @@ export const formElements = {
   subtitle: document.getElementById('pass-subtitle'),
   description: document.getElementById('pass-description'),
   qrContent: document.getElementById('pass-qr-content'),
+  barcodeType: document.getElementById('barcode-type'),
+  barcodeDynamic: document.getElementById('barcode-dynamic'),
   businessName: document.getElementById('business-name'),
   businessCategory: document.getElementById('business-category'),
   template: document.getElementById('pass-template'),
@@ -1124,6 +1126,11 @@ export function getPassFormData() {
     subtitle: formElements.subtitle.value.trim(),
     description: formElements.description.value.trim(),
     qrContent: formElements.qrContent.value.trim(),
+    barcodeConfig: {
+      type: formElements.barcodeType.value || 'QR',
+      dynamic: Boolean(formElements.barcodeDynamic.checked),
+      value: formElements.qrContent.value.trim()
+    },
     businessName: formElements.businessName.value.trim(),
     businessCategory: formElements.businessCategory.value,
     templateId: formElements.template.value,
@@ -1187,6 +1194,8 @@ export function fillEditorFromSavedPass(entry) {
   formElements.subtitle.value = entry.subtitle || '';
   formElements.description.value = entry.description || '';
   formElements.qrContent.value = entry.qr_content || '';
+  formElements.barcodeType.value = entry.wallet_config?.barcode?.selection || entry.barcode_config?.type || 'QR';
+  formElements.barcodeDynamic.checked = entry.wallet_config?.barcode?.static === false || Boolean(entry.barcode_config?.dynamic);
   formElements.businessName.value = entry.business_name || '';
   formElements.businessCategory.value = entry.business_category || 'restaurant';
   formElements.template.value = entry.template_id || passTemplates[0].id;
