@@ -1066,8 +1066,8 @@ export function updatePreview(payload) {
         slot.classList.toggle('stamp-slot-filled', isFilled);
         slot.style.width = `${payload.programConfig?.stampSize ?? 42}px`;
         slot.style.height = `${payload.programConfig?.stampSize ?? 42}px`;
-        slot.style.borderColor = payload.programConfig?.stampBorderColor || 'rgba(255,255,255,0.6)';
-        slot.style.borderWidth = `${payload.programConfig?.stampBorderWidth ?? 2}px`;
+        slot.style.setProperty('--stamp-border-color', payload.programConfig?.stampBorderColor || 'rgba(255,255,255,0.6)');
+        slot.style.setProperty('--stamp-border-width', `${payload.programConfig?.stampBorderWidth ?? 2}px`);
         slot.style.transform = `translate(${payload.programConfig?.stampOffsetX ?? 0}px, ${payload.programConfig?.stampOffsetY ?? 0}px)`;
         const stampIconLogo = payload.programConfig?.useCompanyLogoForStamps ? payload.customIconUrl : '';
         slot.appendChild(createStampIcon(slotIconId || slotIconSymbol, isFilled, stampIconLogo));

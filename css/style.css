@@ -561,7 +561,9 @@ select:focus {
 .stamp-slot {
   width: 42px;
   height: 42px;
-  border: 2px solid rgba(255, 255, 255, 0.6);
+  --stamp-border-color: rgba(255, 255, 255, 0.6);
+  --stamp-border-width: 2px;
+  border: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -569,6 +571,7 @@ select:focus {
   font-weight: 700;
   color: rgba(255, 255, 255, 0.45);
   background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 0 0 var(--stamp-border-width) var(--stamp-border-color);
 }
 
 .stamp-slot-icon {
@@ -617,7 +620,7 @@ select:focus {
 
 .stamp-slot-filled {
   color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.95);
+  --stamp-border-color: rgba(255, 255, 255, 0.95);
   background: rgba(255, 255, 255, 0.2);
 }
 
