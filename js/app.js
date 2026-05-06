@@ -76,6 +76,71 @@ function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
+function randomDigits(length) {
+  let result = '';
+  for (let index = 0; index < length; index += 1) {
+    result += String(Math.floor(Math.random() * 10));
+  }
+  return result;
+}
+
+function calculateModulo10CheckDigit(numberString) {
+  let sum = 0;
+  let multiplier = 3;
+  for (let index = numberString.length - 1; index >= 0; index -= 1) {
+    sum += Number(numberString[index]) * multiplier;
+    multiplier = multiplier === 3 ? 1 : 3;
+  }
+  return String((10 - (sum % 10)) % 10);
+}
+
+function generateBarcodeValueByType(type) {
+  const normalizedType = String(type || 'QR').toUpperCase();
+  const randomToken = Math.random().toString(36).slice(2, 10).toUpperCase();
+
+  switch (normalizedType) {
+    case 'EAN_13': {
+      const base = randomDigits(12);
+      return `${base}${calculateModulo10CheckDigit(base)}`;
+    }
+    case 'EAN_8': {
+      const base = randomDigits(7);
+      return `${base}${calculateModulo10CheckDigit(base)}`;
+    }
+    case 'UPC_A': {
+      const base = randomDigits(11);
+      return `${base}${calculateModulo10CheckDigit(base)}`;
+    }
+    case 'UPC_E': {
+      return `${randomDigits(6)}${Math.floor(Math.random() * 10)}`;
+    }
+    case 'CODE_39':
+      return `CODE39-${randomToken}`;
+    case 'CODE_93':
+    case 'CODE128':
+      return `SCAN-${Date.now()}-${randomToken}`;
+    case 'DATA_MATRIX':
+    case 'PDF417':
+    case 'AZTEC':
+      return `DM-${randomToken}-${Date.now()}`;
+    case 'QR':
+      return `https://scan.el-promillo.local/checkin/${randomToken}`;
+    default:
+      return '';
+  }
+}
+
+function handleBarcodeTypeChange() {
+  const selectedType = formElements.barcodeType?.value || 'QR';
+  const generatedValue = generateBarcodeValueByType(selectedType);
+  if (generatedValue) {
+    formElements.qrContent.value = generatedValue;
+  }
+  refreshPreview();
+  const typeLabel = selectedType === 'none' ? 'Kein Code' : selectedType;
+  showToast(`Barcode-Typ aktiv: ${typeLabel}${generatedValue ? ' • Zufallswert generiert' : ''}`);
+}
+
 async function askEmailConfirmation({ type, email }) {
   const modal = document.getElementById('email-confirm-modal');
   const title = document.getElementById('email-confirm-title');
@@ -1120,6 +1185,7 @@ function wireEvents() {
   previewFields.forEach((field) => field.addEventListener('change', refreshPreview));
 
   formElements.template.addEventListener('change', handleTemplateChange);
+  formElements.barcodeType.addEventListener('change', handleBarcodeTypeChange);
   formElements.bannerEnabled.addEventListener('change', syncBannerFields);
   formElements.bannerColor.addEventListener('change', applyBannerColorPreset);
 
