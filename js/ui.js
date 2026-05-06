@@ -1,6 +1,7 @@
 import { backgroundTemplates, bannerColorOptions, passTemplates, streakIcons, templateIcons } from './config.js';
 import { WALLET_TEMPLATE_TYPES } from './walletTemplates.js';
 import {
+  getDefaultWalletConfig,
   getEditorPasskitConfig,
   getDefaultPasskitConfig,
   normalizePasskitConfig,
@@ -56,6 +57,8 @@ export const formElements = {
   subtitle: document.getElementById('pass-subtitle'),
   description: document.getElementById('pass-description'),
   qrContent: document.getElementById('pass-qr-content'),
+  barcodeType: document.getElementById('barcode-type'),
+  barcodeDynamic: document.getElementById('barcode-dynamic'),
   businessName: document.getElementById('business-name'),
   businessCategory: document.getElementById('business-category'),
   template: document.getElementById('pass-template'),
@@ -1111,11 +1114,27 @@ export function getPassFormData() {
     }
   });
 
+  const walletConfig = getDefaultWalletConfig();
+  walletConfig.baseData = {
+    ...walletConfig.baseData,
+    description: formElements.description.value.trim()
+  };
+  walletConfig.platforms.apple = passkitConfig;
+  walletConfig.barcode = {
+    selection: formElements.barcodeType.value || 'QR',
+    static: !formElements.barcodeDynamic.checked
+  };
+
   return {
     title: formElements.title.value.trim(),
     subtitle: formElements.subtitle.value.trim(),
     description: formElements.description.value.trim(),
     qrContent: formElements.qrContent.value.trim(),
+    barcodeConfig: {
+      type: formElements.barcodeType.value || 'QR',
+      dynamic: Boolean(formElements.barcodeDynamic.checked),
+      value: formElements.qrContent.value.trim()
+    },
     businessName: formElements.businessName.value.trim(),
     businessCategory: formElements.businessCategory.value,
     templateId: formElements.template.value,
@@ -1145,7 +1164,8 @@ export function getPassFormData() {
     },
     pushEnabled: formElements.pushEnabled.checked,
     notificationRules: getNotificationRules(),
-    passkitConfig
+    passkitConfig,
+    walletConfig
   };
 }
 
@@ -1170,11 +1190,16 @@ export function setLoggedOutView() {
 }
 
 export function fillEditorFromSavedPass(entry) {
-  const passkitConfig = normalizePasskitConfig(entry.passkit_config || getDefaultPasskitConfig());
+  const walletConfig = entry.wallet_config || getDefaultWalletConfig();
+  const passkitConfig = normalizePasskitConfig(
+    walletConfig?.platforms?.apple || entry.passkit_config || getDefaultPasskitConfig()
+  );
   formElements.title.value = entry.title || '';
   formElements.subtitle.value = entry.subtitle || '';
   formElements.description.value = entry.description || '';
   formElements.qrContent.value = entry.qr_content || '';
+  formElements.barcodeType.value = entry.wallet_config?.barcode?.selection || entry.barcode_config?.type || 'QR';
+  formElements.barcodeDynamic.checked = entry.wallet_config?.barcode?.static === false || Boolean(entry.barcode_config?.dynamic);
   formElements.businessName.value = entry.business_name || '';
   formElements.businessCategory.value = entry.business_category || 'restaurant';
   formElements.template.value = entry.template_id || passTemplates[0].id;
