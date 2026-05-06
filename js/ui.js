@@ -1076,7 +1076,7 @@ export function updatePreview(payload) {
     } else if (streakCounter) {
       streakCounter.classList.remove('hidden');
       const iconWrapper = document.createElement('span');
-      const iconNode = createStampIcon(slotIconId || slotIconSymbol, true, '');
+      const iconNode = createStampIcon('🔥', true, '');
       iconNode.classList.add('preview-streak-counter-icon');
       iconWrapper.appendChild(iconNode);
       const valueNode = document.createElement('span');
