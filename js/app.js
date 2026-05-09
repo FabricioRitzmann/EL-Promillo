@@ -14,6 +14,8 @@ import {
   uploadCustomImage
 } from './api.js';
 import { appConfig } from './config.js';
+import { extractPalette } from '../src/lib/wallet/extractLogoColors.js';
+import { applyLogoTheme } from '../src/lib/wallet/applyLogoTheme.js';
 import {
   addNotificationRule,
   applyTemplateDefaults,
@@ -56,6 +58,8 @@ let currentUploadedIconUrl = '';
 let currentUploadedBannerUrl = '';
 let currentAccountLogoUrl = '';
 let currentEditingPassId = null;
+let cachedLogoPalette = null;
+let previousManualColors = null;
 let latestPassEntries = [];
 let latestPassStats = [];
 let lastTemplateId = '';
@@ -719,9 +723,57 @@ async function handleAccountLogoUpload(event) {
     return;
   }
   currentAccountLogoUrl = data.publicUrl;
+  cachedLogoPalette = null;
   persistAccountLogo(currentUser.id, currentAccountLogoUrl);
   syncHeaderCompanyLogo();
+  await analyzeLogoPalette(true);
+  await applyAnalyzedLogoTheme();
   showToast('Firmenlogo gespeichert und wird jetzt automatisch auf allen Karten verwendet.');
+}
+
+
+async function analyzeLogoPalette(force = false) {
+  if (!currentAccountLogoUrl) return null;
+  if (cachedLogoPalette && !force) return cachedLogoPalette;
+  try {
+    cachedLogoPalette = await extractPalette(currentAccountLogoUrl);
+    return cachedLogoPalette;
+  } catch (error) {
+    showToast('Logo-Farbanalyse fehlgeschlagen. Bestehende Farben bleiben erhalten.', true);
+    return null;
+  }
+}
+
+async function applyAnalyzedLogoTheme() {
+  const palette = await analyzeLogoPalette();
+  if (!palette) return;
+  if (!previousManualColors) {
+    previousManualColors = { backgroundColor: formElements.bg.value, foregroundColor: formElements.fg.value };
+  }
+  const themed = applyLogoTheme(
+    { backgroundColor: formElements.bg.value, foregroundColor: formElements.fg.value, labelColor: formElements.passkitLabelColor.value },
+    palette,
+    { autoText: formElements.logoThemeAutoText.checked, autoSecondary: formElements.logoThemeAutoSecondary.checked }
+  );
+  if (formElements.logoThemeAutoBackground.checked) {
+    formElements.bg.value = themed.backgroundColor || formElements.bg.value;
+    formElements.passkitBackgroundColor.value = themed.backgroundColor || formElements.passkitBackgroundColor.value;
+  }
+  if (formElements.logoThemeAutoText.checked) {
+    formElements.fg.value = themed.foregroundColor || formElements.fg.value;
+    formElements.passkitForegroundColor.value = themed.foregroundColor || formElements.passkitForegroundColor.value;
+    formElements.passkitLabelColor.value = themed.labelColor || formElements.passkitLabelColor.value;
+  }
+  refreshPreview();
+}
+
+function resetLogoThemeColors() {
+  if (!previousManualColors) return;
+  formElements.bg.value = previousManualColors.backgroundColor;
+  formElements.fg.value = previousManualColors.foregroundColor;
+  formElements.passkitBackgroundColor.value = previousManualColors.backgroundColor;
+  formElements.passkitForegroundColor.value = previousManualColors.foregroundColor;
+  refreshPreview();
 }
 
 function handleBusinessCategoryChange() {
@@ -1191,6 +1243,9 @@ function wireEvents() {
 
   formElements.upload.addEventListener('change', handleImageUpload);
   formElements.accountLogoUpload?.addEventListener('change', handleAccountLogoUpload);
+  formElements.logoThemeAnalyzeBtn?.addEventListener('click', async () => { await analyzeLogoPalette(true); showToast('Logo-Farben wurden analysiert.'); });
+  formElements.logoThemeApplyBtn?.addEventListener('click', applyAnalyzedLogoTheme);
+  formElements.logoThemeResetBtn?.addEventListener('click', resetLogoThemeColors);
   formElements.businessCategory?.addEventListener('change', handleBusinessCategoryChange);
   ui.addBusinessCategoryBtn?.addEventListener('click', handleAddBusinessCategory);
   ui.confirmBusinessCategoryBtn?.addEventListener('click', confirmNewBusinessCategory);
