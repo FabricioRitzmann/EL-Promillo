@@ -137,6 +137,36 @@ let titleBucketLayout = [...defaultTitleBucketLayout];
 let pendingConfirmResolver = null;
 const cardTransitionDurationMs = 260;
 const transitionTimers = new WeakMap();
+
+const barcodePreviewTypeMap = {
+  AZTEC: 'azteccode',
+  PDF417: 'pdf417',
+  CODE128: 'code128',
+  EAN_13: 'ean13',
+  EAN_8: 'ean8',
+  UPC_A: 'upca',
+  UPC_E: 'upce',
+  CODE_39: 'code39',
+  CODE_93: 'code93',
+  DATA_MATRIX: 'datamatrix'
+};
+
+function getBarcodePreviewUrl(type, value) {
+  const normalizedType = String(type || 'QR').toUpperCase();
+  if (normalizedType === 'NONE' || !value) return null;
+  if (normalizedType === 'QR') {
+    return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(value)}`;
+  }
+  const bcid = barcodePreviewTypeMap[normalizedType];
+  if (!bcid) {
+    return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(value)}`;
+  }
+  const isLinear = ['code128', 'ean13', 'ean8', 'upca', 'upce', 'code39', 'code93'].includes(bcid);
+  const scaleX = isLinear ? 2 : 3;
+  const scaleY = isLinear ? 2 : 3;
+  const height = isLinear ? 18 : 1;
+  return `https://bwipjs-api.metafloor.com/?bcid=${bcid}&text=${encodeURIComponent(value)}&scaleX=${scaleX}&scaleY=${scaleY}&height=${height}&includetext=false`;
+}
 const weekdays = [
   { value: 'monday', label: 'Montag' },
   { value: 'tuesday', label: 'Dienstag' },
@@ -1014,8 +1044,10 @@ export function updatePreview(payload) {
   const selectedBarcodeType = payload.barcodeConfig?.type || payload.walletConfig?.barcode?.selection || 'QR';
   const normalizedBarcodeType = String(selectedBarcodeType).toUpperCase();
   const barcodeValue = payload.barcodeConfig?.value || payload.qrContent || 'https://example.com';
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(barcodeValue)}`;
-  qrImage.src = qrUrl;
+  const barcodePreviewUrl = getBarcodePreviewUrl(normalizedBarcodeType, barcodeValue);
+  if (barcodePreviewUrl) {
+    qrImage.src = barcodePreviewUrl;
+  }
   const walletViewMode = toWalletViewMode(walletSkin, previewMode);
   const barcodeTemplate = {
     barcode: {
@@ -1031,12 +1063,11 @@ export function updatePreview(payload) {
   const showBarcode = shouldShowBarcode(barcodeTemplate, walletSkin, walletViewMode);
   qrImage.classList.toggle('hidden', !showBarcode);
   if (barcodeTypeLabel) {
-    const needsQrFallbackPreview = normalizedBarcodeType !== 'QR' && normalizedBarcodeType !== 'NONE';
     barcodeTypeLabel.textContent = normalizedBarcodeType === 'NONE'
       ? 'Kein Barcode aktiv'
-      : needsQrFallbackPreview
-        ? `${normalizedBarcodeType} ausgewählt (Vorschau als QR-Fallback)`
-        : 'QR Code';
+      : normalizedBarcodeType === 'QR'
+        ? 'QR Code'
+        : `${normalizedBarcodeType} Barcode`;
     barcodeTypeLabel.classList.toggle('hidden', !showBarcode && normalizedBarcodeType !== 'NONE');
   }
 
