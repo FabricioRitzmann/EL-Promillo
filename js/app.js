@@ -732,8 +732,10 @@ async function handleAccountLogoUpload(event) {
     return;
   }
   currentAccountLogoUrl = data.publicUrl;
+  cachedLogoPalette = null;
   persistAccountLogo(currentUser.id, currentAccountLogoUrl);
   syncHeaderCompanyLogo();
+  await analyzeLogoPalette(true);
   await applyAnalyzedLogoTheme();
   showToast('Firmenlogo gespeichert und wird jetzt automatisch auf allen Karten verwendet.');
 }
@@ -755,7 +757,7 @@ async function applyAnalyzedLogoTheme() {
   const palette = await analyzeLogoPalette();
   if (!palette) return;
   if (!previousManualColors) {
-    previousManualColors = { backgroundColor: formElements.bg.value, foregroundColor: formElements.fg.value, backgroundTemplateId: formElements.backgroundTemplate.value };
+    previousManualColors = { backgroundColor: formElements.bg.value, foregroundColor: formElements.fg.value };
   }
   const themed = applyLogoTheme(
     { backgroundColor: formElements.bg.value, foregroundColor: formElements.fg.value, labelColor: formElements.passkitLabelColor.value },
@@ -765,9 +767,6 @@ async function applyAnalyzedLogoTheme() {
   if (formElements.logoThemeAutoBackground.checked) {
     formElements.bg.value = themed.backgroundColor || formElements.bg.value;
     formElements.passkitBackgroundColor.value = themed.backgroundColor || formElements.passkitBackgroundColor.value;
-    if (formElements.backgroundTemplate) {
-      formElements.backgroundTemplate.value = 'custom';
-    }
   }
   if (formElements.logoThemeAutoText.checked) {
     formElements.fg.value = themed.foregroundColor || formElements.fg.value;
@@ -782,9 +781,6 @@ function resetLogoThemeColors() {
   formElements.bg.value = previousManualColors.backgroundColor;
   formElements.fg.value = previousManualColors.foregroundColor;
   formElements.passkitBackgroundColor.value = previousManualColors.backgroundColor;
-  if (previousManualColors.backgroundTemplateId && formElements.backgroundTemplate) {
-    formElements.backgroundTemplate.value = previousManualColors.backgroundTemplateId;
-  }
   formElements.passkitForegroundColor.value = previousManualColors.foregroundColor;
   refreshPreview();
 }
