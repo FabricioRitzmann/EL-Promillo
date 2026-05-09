@@ -717,6 +717,15 @@ async function handleAccountLogoUpload(event) {
     event.target.value = '';
     return;
   }
+  const localLogoUrl = URL.createObjectURL(file);
+  try {
+    cachedLogoPalette = await extractPalette(localLogoUrl);
+  } catch (error) {
+    cachedLogoPalette = null;
+  } finally {
+    URL.revokeObjectURL(localLogoUrl);
+  }
+
   const { data, error } = await uploadCustomImage(file, currentUser.id);
   if (error) {
     showToast(`Logo-Upload fehlgeschlagen: ${error.message}`, true);
